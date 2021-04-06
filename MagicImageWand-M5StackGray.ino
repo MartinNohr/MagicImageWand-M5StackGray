@@ -6,10 +6,14 @@
 
 #include <M5ez.h>
 #include <M5Stack.h>
+#include <EEPROM.h>
 
 #include <ezTime.h>
 
 #include "images.h"
+#include "MagicImageWand-M5StackGray.h"
+//#include <SPIFFS.h>
+#include <SD.h>
 
 #define MAIN_DECLARED
 String exit_button = "";
@@ -18,23 +22,40 @@ void setup() {
 #include <themes/default.h>
 #include <themes/dark.h>
     ezt::setDebug(INFO);
-    //m5.begin();
     ez.begin();
+    Wire.begin();
 }
 
 void loop() {
-    ezMenu mainmenu("Magic Image Wand");
-    mainmenu.txtSmall();
-    mainmenu.addItem("Flexible text menus", mainmenu_menus);
-    mainmenu.addItem("Image menus", mainmenu_image);
-    mainmenu.addItem("Neat messages", mainmenu_msgs);
-    mainmenu.addItem("Multi-function buttons", mainmenu_buttons);
-    mainmenu.addItem("3-button text entry", mainmenu_entry);
-    mainmenu.addItem("Built-in wifi & other settings", ez.settings.menu);
-    mainmenu.addItem("Updates via https", mainmenu_ota);
-    mainmenu.upOnFirst("last|up");
-    mainmenu.downOnLast("first|down");
-    mainmenu.run();
+    if (bSettingsMode) {
+        // settings menus
+    }
+    else {
+        GetFileNames(currentFolder);
+        ezMenu mainmenu(bShowBuiltInTests ? "Built-Ins" : currentFolder);
+		mainmenu.txtSmall();
+		// show the files
+		for (String name : FileNames) {
+			//Serial.println(name);
+			mainmenu.addItem(name);
+		}
+        mainmenu.buttons("up # View # Go # Menu # down # # First # Last # SD/BI");
+		mainmenu.runOnce();
+    }
+    //ezMenu mainmenu("Run Mode");
+    //mainmenu.txtSmall();
+    //mainmenu.addItem("Run File", showfiles);
+    //mainmenu.addItem("Built-In Patterns");
+    //mainmenu.addItem("Flexible text menus", mainmenu_menus);
+    ////mainmenu.addItem("Image menus", mainmenu_image);
+    ////mainmenu.addItem("Neat messages", mainmenu_msgs);
+    //mainmenu.addItem("Multi-function buttons", mainmenu_buttons);
+    ////mainmenu.addItem("3-button text entry", mainmenu_entry);
+    //mainmenu.addItem("Built-in wifi & other settings", ez.settings.menu);
+    ////mainmenu.addItem("Updates via https", mainmenu_ota);
+    //mainmenu.upOnFirst("last|up");
+    //mainmenu.downOnLast("first|down");
+    //mainmenu.run();
 }
 
 void mainmenu_menus() {
@@ -148,7 +169,8 @@ void mainmenu_buttons() {
 void printButton() {
     while (true) {
         String btnpressed = ez.buttons.poll();
-        if (btnpressed == "Done") break;
+        if (btnpressed == "Done")
+            break;
         if (btnpressed != "") {
             m5.lcd.fillRect(0, ez.canvas.bottom() - 45, TFT_W, 40, ez.theme->background);
             ez.canvas.pos(20, ez.canvas.bottom() - 45);
@@ -156,7 +178,7 @@ void printButton() {
             ez.canvas.font(&FreeSansBold18pt7b);
             ez.canvas.print(btnpressed);
             ez.canvas.font(&FreeSans12pt7b);
-            ez.canvas.color(TFT_BLACK);
+            ez.canvas.color(TFT_WHITE);
         }
     }
 }
@@ -198,8 +220,6 @@ void sysInfo() {
     }
 }
 
-#include <SPIFFS.h>
-
 void sysInfoPage1() {
     const byte tab = 120;
     ez.screen.clear();
@@ -238,4 +258,111 @@ void sysInfoPage2() {
         ez.canvas.print("SD size:"); ez.canvas.x(tab); ez.canvas.println(String((long)SD.cardSize() / 1000000) + " MB");
         ez.canvas.print("SD used:"); ez.canvas.x(tab); ez.canvas.println(String((long)SD.usedBytes() / 1000000) + " MB");
     }
+}
+
+// read the files from the card or list the built-ins
+// look for start.MIW, and process it, but don't add it to the list
+bool GetFileNames(String dir) {
+    // start over
+    // first empty the current file names
+    FileNames.clear();
+    if (nBootCount == 0)
+        CurrentFileIndex = 0;
+    if (bShowBuiltInTests) {
+        for (int ix = 0; ix < (sizeof(BuiltInFiles) / sizeof(*BuiltInFiles)); ++ix) {
+            FileNames.push_back(String(BuiltInFiles[ix].text));
+        }
+    }
+    else {
+        uint8_t cardType = SD.cardType();
+        bSdCardValid = true;
+        if (cardType == CARD_NONE) {
+            ez.msgBox("SD Card Error", "No SD card was found.", "OK", true, 0, TFT_RED);
+            //Serial.println("No SD card attached");
+            bSdCardValid = false;
+            bShowBuiltInTests = true;
+            // reload built-ins
+            return GetFileNames(currentFolder);
+        }
+        String startfile;
+        if (dir.length() > 1)
+            dir = dir.substring(0, dir.length() - 1);
+        File root = SD.open(dir);
+        File file;
+        String CurrentFilename = "";
+        if (!root) {
+            Serial.println("Failed to open directory: " + dir);
+            //Serial.println("error: " + String(root.getError()));
+            //SD.errorPrint("fail");
+            return false;
+        }
+        if (!root.isDirectory()) {
+            //Serial.println("Not a directory: " + dir);
+            return false;
+        }
+
+        file = root.openNextFile();
+        if (dir != "/") {
+            // add an arrow to go back
+            String sdir = currentFolder.substring(0, currentFolder.length() - 1);
+            sdir = sdir.substring(0, sdir.lastIndexOf("/"));
+            if (sdir.length() == 0)
+                sdir = "/";
+            FileNames.push_back(String(PREVIOUS_FOLDER_CHAR));
+        }
+        while (file) {
+            CurrentFilename = file.name();
+            // strip path
+            CurrentFilename = CurrentFilename.substring(CurrentFilename.lastIndexOf('/') + 1);
+            //Serial.println("name: " + CurrentFilename);
+            if (CurrentFilename != "System Volume Information") {
+                if (file.isDirectory()) {
+                    FileNames.push_back(String(NEXT_FOLDER_CHAR) + CurrentFilename);
+                }
+                else {
+                    String uppername = CurrentFilename;
+                    uppername.toUpperCase();
+                    if (uppername.endsWith(".BMP")) { //find files with our extension only
+                        //Serial.println("name: " + CurrentFilename);
+                        FileNames.push_back(CurrentFilename);
+                    }
+                    else if (uppername == "START.MIW") {
+                        startfile = CurrentFilename;
+                    }
+                }
+            }
+            file.close();
+            file = root.openNextFile();
+        }
+        root.close();
+        std::sort(FileNames.begin(), FileNames.end(), CompareNames);
+        // see if we need to process the auto start file
+        if (startfile.length())
+            ProcessConfigFile(startfile);
+    }
+    return true;
+}
+
+bool ProcessConfigFile(String filename)
+{
+    return false;
+}
+
+// compare strings for sort ignoring case
+bool CompareNames(const String& a, const String& b)
+{
+    String a1 = a, b1 = b;
+    a1.toUpperCase();
+    b1.toUpperCase();
+    // force folders to sort last
+    if (a1[0] == NEXT_FOLDER_CHAR)
+        a1[0] = '0x7e';
+    if (b1[0] == NEXT_FOLDER_CHAR)
+        b1[0] = '0x7e';
+    // force previous folder to sort first
+    if (a1[0] == PREVIOUS_FOLDER_CHAR)
+        a1[0] = '0' - 1;
+    if (b1[0] == PREVIOUS_FOLDER_CHAR)
+        b1[0] = '0' - 1;
+    return a1.compareTo(b1) < 0;
 }

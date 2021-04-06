@@ -24,5 +24,11 @@
     <ClInclude Include="__vm\.MagicImageWand-M5StackGray.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\libraries\M5ez\examples\M5ez-demo\raw_githubusercontent_com.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MagicImageWand-M5StackGray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
