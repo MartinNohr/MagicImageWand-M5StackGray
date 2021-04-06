@@ -39,8 +39,18 @@ void loop() {
 			//Serial.println(name);
 			mainmenu.addItem(name);
 		}
-        mainmenu.buttons("up # View # Go # Menu # down # # First # Last # SD/BI");
-		mainmenu.runOnce();
+		mainmenu.buttons("up # View # Go # Menu # down # # First # Last # " + String(bShowBuiltInTests ? "SD" : "Builtin"));
+		int ret = mainmenu.runOnce();
+        String btnpressed = mainmenu.pickButton();
+		if (btnpressed == "Go") {
+			ez.msgBox("selection", mainmenu.pickName());
+		}
+		else if (btnpressed == "SD" || btnpressed == "Builtin") {
+			bShowBuiltInTests = !bShowBuiltInTests;
+		}
+		else {
+			ez.msgBox("button", btnpressed);
+		}
     }
     //ezMenu mainmenu("Run Mode");
     //mainmenu.txtSmall();
