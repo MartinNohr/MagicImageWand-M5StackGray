@@ -41,6 +41,7 @@ ezMenu* activeMenu;
 void loop() {
     static std::stack<int> selectionStack;
     static bool bReloadSD = true;
+    bool bRetry = false;
     if (bShowBuiltInTests) {
         activeMenu = &builtinMenu;
     }
@@ -50,7 +51,9 @@ void loop() {
                 delete pFileMenu;
 			pFileMenu = new ezMenu(currentFolder);
             pFileMenu->setSortFunction(CompareNames);
-			GetFileNames(currentFolder, pFileMenu);
+            if (!GetFileNames(currentFolder, pFileMenu)) {
+                bRetry = true;
+            }
             pFileMenu->buttons("up # View # Go # Menu # down # Internal");
             pFileMenu->txtSmall();
             if (!selectionStack.empty()) {
@@ -62,7 +65,7 @@ void loop() {
         }
         activeMenu = pFileMenu;
     }
-	while (true) {
+	while (!bRetry && true) {
         int retNum = activeMenu->runOnce();
 		String btnpressed = activeMenu->pickButton();
 		if (btnpressed == "Go") {
@@ -74,6 +77,7 @@ void loop() {
                 bReloadSD = true;
                 Serial.println("index: " + String(retNum));
                 selectionStack.push(retNum);
+                // set the next location to the start of the menu
                 selectionStack.push(1);
                 break;
             }
@@ -90,7 +94,10 @@ void loop() {
 			ez.msgBox("run", (bShowBuiltInTests ? "" : String(currentFolder)) + currentFile);
 		}
 		else if (btnpressed == "SD" || btnpressed == "Internal") {
-			bShowBuiltInTests = !bShowBuiltInTests;
+            bShowBuiltInTests = !bShowBuiltInTests;
+            if (!bSdCardValid) {
+                bShowBuiltInTests = true;
+            }
 			break;
 		}
 		else if (btnpressed == "Menu") {
@@ -364,7 +371,7 @@ void sysInfoPage2() {
 bool GetFileNames(String dir, ezMenu* menu) {
 	//if (nBootCount == 0)
 	//	CurrentFileIndex = 0;
-	uint8_t cardType = SD.cardType();
+    uint8_t cardType = SD.cardType();
 	bSdCardValid = true;
 	if (cardType == CARD_NONE) {
 		ez.msgBox("SD Card Error", "No SD card was found.", "OK", true, 0, TFT_RED);
