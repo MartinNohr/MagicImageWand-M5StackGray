@@ -3,6 +3,7 @@
  Created:	3/29/2021 4:08:35 PM
  Author:	Martin
 */
+#include <stack>
 
 #include <M5ez.h>
 #include <M5Stack.h>
@@ -36,7 +37,9 @@ void setup() {
 ezMenu* pFileMenu = NULL;
 
 ezMenu* activeMenu;
+
 void loop() {
+    static std::stack<int> selectionStack;
     static bool bReloadSD = true;
     if (bShowBuiltInTests) {
         activeMenu = &builtinMenu;
@@ -50,6 +53,11 @@ void loop() {
 			GetFileNames(currentFolder, pFileMenu);
             pFileMenu->buttons("up # View # Go # Menu # down # Internal");
             pFileMenu->txtSmall();
+            if (!selectionStack.empty()) {
+                Serial.println("setting: " + String(selectionStack.top()));
+                pFileMenu->setItem(selectionStack.top());
+                selectionStack.pop();
+            }
             bReloadSD = false;
         }
         activeMenu = pFileMenu;
@@ -64,6 +72,9 @@ void loop() {
                 currentFolder = currentFolder + tmp.substring(1) + "/";
                 currentFile = "";
                 bReloadSD = true;
+                Serial.println("index: " + String(retNum));
+                selectionStack.push(retNum);
+                selectionStack.push(1);
                 break;
             }
             else if (tmp[0] == PREVIOUS_FOLDER_CHAR) {
