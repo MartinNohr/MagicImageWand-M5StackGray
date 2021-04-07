@@ -48,14 +48,13 @@ void loop() {
 		else if (btnpressed == "SD" || btnpressed == "Builtin") {
 			bShowBuiltInTests = !bShowBuiltInTests;
 		}
-		else {
-			ez.msgBox("button", btnpressed);
+        else if (btnpressed == "Menu") {
+            SettingsMenu();
+        }
+        else {
+			ez.msgBox("button: " + String(mainmenu.pickName()), btnpressed);
 		}
     }
-    //ezMenu mainmenu("Run Mode");
-    //mainmenu.txtSmall();
-    //mainmenu.addItem("Run File", showfiles);
-    //mainmenu.addItem("Built-In Patterns");
     //mainmenu.addItem("Flexible text menus", mainmenu_menus);
     ////mainmenu.addItem("Image menus", mainmenu_image);
     ////mainmenu.addItem("Neat messages", mainmenu_msgs);
@@ -68,62 +67,84 @@ void loop() {
     //mainmenu.run();
 }
 
-void mainmenu_menus() {
-    ezMenu submenu("This is a sub menu");
-    submenu.txtSmall();
-    submenu.buttons("up#Back#select##down#");
-    submenu.addItem("You can make small menus");
-    submenu.addItem("Or big ones");
-    submenu.addItem("(Like the Main menu)");
-    submenu.addItem("In this menu most options");
-    submenu.addItem("Do absolutely nothing");
-    submenu.addItem("They are only here");
-    submenu.addItem("To demonstrate that menus");
-    submenu.addItem("Can run off the screen");
-    submenu.addItem("And will just scroll");
-    submenu.addItem("And scroll");
-    submenu.addItem("And Scroll");
-    submenu.addItem("And Scroll even more");
-    submenu.addItem("more | Learn more about menus", submenu_more);
-    submenu.addItem("Exit | Go back to main menu");
-    submenu.run();
+// handle the settings menu
+void SettingsMenu()
+{
+    ezMenu settings("Settings");
+    settings.txtSmall();
+    settings.buttons("up # # Go # back # down # ");
+    settings.addItem("Image Settings");
+    settings.addItem("LED Strip Settings");
+    settings.addItem("System Settings");
+    settings.addItem("Power Off", powerOff);
+    settings.addItem("Reboot", reboot);
+    //settings.addItem("Exit | Go back to main menu");
+    settings.run();
 }
 
-void submenu_more() {
-    ez.header.show("A simple menu in code...");
-    ez.canvas.lmargin(10);
-    ez.canvas.println("");
-    ez.canvas.println("ezMenu menu(\"Main menu\");");
-    ez.canvas.println("menu.addItem(\"Option 1\");");
-    ez.canvas.println("menu.addItem(\"Option 2\");");
-    ez.canvas.println("menu.addItem(\"Option 3\");");
-    ez.canvas.println("while ( menu.run() ) {");
-    ez.canvas.println("  if (menu.pick == 1) {");
-    ez.canvas.println("    ez.msgBox (\"One!\");");
-    ez.canvas.println("  }");
-    ez.canvas.println("}");
-    ez.buttons.wait("OK");
-
-    ezMenu fontmenu("Menus can change looks");
-    fontmenu.txtFont(&Satisfy_24);
-    fontmenu.addItem("Menus can use");
-    fontmenu.addItem("Various Fonts");
-    fontmenu.runOnce();
-
-    ezMenu delmenu("Menus are dynamic");
-    delmenu.txtSmall();
-    delmenu.addItem("You can delete items");
-    delmenu.addItem("While the menu runs");
-    delmenu.addItem("Delete me!");
-    delmenu.addItem("Delete me!");
-    delmenu.addItem("Delete me!");
-    delmenu.addItem("Exit | Go back");
-    while (delmenu.runOnce()) {
-        if (delmenu.pickName() == "Delete me!") {
-            delmenu.deleteItem(delmenu.pick());
-        }
+void reboot()
+{
+    if (ez.msgBox("Restart", "This will restart the system", "Cancel#OK#") == "OK") {
+        ESP.restart();
     }
 }
+
+//void mainmenu_menus() {
+//    ezMenu submenu("This is a sub menu");
+//    submenu.txtSmall();
+//    submenu.buttons("up#Back#select##down#");
+//    submenu.addItem("You can make small menus");
+//    submenu.addItem("Or big ones");
+//    submenu.addItem("(Like the Main menu)");
+//    submenu.addItem("In this menu most options");
+//    submenu.addItem("Do absolutely nothing");
+//    submenu.addItem("They are only here");
+//    submenu.addItem("To demonstrate that menus");
+//    submenu.addItem("Can run off the screen");
+//    submenu.addItem("And will just scroll");
+//    submenu.addItem("And scroll");
+//    submenu.addItem("And Scroll");
+//    submenu.addItem("And Scroll even more");
+//    submenu.addItem("more | Learn more about menus", submenu_more);
+//    submenu.addItem("Exit | Go back to main menu");
+//    submenu.run();
+//}
+
+//void submenu_more() {
+//    ez.header.show("A simple menu in code...");
+//    ez.canvas.lmargin(10);
+//    ez.canvas.println("");
+//    ez.canvas.println("ezMenu menu(\"Main menu\");");
+//    ez.canvas.println("menu.addItem(\"Option 1\");");
+//    ez.canvas.println("menu.addItem(\"Option 2\");");
+//    ez.canvas.println("menu.addItem(\"Option 3\");");
+//    ez.canvas.println("while ( menu.run() ) {");
+//    ez.canvas.println("  if (menu.pick == 1) {");
+//    ez.canvas.println("    ez.msgBox (\"One!\");");
+//    ez.canvas.println("  }");
+//    ez.canvas.println("}");
+//    ez.buttons.wait("OK");
+//
+//    ezMenu fontmenu("Menus can change looks");
+//    fontmenu.txtFont(&Satisfy_24);
+//    fontmenu.addItem("Menus can use");
+//    fontmenu.addItem("Various Fonts");
+//    fontmenu.runOnce();
+//
+//    ezMenu delmenu("Menus are dynamic");
+//    delmenu.txtSmall();
+//    delmenu.addItem("You can delete items");
+//    delmenu.addItem("While the menu runs");
+//    delmenu.addItem("Delete me!");
+//    delmenu.addItem("Delete me!");
+//    delmenu.addItem("Delete me!");
+//    delmenu.addItem("Exit | Go back");
+//    while (delmenu.runOnce()) {
+//        if (delmenu.pickName() == "Delete me!") {
+//            delmenu.deleteItem(delmenu.pick());
+//        }
+//    }
+//}
 
 void mainmenu_image() {
     ezMenu images;
@@ -147,73 +168,73 @@ void mainmenu_msgs() {
     ez.textBox("And there's ez.textBox", "To present or compose longer word-wrapped texts, you can use the ez.textBox function." + cr + cr + "M5ez (pronounced \"M5 easy\") is a complete interface builder library for the M5Stack ESP32 system. It allows even novice programmers to create good looking interfaces. It comes with menus as text or as images, message boxes, very flexible button setup (including different length presses and multi-button functions), 3-button text input (you have to see it to believe it) and built-in Wifi support. Now you can concentrate on what your program does, and let M5ez worry about everything else.", true);
 }
 
-void mainmenu_buttons() {
-    ez.header.show("Simple buttons...");
-    ez.canvas.font(&FreeSans12pt7b);
-    ez.canvas.lmargin(20);
-    ez.canvas.println("");
-    ez.canvas.println("You can have three buttons");
-    ez.canvas.println("with defined funtions.");
-    ez.buttons.show("One # Two # Done");
-    printButton();
-    ez.canvas.clear();
-    ez.header.show("More functions...");
-    ez.canvas.println("");
-    ez.canvas.println("But why stop there?");
-    ez.canvas.println("If you press a little longer");
-    ez.canvas.println("You access the functions");
-    ez.canvas.println("printed in cyan.");
-    ez.buttons.show("One # Two # Three # Four # Done #");
-    printButton();
-    ez.canvas.clear();
-    ez.header.show("Two keys ...");
-    ez.canvas.y(ez.canvas.top() + 10);
-    ez.canvas.println("It gets even better...");
-    ez.canvas.println("The purple bar shows the");
-    ez.canvas.println("functions for key combis.");
-    ez.canvas.println("See if you can work it out...");
-    ez.buttons.show("One # Two # Three # Four # Five # Six # Seven # Eight # Done");
-    printButton();
-}
+//void mainmenu_buttons() {
+//    ez.header.show("Simple buttons...");
+//    ez.canvas.font(&FreeSans12pt7b);
+//    ez.canvas.lmargin(20);
+//    ez.canvas.println("");
+//    ez.canvas.println("You can have three buttons");
+//    ez.canvas.println("with defined funtions.");
+//    ez.buttons.show("One # Two # Done");
+//    printButton();
+//    ez.canvas.clear();
+//    ez.header.show("More functions...");
+//    ez.canvas.println("");
+//    ez.canvas.println("But why stop there?");
+//    ez.canvas.println("If you press a little longer");
+//    ez.canvas.println("You access the functions");
+//    ez.canvas.println("printed in cyan.");
+//    ez.buttons.show("One # Two # Three # Four # Done #");
+//    printButton();
+//    ez.canvas.clear();
+//    ez.header.show("Two keys ...");
+//    ez.canvas.y(ez.canvas.top() + 10);
+//    ez.canvas.println("It gets even better...");
+//    ez.canvas.println("The purple bar shows the");
+//    ez.canvas.println("functions for key combis.");
+//    ez.canvas.println("See if you can work it out...");
+//    ez.buttons.show("One # Two # Three # Four # Five # Six # Seven # Eight # Done");
+//    printButton();
+//}
+//
+//void printButton() {
+//    while (true) {
+//        String btnpressed = ez.buttons.poll();
+//        if (btnpressed == "Done")
+//            break;
+//        if (btnpressed != "") {
+//            m5.lcd.fillRect(0, ez.canvas.bottom() - 45, TFT_W, 40, ez.theme->background);
+//            ez.canvas.pos(20, ez.canvas.bottom() - 45);
+//            ez.canvas.color(TFT_RED);
+//            ez.canvas.font(&FreeSansBold18pt7b);
+//            ez.canvas.print(btnpressed);
+//            ez.canvas.font(&FreeSans12pt7b);
+//            ez.canvas.color(TFT_WHITE);
+//        }
+//    }
+//}
 
-void printButton() {
-    while (true) {
-        String btnpressed = ez.buttons.poll();
-        if (btnpressed == "Done")
-            break;
-        if (btnpressed != "") {
-            m5.lcd.fillRect(0, ez.canvas.bottom() - 45, TFT_W, 40, ez.theme->background);
-            ez.canvas.pos(20, ez.canvas.bottom() - 45);
-            ez.canvas.color(TFT_RED);
-            ez.canvas.font(&FreeSansBold18pt7b);
-            ez.canvas.print(btnpressed);
-            ez.canvas.font(&FreeSans12pt7b);
-            ez.canvas.color(TFT_WHITE);
-        }
-    }
-}
+//void mainmenu_entry() {
+//    if (ez.msgBox("We're gonna enter text ... !", "Have you learned to use the buttons? Go there first if you haven't been there. Or hit 'Go' to see if you can enter your name.", "Back # # Go") == "Go") {
+//        String your_name = ez.textInput();
+//        ez.msgBox("Pfew...", "Hi " + your_name + "! | | Now that was a pain! But it is good enough for entering, say, a WPA key, or don't you think?");
+//        ez.msgBox("Don't worry", "(You do get better with practice...)");
+//    }
+//}
 
-void mainmenu_entry() {
-    if (ez.msgBox("We're gonna enter text ... !", "Have you learned to use the buttons? Go there first if you haven't been there. Or hit 'Go' to see if you can enter your name.", "Back # # Go") == "Go") {
-        String your_name = ez.textInput();
-        ez.msgBox("Pfew...", "Hi " + your_name + "! | | Now that was a pain! But it is good enough for entering, say, a WPA key, or don't you think?");
-        ez.msgBox("Don't worry", "(You do get better with practice...)");
-    }
-}
-
-void mainmenu_ota() {
-    if (ez.msgBox("Get OTA_https demo", "This will replace the demo with a program that can then load the demo program again.", "Cancel#OK#") == "OK") {
-        ezProgressBar progress_bar("OTA update in progress", "Downloading ...", "Abort");
-#include "raw_githubusercontent_com.h" // the root certificate is now in const char * root_cert
-        if (ez.wifi.update("https://raw.githubusercontent.com/M5ez/M5ez/master/compiled_binaries/OTA_https.bin", root_cert, &progress_bar)) {
-            ez.msgBox("Over The Air updater", "OTA download successful. Reboot to new firmware", "Reboot");
-            ESP.restart();
-        }
-        else {
-            ez.msgBox("OTA error", ez.wifi.updateError(), "OK");
-        }
-    }
-}
+//void mainmenu_ota() {
+//    if (ez.msgBox("Get OTA_https demo", "This will replace the demo with a program that can then load the demo program again.", "Cancel#OK#") == "OK") {
+//        ezProgressBar progress_bar("OTA update in progress", "Downloading ...", "Abort");
+//#include "raw_githubusercontent_com.h" // the root certificate is now in const char * root_cert
+//        if (ez.wifi.update("https://raw.githubusercontent.com/M5ez/M5ez/master/compiled_binaries/OTA_https.bin", root_cert, &progress_bar)) {
+//            ez.msgBox("Over The Air updater", "OTA download successful. Reboot to new firmware", "Reboot");
+//            ESP.restart();
+//        }
+//        else {
+//            ez.msgBox("OTA error", ez.wifi.updateError(), "OK");
+//        }
+//    }
+//}
 
 void powerOff() { m5.powerOFF(); }
 
@@ -376,3 +397,182 @@ bool CompareNames(const String& a, const String& b)
         b1[0] = '0' - 1;
     return a1.compareTo(b1) < 0;
 }
+
+// put the current file on the display
+// Note that menu is not used, it is called with NULL sometimes
+//void ShowBmp()
+//{
+//    if (bShowBuiltInTests)
+//        return;
+//    String fn = currentFolder + FileNames[CurrentFileIndex];
+//    // make sure this is a bmp file, if not just quietly go away
+//    String tmp = fn.substring(fn.length() - 3);
+//    tmp.toLowerCase();
+//    if (tmp.compareTo("bmp")) {
+//        return;
+//    }
+//    bool bSawButton0 = !digitalRead(0);
+//    uint16_t* scrBuf;
+//    scrBuf = (uint16_t*)calloc(320 * 144, sizeof(uint16_t));
+//    if (scrBuf == NULL) {
+//        //WriteMessage("Not enough memory", true, 5000);
+//        return;
+//    }
+//    bool bOldGamma = bGammaCorrection;
+//    bGammaCorrection = false;
+//    dataFile = SD.open(fn);
+//    // if the file is available send it to the LED's
+//    if (!dataFile.available()) {
+//        free(scrBuf);
+//        WriteMessage("failed to open: " + currentFolder + FileNames[CurrentFileIndex], true);
+//        return;
+//    }
+//    tft.fillScreen(TFT_BLACK);
+//    // clear the file cache buffer
+//    readByte(true);
+//    uint16_t bmpType = readInt();
+//    uint32_t bmpSize = readLong();
+//    uint16_t bmpReserved1 = readInt();
+//    uint16_t bmpReserved2 = readInt();
+//    uint32_t bmpOffBits = readLong();
+//
+//    /* Check file header */
+//    if (bmpType != MYBMP_BF_TYPE) {
+//        free(scrBuf);
+//        WriteMessage(String("Invalid BMP:\n") + currentFolder + FileNames[CurrentFileIndex], true);
+//        return;
+//    }
+//
+//    /* Read info header */
+//    uint32_t imgSize = readLong();
+//    uint32_t imgWidth = readLong();
+//    uint32_t imgHeight = readLong();
+//    uint16_t imgPlanes = readInt();
+//    uint16_t imgBitCount = readInt();
+//    uint32_t imgCompression = readLong();
+//    uint32_t imgSizeImage = readLong();
+//    uint32_t imgXPelsPerMeter = readLong();
+//    uint32_t imgYPelsPerMeter = readLong();
+//    uint32_t imgClrUsed = readLong();
+//    uint32_t imgClrImportant = readLong();
+//
+//    /* Check info header */
+//    if (imgWidth <= 0 || imgHeight <= 0 || imgPlanes != 1 ||
+//        imgBitCount != 24 || imgCompression != MYBMP_BI_RGB || imgSizeImage == 0)
+//    {
+//        free(scrBuf);
+//        WriteMessage(String("Unsupported, must be 24bpp:\n") + currentFolder + FileNames[CurrentFileIndex], true);
+//        return;
+//    }
+//
+//    int displayWidth = imgWidth;
+//    if (imgWidth > STRIPLENGTH) {
+//        displayWidth = STRIPLENGTH;           //only display the number of led's we have
+//    }
+//
+//    /* compute the line length */
+//    uint32_t lineLength = imgWidth * 3;
+//    // fix for padding to 4 byte words
+//    if ((lineLength % 4) != 0)
+//        lineLength = (lineLength / 4 + 1) * 4;
+//    bool done = false;
+//    bool redraw = true;
+//    bool allowScroll = imgHeight > 320;
+//    // offset for showing the image
+//    int imgOffset = 0;
+//    int oldImgOffset;
+//    bool bShowingSize = false;
+//    // show some info
+//    float walk = (float)imgHeight / (float)imgWidth;
+//    DisplayLine(5, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
+//    DisplayLine(6, "Size: " + String(imgWidth) + " x " + String(imgHeight));
+//    // calculate display time
+//    float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nFrameHold / 1000.0 + imgHeight * .008);
+//    DisplayLine(7, "About " + String((int)round(dspTime)) + " Seconds");
+//    while (!done) {
+//        if (redraw) {
+//            // loop through the image, y is the image width, and x is the image height
+//            for (int y = imgOffset; y < (imgHeight > 320 ? 320 : imgHeight) + imgOffset; ++y) {
+//                int bufpos = 0;
+//                CRGB pixel;
+//                // get to start of pixel data for this column
+//                FileSeekBuf((uint32_t)bmpOffBits + (y * lineLength));
+//                for (int x = displayWidth - 1; x >= 0; --x) {
+//                    // this reads three bytes
+//                    pixel = getRGBwithGamma();
+//                    // add to the display memory
+//                    int row = x - 5;
+//                    int col = y - imgOffset;
+//                    if (row >= 0 && row < 144) {
+//                        uint16_t color = tft.color565(pixel.r, pixel.g, pixel.b);
+//                        uint16_t sbcolor;
+//                        // the memory image colors are byte swapped
+//                        swab(&color, &sbcolor, 2);
+//                        scrBuf[(143 - row) * 320 + col] = sbcolor;
+//                    }
+//                }
+//            }
+//            oldImgOffset = imgOffset;
+//            // got it all, go show it
+//            m5.Lcd.pushRect(0, 0, 320, 144, scrBuf);
+//        }
+//        if (bSawButton0) {
+//            while (digitalRead(0) == 0)
+//                ;
+//            bSawButton0 = false;
+//            delay(30);
+//        }
+//        switch (ReadButton()) {
+//        case CRotaryDialButton::BTN_LEFT:
+//            if (allowScroll) {
+//                imgOffset -= 320;
+//                imgOffset = max(0, imgOffset);
+//            }
+//            break;
+//        case CRotaryDialButton::BTN_RIGHT:
+//            if (allowScroll) {
+//                imgOffset += 320;
+//                imgOffset = min((int32_t)imgHeight - 320, imgOffset);
+//            }
+//            break;
+//        case CRotaryDialButton::BTN_LONGPRESS:
+//            done = true;
+//            break;
+//            //case CRotaryDialButton::BTN_CLICK:
+//            //	if (bShowingSize) {
+//            //		bShowingSize = false;
+//            //		redraw = true;
+//            //	}
+//            //	else {
+//            //		tft.fillScreen(TFT_BLACK);
+//            //		//DisplayLine(0, currentFolder);
+//            //		//DisplayLine(4, FileNames[CurrentFileIndex]);
+//            //		float walk = (float)imgHeight / (float)imgWidth;
+//            //		DisplayLine(5, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
+//            //		DisplayLine(6, "Size: " + String(imgWidth) + " x " + String(imgHeight));
+//            //		// calculate display time
+//            //		float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nFrameHold / 1000.0 + imgHeight * .008);
+//            //		DisplayLine(7, "About " + String((int)round(dspTime)) + " Seconds");
+//            //		bShowingSize = true;
+//            //		redraw = false;
+//            //	}
+//            //	break;
+//        }
+//        if (oldImgOffset != imgOffset) {
+//            redraw = true;
+//        }
+//        // check the 0 button
+//        if (digitalRead(0) == 0) {
+//            // debounce, don't want this seen again in the main loop
+//            delay(30);
+//            done = true;
+//        }
+//        delay(2);
+//    }
+//    // all done
+//    free(scrBuf);
+//    dataFile.close();
+//    readByte(true);
+//    bGammaCorrection = bOldGamma;
+//    tft.fillScreen(TFT_BLACK);
+//}
