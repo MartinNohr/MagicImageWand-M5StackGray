@@ -4,9 +4,10 @@ bool bSdCardValid = false;
 #define NEXT_FOLDER_CHAR '>'
 #define PREVIOUS_FOLDER_CHAR '<'
 String currentFolder = "/";
+String currentFile;
 std::vector<String> FileNames;
 RTC_DATA_ATTR bool bShowBuiltInTests = false;           // list the internal file instead of the SD card
-RTC_DATA_ATTR int CurrentFileIndex = 0;
+//RTC_DATA_ATTR int CurrentFileIndex = 0;
 RTC_DATA_ATTR int nBootCount = 0;
 bool bIsRunning = false;								// system state, idle or running
 // we need to have a pointer reference to this in the MenuItem, the full declaration follows later
