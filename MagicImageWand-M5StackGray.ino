@@ -26,13 +26,14 @@ void setup() {
     ez.begin();
     Wire.begin();
     builtinMenu.txtSmall();
+    builtinMenu.setSortFunction(CompareNames);
     for (BuiltInItem bi : BuiltInFiles) {
         builtinMenu.addItem(bi.text);
     }
     builtinMenu.buttons("up # View # Go # Menu # down # SD");
 }
 
-ezMenu fileMenu("BMP Files");
+ezMenu* pFileMenu = NULL;
 
 ezMenu* activeMenu;
 void loop() {
@@ -41,29 +42,41 @@ void loop() {
         activeMenu = &builtinMenu;
     }
     else {
-        activeMenu = &fileMenu;
         if (bReloadSD) {
-            GetFileNames(currentFolder);
-            fileMenu.buttons("up # View # Go # Menu # down # Internal");
-            fileMenu.txtSmall();
-            // get the files in the menu
-            for (String name : FileNames) {
-                fileMenu.addItem(name);
-            }
-            // don't need these anymore
-            FileNames.clear();
-            ez.header.title(currentFolder);
+            if (pFileMenu != NULL)
+                delete pFileMenu;
+			pFileMenu = new ezMenu(currentFolder);
+            pFileMenu->setSortFunction(CompareNames);
+			GetFileNames(currentFolder, pFileMenu);
+            pFileMenu->buttons("up # View # Go # Menu # down # Internal");
+            pFileMenu->txtSmall();
             bReloadSD = false;
         }
+        activeMenu = pFileMenu;
     }
 	while (true) {
-        ez.header.title("abc");
-        Serial.println("title: " + ez.header.title());
         int retNum = activeMenu->runOnce();
 		String btnpressed = activeMenu->pickButton();
 		if (btnpressed == "Go") {
 			// run the file or change the folder here
-			ez.msgBox("run", activeMenu->pickName());
+            String tmp = activeMenu->pickName();
+            if (tmp[0] == NEXT_FOLDER_CHAR) {
+                currentFolder = currentFolder + tmp.substring(1) + "/";
+                currentFile = "";
+                bReloadSD = true;
+                break;
+            }
+            else if (tmp[0] == PREVIOUS_FOLDER_CHAR) {
+                // remove the ending /
+                currentFolder = currentFolder.substring(0, currentFolder.length() - 1);
+                // remove after the last /
+				currentFolder = currentFolder.substring(0, currentFolder.lastIndexOf('/') + 1);
+                bReloadSD = true;
+                break;
+            }
+            else
+                currentFile = tmp;
+			ez.msgBox("run", (bShowBuiltInTests ? "" : String(currentFolder)) + currentFile);
 		}
 		else if (btnpressed == "SD" || btnpressed == "Internal") {
 			bShowBuiltInTests = !bShowBuiltInTests;
@@ -90,6 +103,25 @@ void loop() {
     //mainmenu.upOnFirst("last|up");
     //mainmenu.downOnLast("first|down");
     //mainmenu.run();
+}
+
+// compare strings for sort ignoring case
+bool CompareNames(const char* a, const char* b)
+{
+    String a1 = a, b1 = b;
+    a1.toUpperCase();
+    b1.toUpperCase();
+    // force folders to sort last
+    if (a1[0] == NEXT_FOLDER_CHAR)
+        a1[0] = '0x7e';
+    if (b1[0] == NEXT_FOLDER_CHAR)
+        b1[0] = '0x7e';
+    // force previous folder to sort first
+    if (a1[0] == PREVIOUS_FOLDER_CHAR)
+        a1[0] = '0' - 1;
+    if (b1[0] == PREVIOUS_FOLDER_CHAR)
+        b1[0] = '0' - 1;
+    return a1.compareTo(b1) < 0;
 }
 
 // handle the settings menu
@@ -318,10 +350,7 @@ void sysInfoPage2() {
 
 // read the files from the card or list the built-ins
 // look for start.MIW, and process it, but don't add it to the list
-bool GetFileNames(String dir) {
-	// start over
-	// first empty the current file names
-	FileNames.clear();
+bool GetFileNames(String dir, ezMenu* menu) {
 	//if (nBootCount == 0)
 	//	CurrentFileIndex = 0;
 	uint8_t cardType = SD.cardType();
@@ -357,7 +386,7 @@ bool GetFileNames(String dir) {
 		sdir = sdir.substring(0, sdir.lastIndexOf("/"));
 		if (sdir.length() == 0)
 			sdir = "/";
-		FileNames.push_back(String(PREVIOUS_FOLDER_CHAR));
+        menu->addItem(String(PREVIOUS_FOLDER_CHAR));
 	}
 	while (file) {
 		CurrentFilename = file.name();
@@ -366,14 +395,14 @@ bool GetFileNames(String dir) {
 		//Serial.println("name: " + CurrentFilename);
 		if (CurrentFilename != "System Volume Information") {
 			if (file.isDirectory()) {
-				FileNames.push_back(String(NEXT_FOLDER_CHAR) + CurrentFilename);
+                menu->addItem(String(NEXT_FOLDER_CHAR) + CurrentFilename);
 			}
 			else {
 				String uppername = CurrentFilename;
 				uppername.toUpperCase();
 				if (uppername.endsWith(".BMP")) { //find files with our extension only
 					//Serial.println("name: " + CurrentFilename);
-					FileNames.push_back(CurrentFilename);
+                    menu->addItem(CurrentFilename);
 				}
 				else if (uppername == "START.MIW") {
 					startfile = CurrentFilename;
@@ -384,7 +413,6 @@ bool GetFileNames(String dir) {
 		file = root.openNextFile();
 	}
 	root.close();
-	std::sort(FileNames.begin(), FileNames.end(), CompareNames);
 	// see if we need to process the auto start file
 	if (startfile.length())
 		ProcessConfigFile(startfile);
@@ -394,25 +422,6 @@ bool GetFileNames(String dir) {
 bool ProcessConfigFile(String filename)
 {
     return false;
-}
-
-// compare strings for sort ignoring case
-bool CompareNames(const String& a, const String& b)
-{
-    String a1 = a, b1 = b;
-    a1.toUpperCase();
-    b1.toUpperCase();
-    // force folders to sort last
-    if (a1[0] == NEXT_FOLDER_CHAR)
-        a1[0] = '0x7e';
-    if (b1[0] == NEXT_FOLDER_CHAR)
-        b1[0] = '0x7e';
-    // force previous folder to sort first
-    if (a1[0] == PREVIOUS_FOLDER_CHAR)
-        a1[0] = '0' - 1;
-    if (b1[0] == PREVIOUS_FOLDER_CHAR)
-        b1[0] = '0' - 1;
-    return a1.compareTo(b1) < 0;
 }
 
 // put the current file on the display
