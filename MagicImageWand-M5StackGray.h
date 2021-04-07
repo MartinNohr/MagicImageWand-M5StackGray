@@ -9,7 +9,6 @@ RTC_DATA_ATTR bool bShowBuiltInTests = false;           // list the internal fil
 RTC_DATA_ATTR int CurrentFileIndex = 0;
 RTC_DATA_ATTR int nBootCount = 0;
 bool bIsRunning = false;								// system state, idle or running
-bool bSettingsMode = false;                             // set true when settings are displayed
 // we need to have a pointer reference to this in the MenuItem, the full declaration follows later
 struct BuiltInItem;
 // built-in "files"

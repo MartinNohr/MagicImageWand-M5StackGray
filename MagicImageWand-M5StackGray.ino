@@ -32,23 +32,30 @@ void loop() {
 	mainmenu.txtSmall();
 	// show the files
 	for (String name : FileNames) {
-		//Serial.println(name);
 		mainmenu.addItem(name);
 	}
 	mainmenu.buttons("up # View # Go # Menu # down # " + String(bShowBuiltInTests ? "SD" : "Internal"));
-	int ret = mainmenu.runOnce();
-	String btnpressed = mainmenu.pickButton();
-	if (btnpressed == "Go") {
-		ez.msgBox("selection", mainmenu.pickName());
-	}
-	else if (btnpressed == "SD" || btnpressed == "Internal") {
-		bShowBuiltInTests = !bShowBuiltInTests;
-	}
-	else if (btnpressed == "Menu") {
-		SettingsMenu();
-	}
-	else {
-		ez.msgBox("button: " + String(mainmenu.pickName()), btnpressed);
+	while (true) {
+		int retNum = mainmenu.runOnce();
+		String btnpressed = mainmenu.pickButton();
+		if (btnpressed == "Go") {
+			// run the file or change the folder here
+			ez.msgBox("run", mainmenu.pickName());
+		}
+		else if (btnpressed == "SD" || btnpressed == "Internal") {
+			bShowBuiltInTests = !bShowBuiltInTests;
+			break;
+		}
+		else if (btnpressed == "Menu") {
+			SettingsMenu();
+		}
+		else if (btnpressed == "View") {
+			// preview the file
+			ez.msgBox("preview: ", String(mainmenu.pickName()));
+		}
+		else {
+			ez.msgBox("How did we get here?", btnpressed);
+		}
 	}
     //mainmenu.addItem("Flexible text menus", mainmenu_menus);
     ////mainmenu.addItem("Image menus", mainmenu_image);
