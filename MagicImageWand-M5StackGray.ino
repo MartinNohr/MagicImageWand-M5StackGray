@@ -27,34 +27,29 @@ void setup() {
 }
 
 void loop() {
-    if (bSettingsMode) {
-        // settings menus
-    }
-    else {
-        GetFileNames(currentFolder);
-        ezMenu mainmenu(bShowBuiltInTests ? "Built-Ins" : currentFolder);
-		mainmenu.txtSmall();
-		// show the files
-		for (String name : FileNames) {
-			//Serial.println(name);
-			mainmenu.addItem(name);
-		}
-		mainmenu.buttons("up # View # Go # Menu # down # # First # Last # " + String(bShowBuiltInTests ? "SD" : "Builtin"));
-		int ret = mainmenu.runOnce();
-        String btnpressed = mainmenu.pickButton();
-		if (btnpressed == "Go") {
-			ez.msgBox("selection", mainmenu.pickName());
-		}
-		else if (btnpressed == "SD" || btnpressed == "Builtin") {
-			bShowBuiltInTests = !bShowBuiltInTests;
-		}
-        else if (btnpressed == "Menu") {
-            SettingsMenu();
-        }
-        else {
-			ez.msgBox("button: " + String(mainmenu.pickName()), btnpressed);
-		}
-    }
+	GetFileNames(currentFolder);
+	ezMenu mainmenu(bShowBuiltInTests ? "Built-Ins" : currentFolder);
+	mainmenu.txtSmall();
+	// show the files
+	for (String name : FileNames) {
+		//Serial.println(name);
+		mainmenu.addItem(name);
+	}
+	mainmenu.buttons("up # View # Go # Menu # down # " + String(bShowBuiltInTests ? "SD" : "Internal"));
+	int ret = mainmenu.runOnce();
+	String btnpressed = mainmenu.pickButton();
+	if (btnpressed == "Go") {
+		ez.msgBox("selection", mainmenu.pickName());
+	}
+	else if (btnpressed == "SD" || btnpressed == "Internal") {
+		bShowBuiltInTests = !bShowBuiltInTests;
+	}
+	else if (btnpressed == "Menu") {
+		SettingsMenu();
+	}
+	else {
+		ez.msgBox("button: " + String(mainmenu.pickName()), btnpressed);
+	}
     //mainmenu.addItem("Flexible text menus", mainmenu_menus);
     ////mainmenu.addItem("Image menus", mainmenu_image);
     ////mainmenu.addItem("Neat messages", mainmenu_msgs);
@@ -72,10 +67,10 @@ void SettingsMenu()
 {
     ezMenu settings("Settings");
     settings.txtSmall();
-    settings.buttons("up # # Go # back # down # ");
+    settings.buttons("up # back # Go # # down # ");
     settings.addItem("Image Settings");
     settings.addItem("LED Strip Settings");
-    settings.addItem("System Settings");
+    settings.addItem("wifi & other settings", ez.settings.menu);
     settings.addItem("Power Off", powerOff);
     settings.addItem("Reboot", reboot);
     //settings.addItem("Exit | Go back to main menu");
