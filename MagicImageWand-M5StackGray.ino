@@ -3,6 +3,12 @@
  Created:	3/29/2021 4:08:35 PM
  Author:	Martin
 */
+// define must ahead #include <M5Stack.h>
+//#define M5STACK_MPU6886 
+#define M5STACK_MPU9250 
+//#define M5STACK_MPU6050
+//#define M5STACK_200Q
+
 #include <stack>
 
 #include <M5ez.h>
@@ -20,6 +26,21 @@
 String exit_button = "";
 
 ezMenu builtinMenu("Built-Ins");
+
+float accX = 0.0F;
+float accY = 0.0F;
+float accZ = 0.0F;
+
+float gyroX = 0.0F;
+float gyroY = 0.0F;
+float gyroZ = 0.0F;
+
+float pitch = 0.0F;
+float roll = 0.0F;
+float yaw = 0.0F;
+
+float temp = 0.0F;
+
 void setup() {
 #include <themes/default.h>
 #include <themes/dark.h>
@@ -32,6 +53,7 @@ void setup() {
         builtinMenu.addItem(bi.text);
     }
     builtinMenu.buttons("up # View # Go # Menu # down # SD");
+    M5.IMU.Init();
 }
 
 ezMenu* pFileMenu = NULL;
@@ -142,6 +164,33 @@ bool CompareNames(const char* a, const char* b)
     return a1.compareTo(b1) < 0;
 }
 
+void GyroTest()
+{
+    ez.screen.clear();
+    ez.canvas.font(&FreeSans12pt7b);
+    while (true) {
+        M5.IMU.getGyroData(&gyroX, &gyroY, &gyroZ);
+        M5.IMU.getAccelData(&accX, &accY, &accZ);
+        M5.IMU.getAhrsData(&pitch, &roll, &yaw);
+        M5.IMU.getTempData(&temp);
+        ez.canvas.pos(0, 20);
+        ez.canvas.printf("%6.2f  %6.2f  %6.2f      ", gyroX, gyroY, gyroZ);
+        ez.canvas.pos(230, 20);
+        ez.canvas.print(" o/s");
+        ez.canvas.pos(0, 65);
+        ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", accX, accY, accZ);
+        ez.canvas.pos(230, 65);
+        ez.canvas.print(" G");
+        ez.canvas.pos(0, 110);
+        ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", pitch, roll, yaw);
+        ez.canvas.pos(230, 110);
+        ez.canvas.print(" deg");
+        ez.canvas.pos(0, 155);
+        ez.canvas.printf("Temperature : %.2f C", temp);
+        delay(100);
+    }
+}
+
 // handle the settings menu
 void SettingsMenu()
 {
@@ -151,6 +200,7 @@ void SettingsMenu()
     settings.addItem("Image Settings");
     settings.addItem("LED Strip Settings");
     settings.addItem("wifi & other settings", ez.settings.menu);
+    settings.addItem("Gyro", GyroTest);
     settings.addItem("Power Off", powerOff);
     settings.addItem("Reboot", reboot);
     //settings.addItem("Exit | Go back to main menu");
