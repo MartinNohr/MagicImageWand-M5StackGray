@@ -164,6 +164,24 @@ bool CompareNames(const char* a, const char* b)
     return a1.compareTo(b1) < 0;
 }
 
+// maintain the array by subtracting the old value from the sum, adding the new value and putting the new value in the array
+// increment and wrap the index
+// then return the new sum divided by the size
+float GetAverage(int& ix, int size, float val, float* fary, float& sum)
+{
+    sum -= fary[ix];
+    sum += val;
+    fary[ix] = val;
+    ++ix;
+    ix = ix & size;
+    return sum / size;
+}
+
+#define SAMPLES 10
+float tempSum;
+float tempArray[SAMPLES];
+int tempIx = 0;
+
 void GyroTest()
 {
     ez.screen.clear();
@@ -173,6 +191,7 @@ void GyroTest()
         M5.IMU.getAccelData(&accX, &accY, &accZ);
         M5.IMU.getAhrsData(&pitch, &roll, &yaw);
         M5.IMU.getTempData(&temp);
+        temp = GetAverage(tempIx, SAMPLES, temp, tempArray, tempSum);
         ez.canvas.pos(0, 20);
         ez.canvas.printf("%6.2f  %6.2f  %6.2f      ", gyroX, gyroY, gyroZ);
         ez.canvas.pos(230, 20);
@@ -201,6 +220,7 @@ void SettingsMenu()
     settings.addItem("LED Strip Settings");
     settings.addItem("wifi & other settings", ez.settings.menu);
     settings.addItem("Gyro", GyroTest);
+    settings.addItem("SysInfo", sysInfo);
     settings.addItem("Power Off", powerOff);
     settings.addItem("Reboot", reboot);
     //settings.addItem("Exit | Go back to main menu");
