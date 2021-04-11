@@ -193,7 +193,8 @@ int YIx = 0;
 float ZSum;
 float ZArray[SAMPLES];
 int ZIx = 0;
-
+int ZOffset = -10;
+int XOffset = 0;
 void LevelDisplay()
 {
     ez.screen.clear();
@@ -212,25 +213,33 @@ void LevelDisplay()
         M5.IMU.getTempData(&temp);
         temp = GetAverage(tempIx, SAMPLES, temp, tempArray, tempSum);
         ez.canvas.pos(0, 20);
-        accX = GetAverage(XIx, SAMPLES, accX, XArray, XSum);
+        accX = GetAverage(XIx, SAMPLES, accX, XArray, XSum) + (float)XOffset / 100;
         accY = GetAverage(YIx, SAMPLES, accY, YArray, YSum);
-        accZ = GetAverage(ZIx, SAMPLES, accZ, ZArray, ZSum);
+		accZ = GetAverage(ZIx, SAMPLES, accZ, ZArray, ZSum) + (float)ZOffset / 100;
         //ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", accX, accY, accZ);
         // draw the horizon line
 		if (lastZ) {
-            // erase previous line
-			M5.Lcd.drawLine(40 + lastW, lastZ + lastX / 2, 280 - lastW, lastZ - lastX / 2, BLACK);
+            // erase previous lines
+            M5.Lcd.drawLine(40, 120 + lastX / 2, 280, 120 - lastX / 2, BLACK);
+            M5.Lcd.drawLine(40 + lastW, lastZ + lastX / 2, 280 - lastW, lastZ - lastX / 2, BLACK);
+            M5.Lcd.drawLine(40, 120 + lastX / 2, 40 + lastW, lastZ + lastX / 2, BLACK);
+            M5.Lcd.drawLine(280, 120 - lastX / 2, 280 - lastW, lastZ - lastX / 2, BLACK);
         }
-        // this is the reference horizon
-        M5.Lcd.drawLine(20, 120, 300, 120, GREEN);
         // draw the new line
         lastZ = 120 - 100 * accZ;
         // the horizon (pitch)
         lastX = -200 * accX;
-        lastW = abs(400 * accX);
-		M5.Lcd.drawLine(40 + lastW, lastZ + lastX / 2, 280 - lastW, lastZ - lastX / 2, ((abs(lastZ - 120) < 2) && (abs(lastX) < 2)) ? GREEN : RED);
+        lastW = abs(100 * accZ);
+        // bottom line
+		M5.Lcd.drawLine(40, 120 + lastX / 2, 280, 120 - lastX / 2, GREEN);
+        // top line
+        M5.Lcd.drawLine(40 + lastW, lastZ + lastX / 2, 280 - lastW, lastZ - lastX / 2, ((abs(lastZ - 120) < 2) && (abs(lastX) < 2)) ? GREEN : RED);
+        M5.Lcd.drawLine(40, 120 + lastX / 2, 40 + lastW, lastZ + lastX / 2, YELLOW);
+		M5.Lcd.drawLine(280, 120 - lastX / 2, 280 - lastW, lastZ - lastX / 2, YELLOW);
         M5.Lcd.drawCircle(160, 120, 80, BLUE);
-        delay(100);
+        M5.Lcd.drawLine(65, 120, 85, 120, CYAN);
+        M5.Lcd.drawLine(235, 120, 255, 120, CYAN);
+        delay(20);
     }
 }
 
