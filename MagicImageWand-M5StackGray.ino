@@ -23,7 +23,7 @@
 #include <SD.h>
 
 #define MAIN_DECLARED
-String exit_button = "";
+String exit_button = "Exit";
 
 ezMenu builtinMenu("Built-Ins");
 
@@ -173,7 +173,7 @@ float GetAverage(int& ix, int size, float val, float* fary, float& sum)
     sum += val;
     fary[ix] = val;
     ++ix;
-    ix = ix & size;
+    ix = ix % size;
     return sum / size;
 }
 
@@ -181,6 +181,18 @@ float GetAverage(int& ix, int size, float val, float* fary, float& sum)
 float tempSum;
 float tempArray[SAMPLES];
 int tempIx = 0;
+
+float XSum;
+float XArray[SAMPLES];
+int XIx = 0;
+
+float YSum;
+float YArray[SAMPLES];
+int YIx = 0;
+
+float ZSum;
+float ZArray[SAMPLES];
+int ZIx = 0;
 
 void GyroTest()
 {
@@ -197,6 +209,9 @@ void GyroTest()
         ez.canvas.pos(230, 20);
         ez.canvas.print(" o/s");
         ez.canvas.pos(0, 65);
+        accX = GetAverage(XIx, SAMPLES, accX, XArray, XSum);
+        accY = GetAverage(YIx, SAMPLES, accY, YArray, YSum);
+        accZ = GetAverage(ZIx, SAMPLES, accZ, ZArray, ZSum);
         ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", accX, accY, accZ);
         ez.canvas.pos(230, 65);
         ez.canvas.print(" G");
@@ -205,7 +220,7 @@ void GyroTest()
         ez.canvas.pos(230, 110);
         ez.canvas.print(" deg");
         ez.canvas.pos(0, 155);
-        ez.canvas.printf("Temperature : %.2f C", temp);
+        ez.canvas.printf("Temperature : %.1f C", temp);
         delay(100);
     }
 }
