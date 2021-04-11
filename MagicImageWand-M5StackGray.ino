@@ -198,9 +198,10 @@ void LevelDisplay()
 {
     ez.screen.clear();
     ez.canvas.font(&FreeSans12pt7b);
-    ez.buttons.show("#" + exit_button + "#");
+    ez.buttons.show("V Offset#" + exit_button + "#H Offset");
     int lastX = 0;
     int lastZ = 0;
+    int lastW = 0;
     while (true) {
         String btn = ez.buttons.poll();
         if (btn == "Exit") 
@@ -218,14 +219,16 @@ void LevelDisplay()
         // draw the horizon line
 		if (lastZ) {
             // erase previous line
-            M5.Lcd.drawLine(40, lastZ + lastX / 2, 280, lastZ - lastX / 2, BLACK);
+			M5.Lcd.drawLine(40 + lastW, lastZ + lastX / 2, 280 - lastW, lastZ - lastX / 2, BLACK);
         }
         // this is the reference horizon
         M5.Lcd.drawLine(20, 120, 300, 120, GREEN);
         // draw the new line
         lastZ = 120 - 100 * accZ;
+        // the horizon (pitch)
         lastX = -200 * accX;
-		M5.Lcd.drawLine(40, lastZ + lastX / 2, 280, lastZ - lastX / 2, ((abs(lastZ - 120) < 2) && (abs(lastX) < 2)) ? GREEN : RED);
+        lastW = abs(400 * accX);
+		M5.Lcd.drawLine(40 + lastW, lastZ + lastX / 2, 280 - lastW, lastZ - lastX / 2, ((abs(lastZ - 120) < 2) && (abs(lastX) < 2)) ? GREEN : RED);
         M5.Lcd.drawCircle(160, 120, 80, BLUE);
         delay(100);
     }
