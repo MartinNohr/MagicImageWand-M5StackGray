@@ -194,33 +194,39 @@ float ZSum;
 float ZArray[SAMPLES];
 int ZIx = 0;
 
-void GyroTest()
+void LevelDisplay()
 {
     ez.screen.clear();
     ez.canvas.font(&FreeSans12pt7b);
+    ez.buttons.show("#" + exit_button + "#");
+    int lastX = 0;
+    int lastZ = 0;
     while (true) {
-        M5.IMU.getGyroData(&gyroX, &gyroY, &gyroZ);
+        String btn = ez.buttons.poll();
+        if (btn == "Exit") 
+			break;
+        //M5.IMU.getGyroData(&gyroX, &gyroY, &gyroZ);
         M5.IMU.getAccelData(&accX, &accY, &accZ);
-        M5.IMU.getAhrsData(&pitch, &roll, &yaw);
+        //M5.IMU.getAhrsData(&pitch, &roll, &yaw);
         M5.IMU.getTempData(&temp);
         temp = GetAverage(tempIx, SAMPLES, temp, tempArray, tempSum);
         ez.canvas.pos(0, 20);
-        ez.canvas.printf("%6.2f  %6.2f  %6.2f      ", gyroX, gyroY, gyroZ);
-        ez.canvas.pos(230, 20);
-        ez.canvas.print(" o/s");
-        ez.canvas.pos(0, 65);
         accX = GetAverage(XIx, SAMPLES, accX, XArray, XSum);
         accY = GetAverage(YIx, SAMPLES, accY, YArray, YSum);
         accZ = GetAverage(ZIx, SAMPLES, accZ, ZArray, ZSum);
-        ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", accX, accY, accZ);
-        ez.canvas.pos(230, 65);
-        ez.canvas.print(" G");
-        ez.canvas.pos(0, 110);
-        ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", pitch, roll, yaw);
-        ez.canvas.pos(230, 110);
-        ez.canvas.print(" deg");
-        ez.canvas.pos(0, 155);
-        ez.canvas.printf("Temperature : %.1f C", temp);
+        //ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", accX, accY, accZ);
+        // draw the horizon line
+		if (lastZ) {
+            // erase previous line
+            M5.Lcd.drawLine(40, lastZ + lastX / 2, 280, lastZ - lastX / 2, BLACK);
+        }
+        // this is the reference horizon
+        M5.Lcd.drawLine(20, 120, 300, 120, GREEN);
+        // draw the new line
+        lastZ = 120 - 100 * accZ;
+        lastX = -200 * accX;
+		M5.Lcd.drawLine(40, lastZ + lastX / 2, 280, lastZ - lastX / 2, ((abs(lastZ - 120) < 2) && (abs(lastX) < 2)) ? GREEN : RED);
+        M5.Lcd.drawCircle(160, 120, 80, BLUE);
         delay(100);
     }
 }
@@ -234,7 +240,7 @@ void SettingsMenu()
     settings.addItem("Image Settings");
     settings.addItem("LED Strip Settings");
     settings.addItem("wifi & other settings", ez.settings.menu);
-    settings.addItem("Gyro", GyroTest);
+    settings.addItem("Level", LevelDisplay);
     settings.addItem("SysInfo", sysInfo);
     settings.addItem("Power Off", powerOff);
     settings.addItem("Reboot", reboot);
@@ -306,27 +312,27 @@ void reboot()
 //    }
 //}
 
-void mainmenu_image() {
-    ezMenu images;
-    images.imgBackground(TFT_BLACK);
-    images.imgFromTop(40);
-    images.imgCaptionColor(TFT_WHITE);
-    images.addItem(sysinfo_jpg, "System Information", sysInfo);
-    images.addItem(wifi_jpg, "WiFi Settings", ez.wifi.menu);
-    images.addItem(about_jpg, "About M5ez", aboutM5ez);
-    images.addItem(sleep_jpg, "Power Off", powerOff);
-    images.addItem(return_jpg, "Back");
-    images.run();
-}
+//void mainmenu_image() {
+//    ezMenu images;
+//    images.imgBackground(TFT_BLACK);
+//    images.imgFromTop(40);
+//    images.imgCaptionColor(TFT_WHITE);
+//    images.addItem(sysinfo_jpg, "System Information", sysInfo);
+//    images.addItem(wifi_jpg, "WiFi Settings", ez.wifi.menu);
+//    images.addItem(about_jpg, "About M5ez", aboutM5ez);
+//    images.addItem(sleep_jpg, "Power Off", powerOff);
+//    images.addItem(return_jpg, "Back");
+//    images.run();
+//}
 
-void mainmenu_msgs() {
-    String cr = (String)char(13);
-    ez.msgBox("You can show messages", "ez.msgBox shows text");
-    ez.msgBox("Looking the way you want", "In any font !", "OK", true, &FreeSerifBold24pt7b, TFT_RED);
-    ez.msgBox("More ez.msgBox", "Even multi-line messages where everything lines up and is kept in the middle of the screen");
-    ez.msgBox("Questions, questions...", "But can it also show any buttons you want?", "No # # Yes");
-    ez.textBox("And there's ez.textBox", "To present or compose longer word-wrapped texts, you can use the ez.textBox function." + cr + cr + "M5ez (pronounced \"M5 easy\") is a complete interface builder library for the M5Stack ESP32 system. It allows even novice programmers to create good looking interfaces. It comes with menus as text or as images, message boxes, very flexible button setup (including different length presses and multi-button functions), 3-button text input (you have to see it to believe it) and built-in Wifi support. Now you can concentrate on what your program does, and let M5ez worry about everything else.", true);
-}
+//void mainmenu_msgs() {
+//    String cr = (String)char(13);
+//    ez.msgBox("You can show messages", "ez.msgBox shows text");
+//    ez.msgBox("Looking the way you want", "In any font !", "OK", true, &FreeSerifBold24pt7b, TFT_RED);
+//    ez.msgBox("More ez.msgBox", "Even multi-line messages where everything lines up and is kept in the middle of the screen");
+//    ez.msgBox("Questions, questions...", "But can it also show any buttons you want?", "No # # Yes");
+//    ez.textBox("And there's ez.textBox", "To present or compose longer word-wrapped texts, you can use the ez.textBox function." + cr + cr + "M5ez (pronounced \"M5 easy\") is a complete interface builder library for the M5Stack ESP32 system. It allows even novice programmers to create good looking interfaces. It comes with menus as text or as images, message boxes, very flexible button setup (including different length presses and multi-button functions), 3-button text input (you have to see it to believe it) and built-in Wifi support. Now you can concentrate on what your program does, and let M5ez worry about everything else.", true);
+//}
 
 //void mainmenu_buttons() {
 //    ez.header.show("Simple buttons...");
@@ -396,11 +402,15 @@ void mainmenu_msgs() {
 //    }
 //}
 
-void powerOff() { m5.powerOFF(); }
-
-void aboutM5ez() {
-    ez.msgBox("About M5ez", "M5ez was written by | Rop Gonggrijp | | https://github.com/M5ez/M5ez");
+void powerOff()
+{
+    m5.powerOFF(); 
 }
+
+//void aboutM5ez() {
+//    ez.msgBox("About M5ez", "M5ez was written by | Rop Gonggrijp | | https://github.com/M5ez/M5ez");
+//}
+
 void sysInfo() {
     sysInfoPage1();
     while (true) {
