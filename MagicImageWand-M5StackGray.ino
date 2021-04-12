@@ -230,17 +230,32 @@ void LevelDisplay()
         }
         // calculate the box height based on z
         int h = 100 * accZ;
+        // get the rotation
+        float rotate = 1.2 * accX;
         // set box color
-		int color = abs(h) < 3 ? GREEN : RED;
+		int color = abs(h) < 3 && abs(rotate) < 0.05 ? GREEN : RED;
         // set box coordinates
-        x[0] = 40;
+        x[0] = 50;
         y[0] = 120;
         x[1] = 320 - x[0];
         y[1] = 120;
-		x[2] = x[0] + abs(h) / 2;
+		x[2] = x[0] + abs(h);
         y[2] = 120 + h;
-		x[3] = x[1] - abs(h) / 2;
+		x[3] = x[1] - abs(h);
         y[3] = 120 + h;
+        // rotate the points depending on x using the rotation matrix
+        int xrel, yrel;
+        for (int ix = 0; ix < 4; ++ix) {
+            // put origin in middle
+			xrel = x[ix] - 160;
+			yrel = y[ix] - 120;
+            // rotate
+            xrel = xrel * cos(rotate) - yrel * sin(rotate);
+            yrel = xrel * sin(rotate) + yrel * cos(rotate);
+            // restore origin
+            x[ix] = xrel + 160;
+            y[ix] = yrel + 120;
+        }
         // draw the box
         for (int ix = 0; ix < 4; ++ix) {
             int pos1 = ix < 2 ? 0 : 3;
@@ -249,6 +264,7 @@ void LevelDisplay()
         }
         // draw the reference circle
         M5.Lcd.drawCircle(160, 120, 80, BLUE);
+        m5.Lcd.fillCircle(160, 120, 4, BLUE);
         M5.Lcd.drawLine(65, 120, 85, 120, CYAN);
         M5.Lcd.drawLine(235, 120, 255, 120, CYAN);
         delay(20);
@@ -260,10 +276,10 @@ void SettingsMenu()
 {
     ezMenu settings("Settings");
     settings.txtSmall();
-    settings.buttons("up # back # Select # # down # ");
+    settings.buttons("up # Back # Select # # down # ");
 	settings.addItem("Image Settings", ImageSettings);
 	settings.addItem("LED Strip Settings", LEDStripSettings);
-    settings.addItem("wifi & other settings", ez.settings.menu);
+    settings.addItem("System Settings", ez.settings.menu);
     settings.addItem("Level", LevelDisplay);
     settings.addItem("SysInfo", sysInfo);
     settings.addItem("Power Off", powerOff);
@@ -745,19 +761,20 @@ void LEDStripSettings()
 {
     ezMenu settings("LED Strip Settings");
     settings.txtSmall();
-    settings.buttons("up # back # Select # # down # ");
+    settings.buttons("up # Back # Select # # down # ");
     //settings.addItem("Column Hold Time\t" + String(nColumnHoldTime));
-    settings.addItem("Brightness\t" + String(nLEDBrightness));
-	settings.addItem("Controllers\t" + String(bSecondController ? 2 : 1));
+    settings.addItem("brightness | Brightness\t" + String(nLEDBrightness));
+	settings.addItem("controllers | Controllers\t" + String(bSecondController ? 2 : 1));
     settings.addItem("Pixels\t" + String(nPixelCount));
 	while (settings.runOnce()) {
         String pick = settings.pickName();
-        if (pick == "back")
+        if (pick == "Back")
             break;
-		else if (pick == "Brightness") {
+		else if (pick == "brightness") {
 		}
-        else if (pick == "Controllers") {
+        else if (pick == "controllers") {
             bSecondController = !bSecondController;
+			settings.setCaption("controllers", "Controllers\t" + String(bSecondController ? 2 : 1));
         }
 	}
 }
@@ -767,11 +784,11 @@ void ImageSettings()
 {
     ezMenu settings("Image Settings");
     settings.txtSmall();
-    settings.buttons("up # back # Select # # down # ");
+    settings.buttons("up # Back # Select # # down # ");
     settings.addItem("Column Hold Time\t" + String(nColumnHoldTime));
     while (settings.runOnce()) {
         String pick = settings.pickName();
-        if (pick == "back")
+        if (pick == "Back")
             break;
         else if (pick == "Column Hold Time") {
         }
