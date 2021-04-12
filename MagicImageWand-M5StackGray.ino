@@ -249,8 +249,8 @@ void SettingsMenu()
     ezMenu settings("Settings");
     settings.txtSmall();
     settings.buttons("up # back # Go # # down # ");
-    settings.addItem("Image Settings");
-    settings.addItem("LED Strip Settings");
+	settings.addItem("Image Settings", ImageSettings);
+	settings.addItem("LED Strip Settings", LEDStripSettings);
     settings.addItem("wifi & other settings", ez.settings.menu);
     settings.addItem("Level", LevelDisplay);
     settings.addItem("SysInfo", sysInfo);
@@ -727,3 +727,41 @@ bool ProcessConfigFile(String filename)
 //    bGammaCorrection = bOldGamma;
 //    tft.fillScreen(TFT_BLACK);
 //}
+
+// Strip settings
+void LEDStripSettings()
+{
+    ezMenu settings("LED Strip Settings");
+    settings.txtSmall();
+    settings.buttons("up # back # Select # # down # ");
+    //settings.addItem("Column Hold Time\t" + String(nColumnHoldTime));
+    settings.addItem("Brightness\t" + String(nLEDBrightness));
+	settings.addItem("Controllers\t" + String(bSecondController ? 2 : 1));
+    settings.addItem("Pixels\t" + String(nPixelCount));
+	while (settings.runOnce()) {
+        String pick = settings.pickName();
+        if (pick == "back")
+            break;
+		else if (pick == "Brightness") {
+		}
+        else if (pick == "Controllers") {
+            bSecondController = !bSecondController;
+        }
+	}
+}
+
+// Image settings
+void ImageSettings()
+{
+    ezMenu settings("Image Settings");
+    settings.txtSmall();
+    settings.buttons("up # back # Select # # down # ");
+    settings.addItem("Column Hold Time\t" + String(nColumnHoldTime));
+    while (settings.runOnce()) {
+        String pick = settings.pickName();
+        if (pick == "back")
+            break;
+        else if (pick == "Column Hold Time") {
+        }
+    }
+}
