@@ -200,9 +200,12 @@ void LevelDisplay()
     ez.screen.clear();
     ez.canvas.font(&FreeSans12pt7b);
     ez.buttons.show("V Offset#" + exit_button + "#H Offset");
-    int lastX = 0;
-    int lastZ = 0;
-    int lastW = 0;
+    // the "box" displayed, height comes from z, tilt from x
+    // x2y2 --- x3y3
+    // |           |
+    // x0y0 --- x2y2
+    int x[4] = { 0 };
+    int y[4] = { 0 };
     while (true) {
         String btn = ez.buttons.poll();
         if (btn == "Exit") 
@@ -217,25 +220,34 @@ void LevelDisplay()
         accY = GetAverage(YIx, SAMPLES, accY, YArray, YSum);
 		accZ = GetAverage(ZIx, SAMPLES, accZ, ZArray, ZSum) + (float)ZOffset / 100;
         //ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", accX, accY, accZ);
-        // draw the horizon line
-		if (lastZ) {
-            // erase previous lines
-            M5.Lcd.drawLine(40, 120 + lastX / 2, 280, 120 - lastX / 2, BLACK);
-            M5.Lcd.drawLine(40 + lastW, lastZ + lastX / 2, 280 - lastW, lastZ - lastX / 2, BLACK);
-            M5.Lcd.drawLine(40, 120 + lastX / 2, 40 + lastW, lastZ + lastX / 2, BLACK);
-            M5.Lcd.drawLine(280, 120 - lastX / 2, 280 - lastW, lastZ - lastX / 2, BLACK);
+		// erase previous lines, only if drawn
+        if (x[0]) {
+            for (int ix = 0; ix < 4; ++ix) {
+                int pos1 = ix < 2 ? 0 : 3;
+                int pos2 = (ix % 2) + 1;
+                m5.Lcd.drawLine(x[pos1], y[pos1], x[pos2], y[pos2], BLACK);
+            }
         }
-        // draw the new line
-        lastZ = 120 - 100 * accZ;
-        // the horizon (pitch)
-        lastX = -200 * accX;
-        lastW = abs(100 * accZ);
-        // bottom line
-		M5.Lcd.drawLine(40, 120 + lastX / 2, 280, 120 - lastX / 2, GREEN);
-        // top line
-        M5.Lcd.drawLine(40 + lastW, lastZ + lastX / 2, 280 - lastW, lastZ - lastX / 2, ((abs(lastZ - 120) < 2) && (abs(lastX) < 2)) ? GREEN : RED);
-        M5.Lcd.drawLine(40, 120 + lastX / 2, 40 + lastW, lastZ + lastX / 2, YELLOW);
-		M5.Lcd.drawLine(280, 120 - lastX / 2, 280 - lastW, lastZ - lastX / 2, YELLOW);
+        // calculate the box height based on z
+        int h = 100 * accZ;
+        // set box color
+		int color = abs(h) < 3 ? GREEN : RED;
+        // set box coordinates
+        x[0] = 40;
+        y[0] = 120;
+        x[1] = 320 - x[0];
+        y[1] = 120;
+		x[2] = x[0] + abs(h) / 2;
+        y[2] = 120 + h;
+		x[3] = x[1] - abs(h) / 2;
+        y[3] = 120 + h;
+        // draw the box
+        for (int ix = 0; ix < 4; ++ix) {
+            int pos1 = ix < 2 ? 0 : 3;
+            int pos2 = (ix % 2) + 1;
+            m5.Lcd.drawLine(x[pos1], y[pos1], x[pos2], y[pos2], color);
+        }
+        // draw the reference circle
         M5.Lcd.drawCircle(160, 120, 80, BLUE);
         M5.Lcd.drawLine(65, 120, 85, 120, CYAN);
         M5.Lcd.drawLine(235, 120, 255, 120, CYAN);
@@ -248,7 +260,7 @@ void SettingsMenu()
 {
     ezMenu settings("Settings");
     settings.txtSmall();
-    settings.buttons("up # back # Go # # down # ");
+    settings.buttons("up # back # Select # # down # ");
 	settings.addItem("Image Settings", ImageSettings);
 	settings.addItem("LED Strip Settings", LEDStripSettings);
     settings.addItem("wifi & other settings", ez.settings.menu);
