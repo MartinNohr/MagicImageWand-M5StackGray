@@ -761,6 +761,7 @@ void SetLedBrightness()
     int inc = 10;
     ezProgressBar bl("LED brightness", "Set brightness", "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
+    int lastVal = nLEDBrightness;
     while (true) {
         String b = ez.buttons.poll();
         if (b == "right")
@@ -770,22 +771,26 @@ void SetLedBrightness()
         if (b == "+") {
             inc += 10;
             ez.canvas.x(0);
-            ez.canvas.y(160);
+            ez.canvas.y(180);
 			ez.canvas.print("inc " + String(inc) + " ");
         }
         if (b == "-") {
             inc -= 10;
             ez.canvas.x(0);
-            ez.canvas.y(160);
+            ez.canvas.y(180);
             ez.canvas.print("inc " + String(inc) + " ");
         }
+        inc = constrain(inc, 1, 100);
         nLEDBrightness = constrain(nLEDBrightness, 1, 255);
         bl.value((float)(nLEDBrightness / 2.55));
         if (b == "ok")
             break;
-        ez.canvas.x(100);
-        ez.canvas.y(160);
-        ez.canvas.print("val " + String(nLEDBrightness) + " ");
+        if (lastVal != nLEDBrightness) {
+            ez.canvas.x(100);
+            ez.canvas.y(180);
+            ez.canvas.print("val " + String(nLEDBrightness) + " ");
+            lastVal = nLEDBrightness;
+        }
     }
 }
 
