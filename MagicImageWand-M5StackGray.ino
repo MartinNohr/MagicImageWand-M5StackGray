@@ -496,8 +496,8 @@ void sysInfoPage2() {
     ez.canvas.print("SPIFFS used:"); ez.canvas.x(tab); ez.canvas.println(String((long)SPIFFS.usedBytes()) + " bytes");
     ez.canvas.print("SD type:"); ez.canvas.x(tab); ez.canvas.println(SD_Type[sd_type]);
     if (sd_type != 0) {
-        ez.canvas.print("SD size:"); ez.canvas.x(tab); ez.canvas.println(String((long)SD.cardSize() / 1000000) + " MB");
-        ez.canvas.print("SD used:"); ez.canvas.x(tab); ez.canvas.println(String((long)SD.usedBytes() / 1000000) + " MB");
+        ez.canvas.print("SD size:"); ez.canvas.x(tab); ez.canvas.println(String((long)(SD.cardSize() / 1000000)) + " MB");
+        ez.canvas.print("SD used:"); ez.canvas.x(tab); ez.canvas.println(String((long)(SD.usedBytes() / 1000000)) + " MB");
     }
 }
 
@@ -756,6 +756,39 @@ bool ProcessConfigFile(String filename)
 //    tft.fillScreen(TFT_BLACK);
 //}
 
+void SetLedBrightness()
+{
+    int inc = 10;
+    ezProgressBar bl("LED brightness", "Set brightness", "left # - # OK # Cancel # right # +");
+    ez.canvas.font(&FreeSans12pt7b);
+    while (true) {
+        String b = ez.buttons.poll();
+        if (b == "right")
+            nLEDBrightness += inc;
+        if (b == "left")
+            nLEDBrightness -= inc;
+        if (b == "+") {
+            inc += 10;
+            ez.canvas.x(0);
+            ez.canvas.y(160);
+			ez.canvas.print("inc " + String(inc) + " ");
+        }
+        if (b == "-") {
+            inc -= 10;
+            ez.canvas.x(0);
+            ez.canvas.y(160);
+            ez.canvas.print("inc " + String(inc) + " ");
+        }
+        nLEDBrightness = constrain(nLEDBrightness, 1, 255);
+        bl.value((float)(nLEDBrightness / 2.55));
+        if (b == "ok")
+            break;
+        ez.canvas.x(100);
+        ez.canvas.y(160);
+        ez.canvas.print("val " + String(nLEDBrightness) + " ");
+    }
+}
+
 // Strip settings
 void LEDStripSettings()
 {
@@ -771,6 +804,8 @@ void LEDStripSettings()
         if (pick == "Back")
             break;
 		else if (pick == "brightness") {
+            SetLedBrightness();
+            settings.setCaption("brightness","Brightness\t" + String(nLEDBrightness));
 		}
         else if (pick == "controllers") {
             bSecondController = !bSecondController;
