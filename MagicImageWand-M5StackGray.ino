@@ -80,7 +80,7 @@ void loop() {
             pFileMenu->txtSmall();
             if (!selectionStack.empty()) {
                 Serial.println("setting: " + String(selectionStack.top()));
-                pFileMenu->setItem(selectionStack.top());
+                //pFileMenu->setItem(selectionStack.top());
                 selectionStack.pop();
             }
             bReloadSD = false;
@@ -127,7 +127,8 @@ void loop() {
 		}
 		else if (btnpressed == "View") {
 			// preview the file
-			ez.msgBox("preview: ", String(activeMenu->pickName()));
+            ShowBmp();
+			//ez.msgBox("preview: ", String(activeMenu->pickName()));
 		}
 		else {
 			ez.msgBox("How did we get here?", btnpressed);
@@ -221,6 +222,8 @@ void LevelDisplay()
 		accZ = GetAverage(ZIx, SAMPLES, accZ, ZArray, ZSum) + (float)ZOffset / 100;
         //ez.canvas.printf(" %5.2f   %5.2f   %5.2f   ", accX, accY, accZ);
 		// erase previous lines, only if drawn
+        //m5.Lcd.fillTriangle(x[0], y[0], x[1], y[1], x[2], y[2], BLACK);
+        //m5.Lcd.fillTriangle(x[1], y[1], x[2], y[2], x[3], y[3], BLACK);
         if (x[0]) {
             for (int ix = 0; ix < 4; ++ix) {
                 int pos1 = ix < 2 ? 0 : 3;
@@ -243,7 +246,7 @@ void LevelDisplay()
         y[2] = 120 + h;
 		x[3] = x[1] - abs(h);
         y[3] = 120 + h;
-        // rotate the points depending on x using the rotation matrix
+        // rotate the points depending on accX using the rotation matrix
         int xrel, yrel;
         for (int ix = 0; ix < 4; ++ix) {
             // put origin in middle
@@ -257,6 +260,8 @@ void LevelDisplay()
             y[ix] = yrel + 120;
         }
         // draw the box
+        //m5.Lcd.fillTriangle(x[0], y[0], x[1], y[1], x[2], y[2], color);
+        //m5.Lcd.fillTriangle(x[1], y[1], x[2], y[2], x[3], y[3], color);
         for (int ix = 0; ix < 4; ++ix) {
             int pos1 = ix < 2 ? 0 : 3;
             int pos2 = (ix % 2) + 1;
@@ -577,184 +582,179 @@ bool ProcessConfigFile(String filename)
     return false;
 }
 
-// put the current file on the display
-// Note that menu is not used, it is called with NULL sometimes
-//void ShowBmp()
-//{
-//    if (bShowBuiltInTests)
-//        return;
-//    String fn = currentFolder + FileNames[CurrentFileIndex];
-//    // make sure this is a bmp file, if not just quietly go away
-//    String tmp = fn.substring(fn.length() - 3);
-//    tmp.toLowerCase();
-//    if (tmp.compareTo("bmp")) {
-//        return;
-//    }
-//    bool bSawButton0 = !digitalRead(0);
-//    uint16_t* scrBuf;
-//    scrBuf = (uint16_t*)calloc(320 * 144, sizeof(uint16_t));
-//    if (scrBuf == NULL) {
-//        //WriteMessage("Not enough memory", true, 5000);
-//        return;
-//    }
-//    bool bOldGamma = bGammaCorrection;
-//    bGammaCorrection = false;
-//    dataFile = SD.open(fn);
-//    // if the file is available send it to the LED's
-//    if (!dataFile.available()) {
-//        free(scrBuf);
-//        WriteMessage("failed to open: " + currentFolder + FileNames[CurrentFileIndex], true);
-//        return;
-//    }
-//    tft.fillScreen(TFT_BLACK);
-//    // clear the file cache buffer
-//    readByte(true);
-//    uint16_t bmpType = readInt();
-//    uint32_t bmpSize = readLong();
-//    uint16_t bmpReserved1 = readInt();
-//    uint16_t bmpReserved2 = readInt();
-//    uint32_t bmpOffBits = readLong();
-//
-//    /* Check file header */
-//    if (bmpType != MYBMP_BF_TYPE) {
-//        free(scrBuf);
-//        WriteMessage(String("Invalid BMP:\n") + currentFolder + FileNames[CurrentFileIndex], true);
-//        return;
-//    }
-//
-//    /* Read info header */
-//    uint32_t imgSize = readLong();
-//    uint32_t imgWidth = readLong();
-//    uint32_t imgHeight = readLong();
-//    uint16_t imgPlanes = readInt();
-//    uint16_t imgBitCount = readInt();
-//    uint32_t imgCompression = readLong();
-//    uint32_t imgSizeImage = readLong();
-//    uint32_t imgXPelsPerMeter = readLong();
-//    uint32_t imgYPelsPerMeter = readLong();
-//    uint32_t imgClrUsed = readLong();
-//    uint32_t imgClrImportant = readLong();
-//
-//    /* Check info header */
-//    if (imgWidth <= 0 || imgHeight <= 0 || imgPlanes != 1 ||
-//        imgBitCount != 24 || imgCompression != MYBMP_BI_RGB || imgSizeImage == 0)
-//    {
-//        free(scrBuf);
-//        WriteMessage(String("Unsupported, must be 24bpp:\n") + currentFolder + FileNames[CurrentFileIndex], true);
-//        return;
-//    }
-//
-//    int displayWidth = imgWidth;
-//    if (imgWidth > STRIPLENGTH) {
-//        displayWidth = STRIPLENGTH;           //only display the number of led's we have
-//    }
-//
-//    /* compute the line length */
-//    uint32_t lineLength = imgWidth * 3;
-//    // fix for padding to 4 byte words
-//    if ((lineLength % 4) != 0)
-//        lineLength = (lineLength / 4 + 1) * 4;
-//    bool done = false;
-//    bool redraw = true;
-//    bool allowScroll = imgHeight > 320;
-//    // offset for showing the image
-//    int imgOffset = 0;
-//    int oldImgOffset;
-//    bool bShowingSize = false;
-//    // show some info
-//    float walk = (float)imgHeight / (float)imgWidth;
-//    DisplayLine(5, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
-//    DisplayLine(6, "Size: " + String(imgWidth) + " x " + String(imgHeight));
-//    // calculate display time
-//    float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nFrameHold / 1000.0 + imgHeight * .008);
-//    DisplayLine(7, "About " + String((int)round(dspTime)) + " Seconds");
-//    while (!done) {
-//        if (redraw) {
-//            // loop through the image, y is the image width, and x is the image height
-//            for (int y = imgOffset; y < (imgHeight > 320 ? 320 : imgHeight) + imgOffset; ++y) {
-//                int bufpos = 0;
-//                CRGB pixel;
-//                // get to start of pixel data for this column
-//                FileSeekBuf((uint32_t)bmpOffBits + (y * lineLength));
-//                for (int x = displayWidth - 1; x >= 0; --x) {
-//                    // this reads three bytes
-//                    pixel = getRGBwithGamma();
-//                    // add to the display memory
-//                    int row = x - 5;
-//                    int col = y - imgOffset;
-//                    if (row >= 0 && row < 144) {
-//                        uint16_t color = tft.color565(pixel.r, pixel.g, pixel.b);
-//                        uint16_t sbcolor;
-//                        // the memory image colors are byte swapped
-//                        swab(&color, &sbcolor, 2);
-//                        scrBuf[(143 - row) * 320 + col] = sbcolor;
-//                    }
-//                }
-//            }
-//            oldImgOffset = imgOffset;
-//            // got it all, go show it
-//            m5.Lcd.pushRect(0, 0, 320, 144, scrBuf);
-//        }
-//        if (bSawButton0) {
-//            while (digitalRead(0) == 0)
-//                ;
-//            bSawButton0 = false;
-//            delay(30);
-//        }
-//        switch (ReadButton()) {
-//        case CRotaryDialButton::BTN_LEFT:
-//            if (allowScroll) {
-//                imgOffset -= 320;
-//                imgOffset = max(0, imgOffset);
-//            }
-//            break;
-//        case CRotaryDialButton::BTN_RIGHT:
-//            if (allowScroll) {
-//                imgOffset += 320;
-//                imgOffset = min((int32_t)imgHeight - 320, imgOffset);
-//            }
-//            break;
-//        case CRotaryDialButton::BTN_LONGPRESS:
-//            done = true;
-//            break;
-//            //case CRotaryDialButton::BTN_CLICK:
-//            //	if (bShowingSize) {
-//            //		bShowingSize = false;
-//            //		redraw = true;
-//            //	}
-//            //	else {
-//            //		tft.fillScreen(TFT_BLACK);
-//            //		//DisplayLine(0, currentFolder);
-//            //		//DisplayLine(4, FileNames[CurrentFileIndex]);
-//            //		float walk = (float)imgHeight / (float)imgWidth;
-//            //		DisplayLine(5, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
-//            //		DisplayLine(6, "Size: " + String(imgWidth) + " x " + String(imgHeight));
-//            //		// calculate display time
-//            //		float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nFrameHold / 1000.0 + imgHeight * .008);
-//            //		DisplayLine(7, "About " + String((int)round(dspTime)) + " Seconds");
-//            //		bShowingSize = true;
-//            //		redraw = false;
-//            //	}
-//            //	break;
-//        }
-//        if (oldImgOffset != imgOffset) {
-//            redraw = true;
-//        }
-//        // check the 0 button
-//        if (digitalRead(0) == 0) {
-//            // debounce, don't want this seen again in the main loop
-//            delay(30);
-//            done = true;
-//        }
-//        delay(2);
-//    }
-//    // all done
-//    free(scrBuf);
-//    dataFile.close();
-//    readByte(true);
-//    bGammaCorrection = bOldGamma;
-//    tft.fillScreen(TFT_BLACK);
-//}
+// some useful BMP constants
+#define MYBMP_BF_TYPE           0x4D42	// "BM"
+#define MYBMP_BI_RGB            0L
+//#define MYBMP_BI_RLE8           1L
+//#define MYBMP_BI_RLE4           2L
+//#define MYBMP_BI_BITFIELDS      3L
+
+//put the current file on the display
+//Note that menu is not used, it is called with NULL sometimes
+void ShowBmp()
+{
+    if (bShowBuiltInTests)
+        return;
+    String fn = currentFolder + currentFile;
+    // make sure this is a bmp file, if not just quietly go away
+    String tmp = fn.substring(fn.length() - 3);
+    tmp.toLowerCase();
+    if (tmp.compareTo("bmp")) {
+        return;
+    }
+    uint16_t* scrBuf;
+    scrBuf = (uint16_t*)calloc(320 * 144, sizeof(uint16_t));
+    if (scrBuf == NULL) {
+        //WriteMessage("Not enough memory", true, 5000);
+        return;
+    }
+    //bool bOldGamma = bGammaCorrection;
+    //bGammaCorrection = false;
+    dataFile = SD.open(fn);
+    // if the file is available send it to the LED's
+    if (!dataFile.available()) {
+        free(scrBuf);
+        //WriteMessage("failed to open: " + currentFolder + FileNames[CurrentFileIndex], true);
+        return;
+    }
+    M5.Lcd.fillScreen(TFT_BLACK);
+    // clear the file cache buffer
+    readByte(true);
+    uint16_t bmpType = readInt();
+    uint32_t bmpSize = readLong();
+    uint16_t bmpReserved1 = readInt();
+    uint16_t bmpReserved2 = readInt();
+    uint32_t bmpOffBits = readLong();
+
+    /* Check file header */
+    if (bmpType != MYBMP_BF_TYPE) {
+        free(scrBuf);
+        //WriteMessage(String("Invalid BMP:\n") + currentFolder + FileNames[CurrentFileIndex], true);
+        return;
+    }
+
+    /* Read info header */
+    uint32_t imgSize = readLong();
+    uint32_t imgWidth = readLong();
+    uint32_t imgHeight = readLong();
+    uint16_t imgPlanes = readInt();
+    uint16_t imgBitCount = readInt();
+    uint32_t imgCompression = readLong();
+    uint32_t imgSizeImage = readLong();
+    uint32_t imgXPelsPerMeter = readLong();
+    uint32_t imgYPelsPerMeter = readLong();
+    uint32_t imgClrUsed = readLong();
+    uint32_t imgClrImportant = readLong();
+
+    /* Check info header */
+    if (imgWidth <= 0 || imgHeight <= 0 || imgPlanes != 1 ||
+        imgBitCount != 24 || imgCompression != MYBMP_BI_RGB || imgSizeImage == 0)
+    {
+        free(scrBuf);
+        //WriteMessage(String("Unsupported, must be 24bpp:\n") + currentFolder + FileNames[CurrentFileIndex], true);
+        return;
+    }
+
+    int displayWidth = imgWidth;
+    if (imgWidth > nPixelCount) {
+        displayWidth = nPixelCount;           //only display the number of led's we have
+    }
+
+    /* compute the line length */
+    uint32_t lineLength = imgWidth * 3;
+    // fix for padding to 4 byte words
+    if ((lineLength % 4) != 0)
+        lineLength = (lineLength / 4 + 1) * 4;
+    bool done = false;
+    bool redraw = true;
+    bool allowScroll = imgHeight > 320;
+    // offset for showing the image
+    int imgOffset = 0;
+    int oldImgOffset;
+    bool bShowingSize = false;
+    // show some info
+    float walk = (float)imgHeight / (float)imgWidth;
+    //DisplayLine(5, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
+    //DisplayLine(6, "Size: " + String(imgWidth) + " x " + String(imgHeight));
+    // calculate display time
+    //float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nFrameHold / 1000.0 + imgHeight * .008);
+    //DisplayLine(7, "About " + String((int)round(dspTime)) + " Seconds");
+    while (!done) {
+        if (redraw) {
+            // loop through the image, y is the image width, and x is the image height
+            for (int y = imgOffset; y < (imgHeight > 320 ? 320 : imgHeight) + imgOffset; ++y) {
+                int bufpos = 0;
+                CRGB pixel;
+                // get to start of pixel data for this column
+                FileSeekBuf((uint32_t)bmpOffBits + (y * lineLength));
+                for (int x = displayWidth - 1; x >= 0; --x) {
+                    // this reads three bytes
+                    pixel = getRGBwithGamma();
+                    // add to the display memory
+                    int row = x - 5;
+                    int col = y - imgOffset;
+                    if (row >= 0 && row < 144) {
+						uint16_t color = m5.Lcd.color565(pixel.r, pixel.g, pixel.b);
+                        uint16_t sbcolor;
+                        // the memory image colors are byte swapped
+                        swab(&color, &sbcolor, 2);
+                        scrBuf[(143 - row) * 320 + col] = sbcolor;
+                    }
+                }
+            }
+            oldImgOffset = imgOffset;
+            // got it all, go show it
+            m5.Lcd.pushRect(0, 0, 320, 144, scrBuf);
+            redraw = false;
+        }
+        //switch (ReadButton()) {
+        //case CRotaryDialButton::BTN_LEFT:
+        //    if (allowScroll) {
+        //        imgOffset -= 320;
+        //        imgOffset = max(0, imgOffset);
+        //    }
+        //    break;
+        //case CRotaryDialButton::BTN_RIGHT:
+        //    if (allowScroll) {
+        //        imgOffset += 320;
+        //        imgOffset = min((int32_t)imgHeight - 320, imgOffset);
+        //    }
+        //    break;
+        //case CRotaryDialButton::BTN_LONGPRESS:
+        //    done = true;
+        //    break;
+        //    //case CRotaryDialButton::BTN_CLICK:
+        //    //	if (bShowingSize) {
+        //    //		bShowingSize = false;
+        //    //		redraw = true;
+        //    //	}
+        //    //	else {
+        //    //		tft.fillScreen(TFT_BLACK);
+        //    //		//DisplayLine(0, currentFolder);
+        //    //		//DisplayLine(4, FileNames[CurrentFileIndex]);
+        //    //		float walk = (float)imgHeight / (float)imgWidth;
+        //    //		DisplayLine(5, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
+        //    //		DisplayLine(6, "Size: " + String(imgWidth) + " x " + String(imgHeight));
+        //    //		// calculate display time
+        //    //		float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nFrameHold / 1000.0 + imgHeight * .008);
+        //    //		DisplayLine(7, "About " + String((int)round(dspTime)) + " Seconds");
+        //    //		bShowingSize = true;
+        //    //		redraw = false;
+        //    //	}
+        //    //	break;
+        //}
+        if (oldImgOffset != imgOffset) {
+            redraw = true;
+        }
+        delay(2);
+    }
+    // all done
+    free(scrBuf);
+    dataFile.close();
+    readByte(true);
+    //bGammaCorrection = bOldGamma;
+    M5.Lcd.fillScreen(TFT_BLACK);
+}
 
 void SetLedBrightness()
 {
@@ -833,5 +833,115 @@ void ImageSettings()
             break;
         else if (pick == "Column Hold Time") {
         }
+    }
+}
+
+uint32_t IRAM_ATTR readLong() {
+    uint32_t retValue;
+    byte incomingbyte;
+
+    incomingbyte = readByte(false);
+    retValue = (uint32_t)((byte)incomingbyte);
+
+    incomingbyte = readByte(false);
+    retValue += (uint32_t)((byte)incomingbyte) << 8;
+
+    incomingbyte = readByte(false);
+    retValue += (uint32_t)((byte)incomingbyte) << 16;
+
+    incomingbyte = readByte(false);
+    retValue += (uint32_t)((byte)incomingbyte) << 24;
+
+    return retValue;
+}
+
+uint16_t IRAM_ATTR readInt() {
+    byte incomingbyte;
+    uint16_t retValue;
+
+    incomingbyte = readByte(false);
+    retValue += (uint16_t)((byte)incomingbyte);
+
+    incomingbyte = readByte(false);
+    retValue += (uint16_t)((byte)incomingbyte) << 8;
+
+    return retValue;
+}
+byte filebuf[512];
+int fileindex = 0;
+int filebufsize = 0;
+uint32_t filePosition = 0;
+
+int IRAM_ATTR readByte(bool clear) {
+    //int retbyte = -1;
+    if (clear) {
+        filebufsize = 0;
+        fileindex = 0;
+        return 0;
+    }
+    // TODO: this needs to align with 512 byte boundaries, maybe
+    if (filebufsize == 0 || fileindex >= sizeof(filebuf)) {
+        filePosition = dataFile.position();
+        //// if not on 512 boundary yet, just return a byte
+        //if ((filePosition % 512) && filebufsize == 0) {
+        //    //Serial.println("not on 512");
+        //    return dataFile.read();
+        //}
+        // read a block
+//        Serial.println("block read");
+        do {
+            filebufsize = dataFile.read(filebuf, sizeof(filebuf));
+        } while (filebufsize < 0);
+        fileindex = 0;
+    }
+    return filebuf[fileindex++];
+    //while (retbyte < 0) 
+    //    retbyte = dataFile.read();
+    //return retbyte;
+}
+
+
+// make sure we are the right place
+void IRAM_ATTR FileSeekBuf(uint32_t place)
+{
+    if (place < filePosition || place >= filePosition + filebufsize) {
+        // we need to read some more
+        filebufsize = 0;
+        dataFile.seek(place);
+    }
+}
+
+// count the actual files, at a given starting point
+//int FileCountOnly(int start)
+//{
+//    int count = 0;
+//    // ignore folders, at the end
+//    for (int files = start; files < FileNames.size(); ++files) {
+//        if (!IsFolder(files))
+//            ++count;
+//    }
+//    return count;
+//}
+
+// return the pixel
+CRGB IRAM_ATTR getRGBwithGamma() {
+    if (bGammaCorrection) {
+        b = gammaB[readByte(false)];
+        g = gammaG[readByte(false)];
+        r = gammaR[readByte(false)];
+    }
+    else {
+        b = readByte(false);
+        g = readByte(false);
+        r = readByte(false);
+    }
+    return CRGB(r, g, b);
+}
+
+void fixRGBwithGamma(byte* rp, byte* gp, byte* bp) {
+    if (bGammaCorrection) {
+        *gp = gammaG[*gp];
+        *bp = gammaB[*bp];
+        *rp = gammaR[*rp];
     }
 }
