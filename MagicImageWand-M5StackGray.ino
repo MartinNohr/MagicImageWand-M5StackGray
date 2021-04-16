@@ -90,7 +90,8 @@ void loop() {
 	while (!bRetry && true) {
         int retNum = activeMenu->runOnce();
 		String btnpressed = activeMenu->pickButton();
-		if (btnpressed == "Go") {
+        currentFile = activeMenu->pickName();
+        if (btnpressed == "Go") {
 			// run the file or change the folder here
             String tmp = activeMenu->pickName();
             if (tmp[0] == NEXT_FOLDER_CHAR) {
@@ -582,6 +583,18 @@ bool ProcessConfigFile(String filename)
     return false;
 }
 
+void DisplayLine(int line, String text, int indent, int16_t color)
+{
+    //if (bPauseDisplay)
+    //    return;
+    M5.Lcd.textdatum = TL_DATUM;
+    int charHeight = M5.Lcd.fontHeight();
+    int y = line * charHeight;
+    M5.Lcd.fillRect(indent, y, M5.Lcd.width(), charHeight, TFT_BLACK);
+    M5.Lcd.setTextColor(color);
+    M5.Lcd.drawString(text, indent, y);
+}
+
 // some useful BMP constants
 #define MYBMP_BF_TYPE           0x4D42	// "BM"
 #define MYBMP_BI_RGB            0L
@@ -674,11 +687,12 @@ void ShowBmp()
     bool bShowingSize = false;
     // show some info
     float walk = (float)imgHeight / (float)imgWidth;
-    //DisplayLine(5, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
-    //DisplayLine(6, "Size: " + String(imgWidth) + " x " + String(imgHeight));
+	DisplayLine(7, "Size: " + String(imgWidth) + " x " + String(imgHeight) + " Pixels");
+    DisplayLine(8, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
     // calculate display time
-    //float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nFrameHold / 1000.0 + imgHeight * .008);
-    //DisplayLine(7, "About " + String((int)round(dspTime)) + " Seconds");
+    float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nColumnHoldTime / 1000.0 + imgHeight * .008);
+    DisplayLine(9, "About " + String((int)round(dspTime)) + " Seconds");
+    ez.buttons.show("left # Start # Exit # # right # End");
     while (!done) {
         if (redraw) {
             // loop through the image, y is the image width, and x is the image height
@@ -707,42 +721,32 @@ void ShowBmp()
             m5.Lcd.pushRect(0, 0, 320, 144, scrBuf);
             redraw = false;
         }
-        //switch (ReadButton()) {
-        //case CRotaryDialButton::BTN_LEFT:
-        //    if (allowScroll) {
-        //        imgOffset -= 320;
-        //        imgOffset = max(0, imgOffset);
-        //    }
-        //    break;
-        //case CRotaryDialButton::BTN_RIGHT:
-        //    if (allowScroll) {
-        //        imgOffset += 320;
-        //        imgOffset = min((int32_t)imgHeight - 320, imgOffset);
-        //    }
-        //    break;
-        //case CRotaryDialButton::BTN_LONGPRESS:
-        //    done = true;
-        //    break;
-        //    //case CRotaryDialButton::BTN_CLICK:
-        //    //	if (bShowingSize) {
-        //    //		bShowingSize = false;
-        //    //		redraw = true;
-        //    //	}
-        //    //	else {
-        //    //		tft.fillScreen(TFT_BLACK);
-        //    //		//DisplayLine(0, currentFolder);
-        //    //		//DisplayLine(4, FileNames[CurrentFileIndex]);
-        //    //		float walk = (float)imgHeight / (float)imgWidth;
-        //    //		DisplayLine(5, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
-        //    //		DisplayLine(6, "Size: " + String(imgWidth) + " x " + String(imgHeight));
-        //    //		// calculate display time
-        //    //		float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nFrameHold / 1000.0 + imgHeight * .008);
-        //    //		DisplayLine(7, "About " + String((int)round(dspTime)) + " Seconds");
-        //    //		bShowingSize = true;
-        //    //		redraw = false;
-        //    //	}
-        //    //	break;
-        //}
+        String str = ez.buttons.poll();
+        if (str == "Exit") {
+            done = true;
+        }
+        else if (str == "left") {
+			if (allowScroll) {
+				imgOffset -= 160;
+				imgOffset = max(0, imgOffset);
+			}
+		}
+        else if (str == "right") {
+			if (allowScroll) {
+				imgOffset += 160;
+				imgOffset = min(imgHeight - 320, imgOffset);
+			}
+        }
+        else if (str == "Start") {
+            if (allowScroll) {
+                imgOffset = 0;
+            }
+        }
+        else if (str == "End") {
+            if (allowScroll) {
+                imgOffset = imgHeight - 320;
+            }
+        }
         if (oldImgOffset != imgOffset) {
             redraw = true;
         }
@@ -759,6 +763,7 @@ void ShowBmp()
 void SetLedBrightness()
 {
     int inc = 10;
+    int originalVal = nLEDBrightness;
     ezProgressBar bl("LED brightness", "Set brightness", "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
     int lastVal = nLEDBrightness;
@@ -767,19 +772,26 @@ void SetLedBrightness()
         String b = ez.buttons.poll();
         if (b == "right")
             nLEDBrightness += inc;
-        if (b == "left")
+        else if (b == "left")
             nLEDBrightness -= inc;
-        if (b == "+") {
+        else if (b == "+") {
             inc += 10;
         }
-        if (b == "-") {
+        else if (b == "-") {
             inc -= 10;
+        }
+        else if (b == "OK") {
+            break;
+        }
+        else if (b == "Cancel") {
+            if (ez.msgBox("Restore original value", "Cancel?") == "OK") {
+                nLEDBrightness = originalVal;
+                break;
+            }
         }
         inc = constrain(inc, 1, 100);
         nLEDBrightness = constrain(nLEDBrightness, 1, 255);
         bl.value((float)(nLEDBrightness / 2.55));
-        if (b == "ok")
-            break;
         if (lastInc != inc) {
             ez.canvas.x(0);
             ez.canvas.y(180);

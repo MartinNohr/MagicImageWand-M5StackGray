@@ -14,7 +14,9 @@ fs::File dataFile;
 RTC_DATA_ATTR bool bShowBuiltInTests = false;           // list the internal file instead of the SD card
 RTC_DATA_ATTR int nBootCount = 0;
 // image settings
-RTC_DATA_ATTR int nColumnHoldTime = 10;
+RTC_DATA_ATTR int nColumnHoldTime = 10;                 // mSec frame hold time
+RTC_DATA_ATTR bool bFixedTime = false;                  // fixed total time or hold time for image
+RTC_DATA_ATTR int nFixedImageTime = 10;                 // seconds of time
 // led strip settings
 RTC_DATA_ATTR int nLEDBrightness = 25;                  // 255 is 100%
 RTC_DATA_ATTR bool bSecondController = false;
@@ -24,8 +26,9 @@ int g = 0;                                // Variable for the Green Value
 int b = 0;                                // Variable for the Blue Value
 int r = 0;                                // Variable for the Red Value
 bool bIsRunning = false;								// system state, idle or running
-// we need to have a pointer reference to this in the MenuItem, the full declaration follows later
-struct BuiltInItem;
+// functions
+void DisplayLine(int line, String text, int indent = 0, int16_t color = TFT_WHITE);
+
 // built-in "files"
 struct BuiltInItem {
     const char* text;
