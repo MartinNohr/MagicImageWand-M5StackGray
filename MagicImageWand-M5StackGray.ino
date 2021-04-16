@@ -80,7 +80,7 @@ void loop() {
             pFileMenu->txtSmall();
             if (!selectionStack.empty()) {
                 Serial.println("setting: " + String(selectionStack.top()));
-                //pFileMenu->setItem(selectionStack.top());
+                pFileMenu->setItem(selectionStack.top());
                 selectionStack.pop();
             }
             bReloadSD = false;
