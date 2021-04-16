@@ -762,7 +762,7 @@ void ShowBmp()
 
 void SetLedBrightness()
 {
-    int inc = 10;
+    int inc = 1;
     int originalVal = nLEDBrightness;
     ezProgressBar bl("LED brightness", "Set brightness", "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
@@ -775,19 +775,21 @@ void SetLedBrightness()
         else if (b == "left")
             nLEDBrightness -= inc;
         else if (b == "+") {
-            inc += 10;
+            inc *= 10;
         }
         else if (b == "-") {
-            inc -= 10;
+            inc /= 10;
         }
         else if (b == "OK") {
             break;
         }
         else if (b == "Cancel") {
-            if (ez.msgBox("Restore original value", "Cancel?") == "OK") {
+			if (ez.msgBox("Restore original", "Cancel?", "Cancel # OK #") == "OK") {
                 nLEDBrightness = originalVal;
                 break;
             }
+            ez.buttons.show("left # - # OK # Cancel # right # +");
+            ez.canvas.font(&FreeSans12pt7b);
         }
         inc = constrain(inc, 1, 100);
         nLEDBrightness = constrain(nLEDBrightness, 1, 255);
