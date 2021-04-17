@@ -23,6 +23,7 @@ struct IMG_INFO {
     bool bUpsideDown = false;       // topsy-turvy
     bool bDoublePixels = false;     // double up to make 144 288 etc
     bool bMirrorPlayImage = false;  // play mirror image trick
+    int nMirrorDelay = 0;           // time to delay mirroring
     bool bScaleHeight = false;      // scale height to fit, e.g. 288 to 144
     bool bManualFrameAdvance = false;   // for click advancing of frame or frame wheel counter
     int nFramePulseCount = 0;

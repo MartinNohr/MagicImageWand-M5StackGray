@@ -169,12 +169,8 @@ void loop() {
                 else {
                     // run the file
                     // TODO: add repeats, chains, etc in a new function
-                    String fn = currentFolder + currentFile;
-                    dataFile = SD.open(fn);
                     FastLED.setBrightness(LedInfo.nLEDBrightness);
-                    ReadAndDisplayFile(false);
-                    dataFile.close();
-                    FastLED.clear(true);
+                    SendFile(currentFolder + currentFile);
                     bCancelRun = false;
                 }
             }
@@ -1326,6 +1322,37 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
     }
     // all done
     readByte(true);
+}
+
+void SendFile(String Filename) {
+    // see if there is an associated config file
+    //String cfFile = MakeMIWFilename(Filename, true);
+    //SettingsSaveRestore(true, 0);
+    //ProcessConfigFile(cfFile);
+    String fn = currentFolder + Filename;
+    dataFile = SD.open(fn);
+    // if the file is available send it to the LED's
+    if (dataFile.available()) {
+        for (int cnt = 0; cnt < (ImgInfo.bMirrorPlayImage ? 2 : 1); ++cnt) {
+            ReadAndDisplayFile(cnt == 0);
+            ImgInfo.bReverseImage = !ImgInfo.bReverseImage; // note this will be restored by SettingsSaveRestore
+            dataFile.seek(0);
+            FastLED.clear(true);
+            int wait = ImgInfo.nMirrorDelay;
+            while (wait-- > 0) {
+                delay(100);
+            }
+            if (CheckCancel())
+                break;
+        }
+        dataFile.close();
+    }
+    else {
+        ez.msgBox("Error","open fail: " + fn);
+        return;
+    }
+    ShowProgressBar(100);
+    //SettingsSaveRestore(false, 0);
 }
 
 void ShowProgressBar(int percent)
