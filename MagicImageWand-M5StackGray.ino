@@ -175,6 +175,7 @@ void loop() {
                     ReadAndDisplayFile(false);
                     dataFile.close();
                     FastLED.clear(true);
+                    bCancelRun = false;
                 }
             }
 			//ez.msgBox("run", (bShowBuiltInTests ? "" : String(currentFolder)) + currentFile);
@@ -347,7 +348,8 @@ void SettingsMenu()
     settings.txtSmall();
     settings.buttons("up # Back # Select # # down # ");
 	settings.addItem("Image Settings", ImageSettings);
-	settings.addItem("LED Strip Settings", LEDStripSettings);
+    settings.addItem("Repeat and Chain Settings");
+    settings.addItem("LED Strip Settings", LEDStripSettings);
     settings.addItem("System Settings", ez.settings.menu);
     settings.addItem("Level", LevelDisplay);
     settings.addItem("SysInfo", sysInfo);
@@ -1122,6 +1124,16 @@ void IRAM_ATTR SetPixel(int ix, CRGB pixel, int column, int totalColumns)
         leds[ix2] = pixel;
 }
 
+// check for cancel button
+bool CheckCancel()
+{
+    if (ez.buttons.poll() == "Cancel") {
+        bCancelRun = true;
+        return true;
+    }
+    return false;
+}
+
 void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
     static int totalSeconds;
     if (doingFirstHalf)
@@ -1192,6 +1204,7 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
     int percent;
     unsigned minLoopTime = 0; // the minimum time it takes to process a line
     bool bLoopTimed = false;
+	ez.buttons.show(ImgInfo.bManualFrameAdvance ? "-Column # # # Cancel # +Column #" : "# # # Cancel # #");
     // also remember that height and width are effectively swapped since we rotated the BMP image CCW for ease of reading and displaying here
     for (int y = ImgInfo.bReverseImage ? imgHeight - 1 : 0; ImgInfo.bReverseImage ? y >= 0 : y < imgHeight; ImgInfo.bReverseImage ? --y : ++y) {
         // approximate time left
@@ -1223,7 +1236,7 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
             }
         }
         if (((percent % 5) == 0) || percent > 90) {
-            //ShowProgressBar(percent);
+            ShowProgressBar(percent);
         }
         int bufpos = 0;
         CRGB pixel;
@@ -1262,55 +1275,50 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
         bStripWaiting = true;
         esp_timer_start_once(oneshot_LED_timer, ImgInfo.nColumnHoldTime * 1000);
         // check keys
-        //if (CheckCancel())
-        //    break;
+        if (CheckCancel())
+            break;
         if (ImgInfo.bManualFrameAdvance) {
             // check if frame advance button requested
             if (ImgInfo.nFramePulseCount) {
                 for (int ix = ImgInfo.nFramePulseCount; ix; --ix) {
-                    // wait for press
-                    //while (digitalRead(FRAMEBUTTON)) {
-                    //    if (CheckCancel())
-                    //        break;
-                    //    delay(10);
-                    //}
-                    //// wait for release
-                    //while (!digitalRead(FRAMEBUTTON)) {
-                    //    if (CheckCancel())
-                    //        break;
-                    //    delay(10);
-                    //}
+                    // wait for signal
+                    while (digitalRead(FRAMEBUTTON)) {
+                        if (CheckCancel())
+                            break;
+                        delay(10);
+                    }
+                    // wait for release
+                    while (!digitalRead(FRAMEBUTTON)) {
+                        if (CheckCancel())
+                            break;
+                        delay(10);
+                    }
                 }
             }
             else {
-            //    // by button click or rotate
-            //    int btn;
-            //    for (;;) {
-            //        btn = ReadButton();
-            //        if (btn == BTN_NONE)
-            //            continue;
-            //        else if (btn == BTN_LONG)
-            //            CRotaryDialButton::pushButton(BTN_LONG);
-            //        else if (btn == BTN_LEFT) {
-            //            // backup a line, use 2 because the for loop does one when we're done here
-            //            if (bReverseImage) {
-            //                y += 2;
-            //                if (y > imgHeight)
-            //                    y = imgHeight;
-            //            }
-            //            else {
-            //                y -= 2;
-            //                if (y < -1)
-            //                    y = -1;
-            //            }
-            //            break;
-            //        }
-            //        else
-            //            break;
-            //        //if (CheckCancel())
-            //        //    break;
-            //        delay(10);
-            //    }
+                // by button click or rotate
+                for (;;) {
+                    String str = ez.buttons.poll();
+					if (str == "-Column") {
+                        // backup a line, use 2 because the for loop does one when we're done here
+                        if (ImgInfo.bReverseImage) {
+                            y += 2;
+                            if (y > imgHeight)
+                                y = imgHeight;
+                        }
+                        else {
+                            y -= 2;
+                            if (y < -1)
+                                y = -1;
+                        }
+                        break;
+                    }
+					else if (str == "+Column")
+                        break;
+                    if (CheckCancel())
+                        break;
+                    delay(10);
+                }
             }
         }
         if (bCancelRun)
@@ -1318,4 +1326,30 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
     }
     // all done
     readByte(true);
+}
+
+void ShowProgressBar(int percent)
+{
+    //nProgress = percent;
+    //if (!bShowProgress || bPauseDisplay)
+    //    return;
+    static int lastpercent;
+    if (lastpercent && (lastpercent == percent))
+        return;
+    if (percent == 0) {
+        m5.Lcd.fillRect(0, 0, m5.Lcd.width() - 1, 8, TFT_BLACK);
+    }
+    DrawProgressBar(0, 0, m5.Lcd.width() - 1, 8, percent);
+    lastpercent = percent;
+}
+
+// draw a progress bar
+void DrawProgressBar(int x, int y, int dx, int dy, int percent)
+{
+    m5.Lcd.drawRoundRect(x, y, dx, dy, 2, TFT_BLUE);
+    int fill = (dx - 2) * percent / 100;
+    // fill the filled part
+    m5.Lcd.fillRect(x + 1, y + 1, fill, dy - 2, TFT_GREEN);
+    // blank the empty part
+    m5.Lcd.fillRect(x + 1 + fill, y + 1, dx - 2 - fill, dy - 2, TFT_BLACK);
 }

@@ -30,6 +30,7 @@ struct IMG_INFO {
 typedef IMG_INFO IMG_INFO;
 RTC_DATA_ATTR IMG_INFO ImgInfo;
 
+#define FRAMEBUTTON 17
 // led strip settings
 #define DATA_PIN1 2
 #define DATA_PIN2 5
