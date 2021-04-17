@@ -55,24 +55,49 @@ void setup() {
     }
     builtinMenu.buttons("up # View # Go # Menu # down # SD");
     M5.IMU.Init();
-    leds = (CRGB*)calloc(nPixelCount, sizeof(CRGB));
-    FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, nPixelCount);
-    leds[0] = CRGB::Red;
-    leds[1] = CRGB::Green;
-    leds[2] = CRGB::Blue;
-    leds[70] = CRGB::Blue;
-    leds[75] = CRGB::Red;
-    leds[141] = CRGB::Red;
-    leds[142] = CRGB::Green;
-    leds[143] = CRGB::Blue;
-    //SetPixel(0, CRGB::Red);
-    //SetPixel(1, CRGB::Green);
-    //SetPixel(2, CRGB::Blue);
-    //SetPixel(143, CRGB::Red);
-    //SetPixel(142, CRGB::Green);
-    //SetPixel(141, CRGB::Blue);
-    FastLED.show();
-    delay(2000);
+    leds = (CRGB*)calloc(LedInfo.nPixelCount, sizeof(CRGB));
+    FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, LedInfo.nPixelCount);
+    //leds[0] = CRGB::Red;
+    //leds[1] = CRGB::Green;
+    //leds[2] = CRGB::Blue;
+    //leds[70] = CRGB::Blue;
+    //leds[75] = CRGB::Red;
+    //leds[141] = CRGB::Red;
+    //leds[142] = CRGB::Green;
+    //leds[143] = CRGB::Blue;
+    ////SetPixel(0, CRGB::Red);
+    ////SetPixel(1, CRGB::Green);
+    ////SetPixel(2, CRGB::Blue);
+    ////SetPixel(143, CRGB::Red);
+    ////SetPixel(142, CRGB::Green);
+    ////SetPixel(141, CRGB::Blue);
+    //FastLED.show();
+    //delay(2000);
+    FastLED.clear(true);
+    for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
+        SetPixel(ix, CRGB::Blue);
+        FastLED.show();
+        SetPixel(ix, CRGB::Black);
+        delayMicroseconds(50);
+    }
+	for (int ix = LedInfo.nPixelCount - 1; ix >= 0; --ix) {
+        SetPixel(ix, CRGB::Green);
+        FastLED.show();
+        SetPixel(ix, CRGB::Black);
+        delayMicroseconds(50);
+    }
+    for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
+        SetPixel(ix, CRGB::Red);
+        FastLED.show();
+        SetPixel(ix, CRGB::Black);
+        delayMicroseconds(50);
+    }
+    for (int ix = LedInfo.nPixelCount - 1; ix >= 0; --ix) {
+        SetPixel(ix, CRGB::Yellow);
+        FastLED.show();
+        SetPixel(ix, CRGB::Black);
+        delayMicroseconds(50);
+    }
     FastLED.clear(true);
 }
 
@@ -691,8 +716,8 @@ void ShowBmp()
     }
 
     int displayWidth = imgWidth;
-    if (imgWidth > nPixelCount) {
-        displayWidth = nPixelCount;           //only display the number of led's we have
+    if (imgWidth > LedInfo.nPixelCount) {
+        displayWidth = LedInfo.nPixelCount;           //only display the number of led's we have
     }
 
     /* compute the line length */
@@ -712,7 +737,7 @@ void ShowBmp()
 	DisplayLine(7, "Size: " + String(imgWidth) + " x " + String(imgHeight) + " Pixels");
     DisplayLine(8, "" + String(walk, 2) + " meters " + String(walk * 3.28084, 1) + " feet");
     // calculate display time
-    float dspTime = bFixedTime ? nFixedImageTime : (imgHeight * nColumnHoldTime / 1000.0 + imgHeight * .008);
+    float dspTime = ImgInfo.bFixedTime ? ImgInfo.nFixedImageTime : (imgHeight * ImgInfo.nColumnHoldTime / 1000.0 + imgHeight * .008);
     DisplayLine(9, "About " + String((int)round(dspTime)) + " Seconds");
     ez.buttons.show("left # Start # Exit # # right # End");
     while (!done) {
@@ -785,17 +810,17 @@ void ShowBmp()
 void SetLedBrightness()
 {
     int inc = 1;
-    int originalVal = nLEDBrightness;
+    int originalVal = LedInfo.nLEDBrightness;
     ezProgressBar bl("LED brightness", "Set brightness", "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
-    int lastVal = nLEDBrightness;
+    int lastVal = LedInfo.nLEDBrightness;
     int lastInc = inc;
     while (true) {
         String b = ez.buttons.poll();
         if (b == "right")
-            nLEDBrightness += inc;
+            LedInfo.nLEDBrightness += inc;
         else if (b == "left")
-            nLEDBrightness -= inc;
+            LedInfo.nLEDBrightness -= inc;
         else if (b == "+") {
             inc *= 10;
         }
@@ -807,26 +832,26 @@ void SetLedBrightness()
         }
         else if (b == "Cancel") {
 			if (ez.msgBox("Restore original", "Cancel?", "Cancel # OK #") == "OK") {
-                nLEDBrightness = originalVal;
+                LedInfo.nLEDBrightness = originalVal;
                 break;
             }
             ez.buttons.show("left # - # OK # Cancel # right # +");
             ez.canvas.font(&FreeSans12pt7b);
         }
         inc = constrain(inc, 1, 100);
-        nLEDBrightness = constrain(nLEDBrightness, 1, 255);
-        bl.value((float)(nLEDBrightness / 2.55));
+        LedInfo.nLEDBrightness = constrain(LedInfo.nLEDBrightness, 1, 255);
+        bl.value((float)(LedInfo.nLEDBrightness / 2.55));
         if (lastInc != inc) {
             ez.canvas.x(0);
             ez.canvas.y(180);
             ez.canvas.print("inc " + String(inc) + "   ");
             lastInc = inc;
         }
-        if (lastVal != nLEDBrightness) {
+        if (lastVal != LedInfo.nLEDBrightness) {
             ez.canvas.x(100);
             ez.canvas.y(180);
-            ez.canvas.print("val " + String(nLEDBrightness) + "   ");
-            lastVal = nLEDBrightness;
+            ez.canvas.print("val " + String(LedInfo.nLEDBrightness) + "   ");
+            lastVal = LedInfo.nLEDBrightness;
         }
     }
 }
@@ -837,21 +862,20 @@ void LEDStripSettings()
     ezMenu settings("LED Strip Settings");
     settings.txtSmall();
     settings.buttons("up # Back # Select # # down # ");
-    //settings.addItem("Column Hold Time\t" + String(nColumnHoldTime));
-    settings.addItem("brightness | Brightness\t" + String(nLEDBrightness));
-	settings.addItem("controllers | Controllers\t" + String(bSecondController ? 2 : 1));
-    settings.addItem("Pixels\t" + String(nPixelCount));
+    settings.addItem("brightness | Brightness\t" + String(LedInfo.nLEDBrightness));
+	settings.addItem("controllers | Controllers\t" + String(LedInfo.bSecondController ? 2 : 1));
+    settings.addItem("Pixels\t" + String(LedInfo.nPixelCount));
 	while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
             break;
 		else if (pick == "brightness") {
             SetLedBrightness();
-            settings.setCaption("brightness","Brightness\t" + String(nLEDBrightness));
+            settings.setCaption("brightness","Brightness\t" + String(LedInfo.nLEDBrightness));
 		}
         else if (pick == "controllers") {
-            bSecondController = !bSecondController;
-			settings.setCaption("controllers", "Controllers\t" + String(bSecondController ? 2 : 1));
+            LedInfo.bSecondController = !LedInfo.bSecondController;
+			settings.setCaption("controllers", "Controllers\t" + String(LedInfo.bSecondController ? 2 : 1));
         }
 	}
 }
@@ -862,7 +886,7 @@ void ImageSettings()
     ezMenu settings("Image Settings");
     settings.txtSmall();
     settings.buttons("up # Back # Select # # down # ");
-    settings.addItem("Column Hold Time\t" + String(nColumnHoldTime));
+    settings.addItem("Column Hold Time\t" + String(ImgInfo.nColumnHoldTime));
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
@@ -961,7 +985,7 @@ void IRAM_ATTR FileSeekBuf(uint32_t place)
 
 // return the pixel
 CRGB IRAM_ATTR getRGBwithGamma() {
-    if (bGammaCorrection) {
+    if (LedInfo.bGammaCorrection) {
         b = gammaB[readByte(false)];
         g = gammaG[readByte(false)];
         r = gammaR[readByte(false)];
@@ -975,9 +999,109 @@ CRGB IRAM_ATTR getRGBwithGamma() {
 }
 
 void fixRGBwithGamma(byte* rp, byte* gp, byte* bp) {
-    if (bGammaCorrection) {
+    if (LedInfo.bGammaCorrection) {
         *gp = gammaG[*gp];
         *bp = gammaB[*bp];
         *rp = gammaR[*rp];
     }
+}
+
+// reverse the strip index order for the lower strip, the upper strip is normal
+// also check to make sure it isn't out of range
+int AdjustStripIndex(int ix)
+{
+    switch (LedInfo.stripsMode) {
+    case 0:	// bottom reversed, top normal, both wired in the middle
+        if (ix < LedInfo.nPixelCount) {
+            ix = (LedInfo.nPixelCount - 1 - ix);
+        }
+        break;
+    case 1:	// bottom and top normal, chained, so nothing to do
+        break;
+    case 2:	// top reversed, bottom normal, no connection in the middle
+        if (ix >= LedInfo.nPixelCount) {
+            ix = (LedInfo.nPixelCount - 1 - ix);
+        }
+        break;
+    }
+    // make sure it isn't too big or too small
+    ix = constrain(ix, 0, LedInfo.nPixelCount - 1);
+    return ix;
+}
+
+// write a pixel to the correct location
+// pixel doubling is handled here
+// e.g. pixel 0 will be 0 and 1, 1 will be 2 and 3, etc
+// if upside down n will be n and n-1, n-1 will be n-1 and n-2
+// column = -1 to init fade in/out values
+void IRAM_ATTR SetPixel(int ix, CRGB pixel, int column, int totalColumns)
+{
+    static int fadeStep;
+    static int fadeColumns;
+    static int lastColumn;
+    static int maxColumn;
+    static int fade;
+    if (ImgInfo.nFadeInOutFrames) {
+        // handle fading
+        if (column == -1) {
+            fadeColumns = min(totalColumns / 2, ImgInfo.nFadeInOutFrames);
+            maxColumn = totalColumns;
+            fadeStep = 255 / fadeColumns;
+            //Serial.println("fadeStep: " + String(fadeStep) + " fadeColumns: " + String(fadeColumns) + " maxColumn: " + String(maxColumn));
+            lastColumn = -1;
+            fade = 255;
+            return;
+        }
+        // when the column changes check if we are in the fade areas
+        if (column != lastColumn) {
+            int realColumn = ImgInfo.bReverseImage ? maxColumn - 1 - column : column;
+            if (realColumn <= fadeColumns) {
+                // calculate the fade amount
+                fade = realColumn * fadeStep;
+                fade = constrain(fade, 0, 255);
+                // fading up
+                //Serial.println("UP col: " + String(realColumn) + " fade: " + String(fade));
+            }
+            else if (realColumn >= maxColumn - 1 - fadeColumns) {
+                // calculate the fade amount
+                fade = (maxColumn - 1 - realColumn) * fadeStep;
+                fade = constrain(fade, 0, 255);
+                // fading down
+                //Serial.println("DOWN col: " + String(realColumn) + " fade: " + String(fade));
+            }
+            else
+                fade = 255;
+            lastColumn = column;
+        }
+    }
+    else {
+        // no fade
+        fade = 255;
+    }
+    int ix1, ix2;
+    if (ImgInfo.bUpsideDown) {
+        if (ImgInfo.bDoublePixels) {
+            ix1 = AdjustStripIndex(LedInfo.nPixelCount - 1 - 2 * ix);
+            ix2 = AdjustStripIndex(LedInfo.nPixelCount - 2 - 2 * ix);
+        }
+        else {
+            ix1 = AdjustStripIndex(LedInfo.nPixelCount - 1 - ix);
+        }
+    }
+    else {
+        if (ImgInfo.bDoublePixels) {
+            ix1 = AdjustStripIndex(2 * ix);
+            ix2 = AdjustStripIndex(2 * ix + 1);
+        }
+        else {
+            ix1 = AdjustStripIndex(ix);
+        }
+    }
+    if (fade != 255) {
+        pixel = pixel.nscale8_video(fade);
+        //Serial.println("col: " + String(column) + " fade: " + String(fade));
+    }
+    leds[ix1] = pixel;
+    if (ImgInfo.bDoublePixels)
+        leds[ix2] = pixel;
 }

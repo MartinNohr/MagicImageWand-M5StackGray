@@ -14,23 +14,39 @@ fs::File dataFile;
 RTC_DATA_ATTR bool bShowBuiltInTests = false;           // list the internal file instead of the SD card
 RTC_DATA_ATTR int nBootCount = 0;
 // image settings
-RTC_DATA_ATTR int nColumnHoldTime = 10;                 // mSec frame hold time
-RTC_DATA_ATTR bool bFixedTime = false;                  // fixed total time or hold time for image
-RTC_DATA_ATTR int nFixedImageTime = 10;                 // seconds of time
+struct IMG_INFO {
+    int nColumnHoldTime = 10;   // mSec frame hold time
+    bool bFixedTime = false;    // fixed total time or hold time for image
+    int nFixedImageTime = 20;   // seconds of time
+    int nFadeInOutFrames = 0;   // fading frames
+    bool bReverseImage = false; // show backwards
+    bool bUpsideDown = false;   // topsy-turvy
+    bool bDoublePixels = false; // double up to make 144 288 etc
+};
+typedef IMG_INFO IMG_INFO;
+RTC_DATA_ATTR IMG_INFO ImgInfo;
+
 // led strip settings
 #define DATA_PIN1 2
 #define DATA_PIN2 5
 CRGB* leds;
-RTC_DATA_ATTR int nLEDBrightness = 25;                  // 255 is 100%
-RTC_DATA_ATTR bool bSecondController = false;
-RTC_DATA_ATTR int nPixelCount = 144;
-RTC_DATA_ATTR bool bGammaCorrection = true;
+struct LED_INFO {
+	bool bSecondController = false;
+	int nLEDBrightness = 25;
+	int nPixelCount = 144;
+	bool bGammaCorrection = true;
+    int stripsMode = 0;             // 0 feed from center, 1 serial from end, 2 from outsides
+};
+typedef LED_INFO LED_INFO;
+RTC_DATA_ATTR LED_INFO LedInfo;
 int g = 0;                                // Variable for the Green Value
 int b = 0;                                // Variable for the Blue Value
 int r = 0;                                // Variable for the Red Value
+
 bool bIsRunning = false;								// system state, idle or running
 // functions
 void DisplayLine(int line, String text, int indent = 0, int16_t color = TFT_WHITE);
+void IRAM_ATTR SetPixel(int ix, CRGB pixel, int column = 0, int totalColumns = 1);
 
 // built-in "files"
 struct BuiltInItem {
