@@ -985,17 +985,24 @@ void IRAM_ATTR FileSeekBuf(uint32_t place)
     }
 }
 
+// return true if current file is folder
+bool IsFolder(int index)
+{
+    return FileNames[index][0] == NEXT_FOLDER_CHAR
+        || FileNames[index][0] == PREVIOUS_FOLDER_CHAR;
+}
+
 // count the actual files, at a given starting point
-//int FileCountOnly(int start)
-//{
-//    int count = 0;
-//    // ignore folders, at the end
-//    for (int files = start; files < FileNames.size(); ++files) {
-//        if (!IsFolder(files))
-//            ++count;
-//    }
-//    return count;
-//}
+int FileCountOnly(int start)
+{
+    int count = 0;
+    // ignore folders, at the end
+    for (int files = start; files < FileNames.size(); ++files) {
+        if (!IsFolder(files))
+            ++count;
+    }
+    return count;
+}
 
 // return the pixel
 CRGB IRAM_ATTR getRGBwithGamma() {
@@ -1324,10 +1331,171 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
     readByte(true);
 }
 
+// run file or built-in
+void ProcessFileOrTest()
+{
+    int nRepeatsLeft;                         // countdown while repeating
+    String line;
+    //if (bRecordingMacro) {
+    //    strcpy(FileToShow, FileNames[CurrentFileIndex].c_str());
+    //    WriteOrDeleteConfigFile(String(nCurrentMacro), false, false);
+    //}
+    bIsRunning = true;
+    if (ImgInfo.startDelay) {
+        // set a timer
+        nTimerSeconds = ImgInfo.startDelay;
+        while (nTimerSeconds && !CheckCancel()) {
+            line = "Start Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
+            DisplayLine(2, line, TFT_WHITE);
+            delay(100);
+            --nTimerSeconds;
+        }
+        DisplayLine(3, "");
+    }
+    int chainCount = ImgInfo.bChainFiles ? FileCountOnly(CurrentFileIndex) : 1;
+    int chainRepeatCount = ImgInfo.bChainFiles ? ImgInfo.nChainRepeats : 1;
+    int lastFileIndex = CurrentFileIndex;
+    // don't allow chaining for built-ins, although maybe we should
+    if (bShowBuiltInTests) {
+        chainCount = 1;
+        chainRepeatCount = 1;
+    }
+    // set the basic LED info
+    FastLED.setTemperature(CRGB(LedInfo.whiteBalance.r, LedInfo.whiteBalance.g, LedInfo.whiteBalance.b));
+    FastLED.setBrightness(LedInfo.nLEDBrightness);
+    line = "";
+    while (chainRepeatCount-- > 0) {
+        while (chainCount-- > 0) {
+            DisplayCurrentFile();
+            if (ImgInfo.bChainFiles && !bShowBuiltInTests) {
+                line = "Files: " + String(chainCount + 1);
+                DisplayLine(4, line, TFT_WHITE);
+                line = "";
+            }
+            // process the repeats and waits for each file in the list
+            for (nRepeatsLeft = ImgInfo.repeatCount; nRepeatsLeft > 0; nRepeatsLeft--) {
+                // fill the progress bar
+                if (!bShowBuiltInTests)
+                    ShowProgressBar(0);
+                if (ImgInfo.repeatCount > 1) {
+                    line = "Repeats: " + String(nRepeatsLeft) + " ";
+                }
+                if (!bShowBuiltInTests && ImgInfo.nChainRepeats > 1) {
+                    line += "Chains: " + String(chainRepeatCount + 1);
+                }
+                DisplayLine(3, line, TFT_WHITE);
+                if (bShowBuiltInTests) {
+                    DisplayLine(4, "Running (long cancel)", TFT_WHITE);
+                    // run the test
+                    (*BuiltInFiles[CurrentFileIndex].function)();
+                }
+                else {
+                    if (nRepeatCountMacro > 1 && bRunningMacro) {
+                        DisplayLine(4, String("Macro Repeats: ") + String(nMacroRepeatsLeft), menuTextColor);
+                    }
+                    // output the file
+                    SendFile(FileNames[CurrentFileIndex]);
+                }
+                if (bCancelRun) {
+                    break;
+                }
+                if (!bShowBuiltInTests)
+                    ShowProgressBar(0);
+                if (nRepeatsLeft > 1) {
+                    if (ImgInfo.repeatDelay) {
+                        FastLED.clear(true);
+                        // start timer
+                        nTimerSeconds = ImgInfo.repeatDelay;
+                        while (nTimerSeconds > 0 && !CheckCancel()) {
+                            line = "Repeat Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
+                            DisplayLine(2, line, TFT_WHITE);
+                            line = "";
+                            delay(100);
+                            --nTimerSeconds;
+                        }
+                        //DisplayLine(3, "");
+                    }
+                }
+            }
+            if (bCancelRun) {
+                chainCount = 0;
+                break;
+            }
+            if (bShowBuiltInTests)
+                break;
+            // see if we are chaining, if so, get the next file, if a folder we're done
+            if (ImgInfo.bChainFiles) {
+                // grab the next file
+                if (CurrentFileIndex < FileNames.size() - 1)
+                    ++CurrentFileIndex;
+                if (IsFolder(CurrentFileIndex))
+                    break;
+                // handle any chain delay
+                for (int dly = ImgInfo.nChainDelay; dly > 0 && !CheckCancel(); --dly) {
+                    line = "Chain Delay: " + String(dly / 10) + "." + String(dly % 10);
+                    DisplayLine(2, line, TFT_WHITE);
+                    delay(100);
+                }
+                // check for chain wait for keypress
+                if (chainCount && ImgInfo.bChainWaitKey) {
+                    DisplayLine(2, "Click: " + FileNames[CurrentFileIndex], TFT_WHITE);
+                    bool waitNext = true;
+                    int wbtn;
+                    while (waitNext) {
+                        delay(10);
+                        wbtn = ReadButton();
+                        if (wbtn == BTN_NONE)
+                            continue;
+                        if (wbtn == BTN_LONG) {
+                            CRotaryDialButton::pushButton(CRotaryDialButton::BTN_LONGPRESS);
+                        }
+                        else {
+                            waitNext = false;
+                        }
+                        if (CheckCancel()) {
+                            waitNext = false;
+                        }
+                    }
+                }
+            }
+            line = "";
+            // clear
+            FastLED.clear(true);
+        }
+        if (bCancelRun) {
+            chainCount = 0;
+            chainRepeatCount = 0;
+            bCancelRun = false;
+            break;
+        }
+        // start again
+        CurrentFileIndex = lastFileIndex;
+        chainCount = ImgInfo.bChainFiles ? FileCountOnly(CurrentFileIndex) : 1;
+        if (ImgInfo.repeatDelay && (nRepeatsLeft > 1) || chainRepeatCount >= 1) {
+            FastLED.clear(true);
+            // start timer
+            nTimerSeconds = ImgInfo.repeatDelay;
+            while (nTimerSeconds > 0 && !CheckCancel()) {
+                line = "Repeat Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
+                DisplayLine(2, line, TFT_WHITE);
+                line = "";
+                delay(100);
+                --nTimerSeconds;
+            }
+        }
+    }
+    if (ImgInfo.bChainFiles)
+        CurrentFileIndex = lastFileIndex;
+    FastLED.clear(true);
+    m5.Lcd.fillScreen(TFT_BLACK);
+    bIsRunning = false;
+}
+
 void SendFile(String Filename) {
     // see if there is an associated config file
     //String cfFile = MakeMIWFilename(Filename, true);
     //SettingsSaveRestore(true, 0);
+    IMG_INFO savedImgInfo = ImgInfo;
     //ProcessConfigFile(cfFile);
     String fn = currentFolder + Filename;
     dataFile = SD.open(fn);
@@ -1352,12 +1520,12 @@ void SendFile(String Filename) {
         return;
     }
     ShowProgressBar(100);
+    ImgInfo = savedImgInfo;
     //SettingsSaveRestore(false, 0);
 }
 
 void ShowProgressBar(int percent)
 {
-    //nProgress = percent;
     //if (!bShowProgress || bPauseDisplay)
     //    return;
     static int lastpercent;
