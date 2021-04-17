@@ -41,12 +41,30 @@ float yaw = 0.0F;
 
 float temp = 0.0F;
 
+//static const char* TAG = "lightwand";
+//esp_timer_cb_t oneshot_timer_callback(void* arg)
+void IRAM_ATTR oneshot_LED_timer_callback(void* arg)
+{
+    bStripWaiting = false;
+    //int64_t time_since_boot = esp_timer_get_time();
+    //Serial.println("in isr");
+    //ESP_LOGI(TAG, "One-shot timer called, time since boot: %lld us", time_since_boot);
+}
+
 void setup() {
 #include <themes/default.h>
 #include <themes/dark.h>
     ezt::setDebug(INFO);
     ez.begin();
     Wire.begin();
+    oneshot_LED_timer_args = {
+                oneshot_LED_timer_callback,
+                /* argument specified here will be passed to timer callback function */
+                (void*)0,
+                ESP_TIMER_TASK,
+                "one-shotLED"
+    };
+    esp_timer_create(&oneshot_LED_timer_args, &oneshot_LED_timer);
     builtinMenu.txtSmall();
     ez.msgBox("Initializing", "LED test", "", false);
     builtinMenu.setSortFunction(CompareNames);
@@ -57,23 +75,7 @@ void setup() {
     M5.IMU.Init();
     leds = (CRGB*)calloc(LedInfo.nPixelCount, sizeof(CRGB));
     FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, LedInfo.nPixelCount);
-    //leds[0] = CRGB::Red;
-    //leds[1] = CRGB::Green;
-    //leds[2] = CRGB::Blue;
-    //leds[70] = CRGB::Blue;
-    //leds[75] = CRGB::Red;
-    //leds[141] = CRGB::Red;
-    //leds[142] = CRGB::Green;
-    //leds[143] = CRGB::Blue;
-    ////SetPixel(0, CRGB::Red);
-    ////SetPixel(1, CRGB::Green);
-    ////SetPixel(2, CRGB::Blue);
-    ////SetPixel(143, CRGB::Red);
-    ////SetPixel(142, CRGB::Green);
-    ////SetPixel(141, CRGB::Blue);
-    //FastLED.show();
-    //delay(2000);
-    FastLED.clear(true);
+    FastLED.setBrightness(LedInfo.nLEDBrightness);
     for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
         SetPixel(ix, CRGB::Blue);
         FastLED.show();
@@ -159,9 +161,23 @@ void loop() {
                 bReloadSD = true;
                 break;
             }
-            else
+            else {
                 currentFile = tmp;
-			ez.msgBox("run", (bShowBuiltInTests ? "" : String(currentFolder)) + currentFile);
+                if (bShowBuiltInTests) {
+                    // run a built-in
+                }
+                else {
+                    // run the file
+                    // TODO: add repeats, chains, etc in a new function
+                    String fn = currentFolder + currentFile;
+                    dataFile = SD.open(fn);
+                    FastLED.setBrightness(LedInfo.nLEDBrightness);
+                    ReadAndDisplayFile(false);
+                    dataFile.close();
+                    FastLED.clear(true);
+                }
+            }
+			//ez.msgBox("run", (bShowBuiltInTests ? "" : String(currentFolder)) + currentFile);
 		}
 		else if (btnpressed == "SD" || btnpressed == "Internal") {
             bShowBuiltInTests = !bShowBuiltInTests;
@@ -1104,4 +1120,202 @@ void IRAM_ATTR SetPixel(int ix, CRGB pixel, int column, int totalColumns)
     leds[ix1] = pixel;
     if (ImgInfo.bDoublePixels)
         leds[ix2] = pixel;
+}
+
+void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
+    static int totalSeconds;
+    if (doingFirstHalf)
+        totalSeconds = -1;
+
+    // clear the file cache buffer
+    readByte(true);
+    uint16_t bmpType = readInt();
+    uint32_t bmpSize = readLong();
+    uint16_t bmpReserved1 = readInt();
+    uint16_t bmpReserved2 = readInt();
+    uint32_t bmpOffBits = readLong();
+    //Serial.println("\nBMPtype: " + String(bmpType) + " offset: " + String(bmpOffBits));
+
+    /* Check file header */
+    if (bmpType != MYBMP_BF_TYPE) {
+		ez.msgBox("Error", String("Invalid BMP: ") + currentFolder + currentFile);
+        return;
+    }
+
+    /* Read info header */
+    uint32_t imgSize = readLong();
+    uint32_t imgWidth = readLong();
+    uint32_t imgHeight = readLong();
+    uint16_t imgPlanes = readInt();
+    uint16_t imgBitCount = readInt();
+    uint32_t imgCompression = readLong();
+    uint32_t imgSizeImage = readLong();
+    uint32_t imgXPelsPerMeter = readLong();
+    uint32_t imgYPelsPerMeter = readLong();
+    uint32_t imgClrUsed = readLong();
+    uint32_t imgClrImportant = readLong();
+
+    //Serial.println("imgSize: " + String(imgSize));
+    //Serial.println("imgWidth: " + String(imgWidth));
+    //Serial.println("imgHeight: " + String(imgHeight));
+    //Serial.println("imgPlanes: " + String(imgPlanes));
+    //Serial.println("imgBitCount: " + String(imgBitCount));
+    //Serial.println("imgCompression: " + String(imgCompression));
+    //Serial.println("imgSizeImage: " + String(imgSizeImage));
+    /* Check info header */
+    if (imgWidth <= 0 || imgHeight <= 0 || imgPlanes != 1 ||
+        imgBitCount != 24 || imgCompression != MYBMP_BI_RGB || imgSizeImage == 0)
+    {
+        ez.msgBox("Error", String("Must be 24bpp: ") + currentFolder + currentFile);
+        return;
+    }
+
+    int displayWidth = imgWidth;
+    if (imgWidth > LedInfo.nPixelCount) {
+        displayWidth = LedInfo.nPixelCount;           //only display the number of led's we have
+    }
+
+    /* compute the line length */
+    uint32_t lineLength = imgWidth * 3;
+    // fix for padding to 4 byte words
+    if ((lineLength % 4) != 0)
+        lineLength = (lineLength / 4 + 1) * 4;
+
+    // Note:  
+    // The x,r,b,g sequence below might need to be changed if your strip is displaying
+    // incorrect colors.  Some strips use an x,r,b,g sequence and some use x,r,g,b
+    // Change the order if needed to make the colors correct.
+    // init the fade settings in SetPixel
+    SetPixel(0, TFT_BLACK, -1, (int)imgHeight);
+    long secondsLeft = 0, lastSeconds = 0;
+    char num[50];
+    int percent;
+    unsigned minLoopTime = 0; // the minimum time it takes to process a line
+    bool bLoopTimed = false;
+    // also remember that height and width are effectively swapped since we rotated the BMP image CCW for ease of reading and displaying here
+    for (int y = ImgInfo.bReverseImage ? imgHeight - 1 : 0; ImgInfo.bReverseImage ? y >= 0 : y < imgHeight; ImgInfo.bReverseImage ? --y : ++y) {
+        // approximate time left
+        if (ImgInfo.bReverseImage)
+            secondsLeft = ((long)y * (ImgInfo.nColumnHoldTime + minLoopTime) / 1000L) + 1;
+        else
+            secondsLeft = ((long)(imgHeight - y) * (ImgInfo.nColumnHoldTime + minLoopTime) / 1000L) + 1;
+        // mark the time for timing the loop
+        if (!bLoopTimed) {
+            minLoopTime = millis();
+        }
+        if (ImgInfo.bMirrorPlayImage) {
+            if (totalSeconds == -1)
+                totalSeconds = secondsLeft;
+            if (doingFirstHalf) {
+                secondsLeft += totalSeconds;
+            }
+        }
+        if (secondsLeft != lastSeconds) {
+            lastSeconds = secondsLeft;
+            sprintf(num, "File Seconds: %d", secondsLeft);
+            DisplayLine(1, num);
+        }
+        percent = map(ImgInfo.bReverseImage ? imgHeight - y : y, 0, imgHeight, 0, 100);
+        if (ImgInfo.bMirrorPlayImage) {
+            percent /= 2;
+            if (!doingFirstHalf) {
+                percent += 50;
+            }
+        }
+        if (((percent % 5) == 0) || percent > 90) {
+            //ShowProgressBar(percent);
+        }
+        int bufpos = 0;
+        CRGB pixel;
+        FileSeekBuf((uint32_t)bmpOffBits + (y * lineLength));
+        //uint32_t offset = (bmpOffBits + (y * lineLength));
+        //dataFile.seekSet(offset);
+        for (int x = displayWidth - 1; x >= 0; --x) {
+            // this reads three bytes
+            pixel = getRGBwithGamma();
+            // see if we want this one
+            if (ImgInfo.bScaleHeight && (x * displayWidth) % imgWidth) {
+                continue;
+            }
+            SetPixel(x, pixel, y);
+        }
+        // see how long it took to get here
+        if (!bLoopTimed) {
+            minLoopTime = millis() - minLoopTime;
+            bLoopTimed = true;
+            // if fixed time then we need to calculate the framehold value
+            if (ImgInfo.bFixedTime) {
+                // divide the time by the number of frames
+                ImgInfo.nColumnHoldTime = 1000 * ImgInfo.nFixedImageTime / imgHeight;
+                ImgInfo.nColumnHoldTime -= minLoopTime;
+                ImgInfo.nColumnHoldTime = max(ImgInfo.nColumnHoldTime, 0);
+            }
+        }
+        // wait for timer to expire before we show the next frame
+        while (bStripWaiting) {
+            delayMicroseconds(100);
+            // we should maybe check the cancel key here to handle slow frame rates?
+        }
+        // now show the lights
+        FastLED.show();
+        // set a timer while we go ahead and load the next frame
+        bStripWaiting = true;
+        esp_timer_start_once(oneshot_LED_timer, ImgInfo.nColumnHoldTime * 1000);
+        // check keys
+        //if (CheckCancel())
+        //    break;
+        if (ImgInfo.bManualFrameAdvance) {
+            // check if frame advance button requested
+            if (ImgInfo.nFramePulseCount) {
+                for (int ix = ImgInfo.nFramePulseCount; ix; --ix) {
+                    // wait for press
+                    //while (digitalRead(FRAMEBUTTON)) {
+                    //    if (CheckCancel())
+                    //        break;
+                    //    delay(10);
+                    //}
+                    //// wait for release
+                    //while (!digitalRead(FRAMEBUTTON)) {
+                    //    if (CheckCancel())
+                    //        break;
+                    //    delay(10);
+                    //}
+                }
+            }
+            else {
+            //    // by button click or rotate
+            //    int btn;
+            //    for (;;) {
+            //        btn = ReadButton();
+            //        if (btn == BTN_NONE)
+            //            continue;
+            //        else if (btn == BTN_LONG)
+            //            CRotaryDialButton::pushButton(BTN_LONG);
+            //        else if (btn == BTN_LEFT) {
+            //            // backup a line, use 2 because the for loop does one when we're done here
+            //            if (bReverseImage) {
+            //                y += 2;
+            //                if (y > imgHeight)
+            //                    y = imgHeight;
+            //            }
+            //            else {
+            //                y -= 2;
+            //                if (y < -1)
+            //                    y = -1;
+            //            }
+            //            break;
+            //        }
+            //        else
+            //            break;
+            //        //if (CheckCancel())
+            //        //    break;
+            //        delay(10);
+            //    }
+            }
+        }
+        if (bCancelRun)
+            break;
+    }
+    // all done
+    readByte(true);
 }

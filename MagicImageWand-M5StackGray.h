@@ -15,13 +15,17 @@ RTC_DATA_ATTR bool bShowBuiltInTests = false;           // list the internal fil
 RTC_DATA_ATTR int nBootCount = 0;
 // image settings
 struct IMG_INFO {
-    int nColumnHoldTime = 10;   // mSec frame hold time
-    bool bFixedTime = false;    // fixed total time or hold time for image
-    int nFixedImageTime = 20;   // seconds of time
-    int nFadeInOutFrames = 0;   // fading frames
-    bool bReverseImage = false; // show backwards
-    bool bUpsideDown = false;   // topsy-turvy
-    bool bDoublePixels = false; // double up to make 144 288 etc
+    int nColumnHoldTime = 10;       // mSec frame hold time
+    bool bFixedTime = false;        // fixed total time or hold time for image
+    int nFixedImageTime = 5;        // seconds of time
+    int nFadeInOutFrames = 0;       // fading frames
+    bool bReverseImage = false;     // show backwards
+    bool bUpsideDown = false;       // topsy-turvy
+    bool bDoublePixels = false;     // double up to make 144 288 etc
+    bool bMirrorPlayImage = false;  // play mirror image trick
+    bool bScaleHeight = false;      // scale height to fit, e.g. 288 to 144
+    bool bManualFrameAdvance = false;   // for click advancing of frame or frame wheel counter
+    int nFramePulseCount = 0;
 };
 typedef IMG_INFO IMG_INFO;
 RTC_DATA_ATTR IMG_INFO ImgInfo;
@@ -39,6 +43,13 @@ struct LED_INFO {
 };
 typedef LED_INFO LED_INFO;
 RTC_DATA_ATTR LED_INFO LedInfo;
+// set this to the delay time while we get the next frame, also used for delay timers
+volatile bool bStripWaiting = false;
+esp_timer_handle_t oneshot_LED_timer;
+esp_timer_create_args_t oneshot_LED_timer_args;
+// use this to stop an image run
+bool bCancelRun = false;
+
 int g = 0;                                // Variable for the Green Value
 int b = 0;                                // Variable for the Blue Value
 int r = 0;                                // Variable for the Red Value
