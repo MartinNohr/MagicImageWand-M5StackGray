@@ -48,6 +48,7 @@ void setup() {
     ez.begin();
     Wire.begin();
     builtinMenu.txtSmall();
+    ez.msgBox("Initializing", "LED test", "", false);
     builtinMenu.setSortFunction(CompareNames);
     for (BuiltInItem bi : BuiltInFiles) {
         builtinMenu.addItem(bi.text);
@@ -84,9 +85,11 @@ void loop() {
     static bool bReloadSD = true;
     bool bRetry = false;
     if (bShowBuiltInTests) {
+        builtinMenu.buttons("up # # Go # Menu # down # SD");
         activeMenu = &builtinMenu;
     }
     else {
+        builtinMenu.buttons("up # View # Go # Menu # down # SD");
         if (bReloadSD) {
             if (pFileMenu != NULL)
                 delete pFileMenu;
