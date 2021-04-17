@@ -18,6 +18,9 @@ RTC_DATA_ATTR int nColumnHoldTime = 10;                 // mSec frame hold time
 RTC_DATA_ATTR bool bFixedTime = false;                  // fixed total time or hold time for image
 RTC_DATA_ATTR int nFixedImageTime = 10;                 // seconds of time
 // led strip settings
+#define DATA_PIN1 21
+#define DATA_PIN2 22
+CRGB* leds;
 RTC_DATA_ATTR int nLEDBrightness = 25;                  // 255 is 100%
 RTC_DATA_ATTR bool bSecondController = false;
 RTC_DATA_ATTR int nPixelCount = 144;

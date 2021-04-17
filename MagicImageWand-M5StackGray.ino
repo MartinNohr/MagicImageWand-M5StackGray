@@ -54,6 +54,25 @@ void setup() {
     }
     builtinMenu.buttons("up # View # Go # Menu # down # SD");
     M5.IMU.Init();
+    leds = (CRGB*)calloc(nPixelCount, sizeof(CRGB));
+    FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, nPixelCount);
+    leds[0] = CRGB::Red;
+    leds[1] = CRGB::Green;
+    leds[2] = CRGB::Blue;
+    leds[70] = CRGB::Blue;
+    leds[75] = CRGB::Red;
+    leds[141] = CRGB::Red;
+    leds[142] = CRGB::Green;
+    leds[143] = CRGB::Blue;
+    //SetPixel(0, CRGB::Red);
+    //SetPixel(1, CRGB::Green);
+    //SetPixel(2, CRGB::Blue);
+    //SetPixel(143, CRGB::Red);
+    //SetPixel(142, CRGB::Green);
+    //SetPixel(141, CRGB::Blue);
+    FastLED.show();
+    delay(2000);
+    FastLED.clear(true);
 }
 
 ezMenu* pFileMenu = NULL;
