@@ -341,7 +341,7 @@ void SettingsMenu()
     settings.txtSmall();
     settings.buttons("up # Back # Select # # down # ");
 	settings.addItem("Image Settings", ImageSettings);
-    settings.addItem("Repeat and Chain Settings");
+    settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
     settings.addItem("System Settings", ez.settings.menu);
     settings.addItem("Level", LevelDisplay);
@@ -898,6 +898,16 @@ bool SetLedPixelCount(ezMenu* menu)
     return GetInteger(menu, "Total Pixels", LedInfo.nPixelCount, 1, 512);
 }
 
+bool SetRepeatCount(ezMenu* menu)
+{
+    return GetInteger(menu, "Image Repeat Count", ImgInfo.repeatCount, 1, 100);
+}
+
+bool SetColumnHold(ezMenu* menu)
+{
+    return GetInteger(menu, "Column Hold Time (mS)", ImgInfo.nColumnHoldTime, 0, 100);
+}
+
 // Strip settings
 void LEDStripSettings()
 {
@@ -918,19 +928,32 @@ void LEDStripSettings()
 	}
 }
 
+
+void RepeatSettings()
+{
+    ezMenu settings("Repeat & Chain Settings");
+    settings.txtSmall();
+    settings.buttons("up # Back # Select # # down # ");
+    settings.addItem("Repeat Count\t" + String(ImgInfo.repeatCount), NULL, SetRepeatCount);
+    //settings.addItem("Chain Files\t" + String(ImgInfo.bChainFiles), NULL, ToggleBoolean);
+    while (settings.runOnce()) {
+        String pick = settings.pickName();
+        if (pick == "Back")
+            break;
+    }
+}
+
 // Image settings
 void ImageSettings()
 {
     ezMenu settings("Image Settings");
     settings.txtSmall();
     settings.buttons("up # Back # Select # # down # ");
-    settings.addItem("Column Hold Time\t" + String(ImgInfo.nColumnHoldTime));
+	settings.addItem("Column Hold Time\t" + String(ImgInfo.nColumnHoldTime), NULL, SetColumnHold);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
             break;
-        else if (pick == "Column Hold Time") {
-        }
     }
 }
 
@@ -1293,8 +1316,11 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
         }
         // wait for timer to expire before we show the next frame
         while (bStripWaiting) {
-            delayMicroseconds(100);
+            //delayMicroseconds(100);
+            //yield();
             // we should maybe check the cancel key here to handle slow frame rates?
+            if (CheckCancel())
+                break;
         }
         // now show the lights
         FastLED.show();
@@ -1370,7 +1396,7 @@ void ProcessFileOrTest()
         nTimerSeconds = ImgInfo.startDelay;
         while (nTimerSeconds && !CheckCancel()) {
             line = "Start Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
-            DisplayLine(3, line, TFT_WHITE);
+            DisplayLine(3, line);
             delay(100);
             --nTimerSeconds;
         }
@@ -1393,7 +1419,7 @@ void ProcessFileOrTest()
             DisplayLine(1, pFileMenu->getItemName(currentFileIndex));
             if (ImgInfo.bChainFiles && !bShowBuiltInTests) {
                 line = "Files: " + String(chainCount + 1);
-                DisplayLine(5, line, TFT_WHITE);
+                DisplayLine(5, line);
                 line = "";
             }
             // process the repeats and waits for each file in the list
@@ -1407,15 +1433,15 @@ void ProcessFileOrTest()
                 if (!bShowBuiltInTests && ImgInfo.nChainRepeats > 1) {
                     line += "Chains: " + String(chainRepeatCount + 1);
                 }
-                DisplayLine(4, line, TFT_WHITE);
+                DisplayLine(4, line);
                 if (bShowBuiltInTests) {
-                    DisplayLine(5, "Running (long cancel)", TFT_WHITE);
+                    DisplayLine(5, "Running (long cancel)");
                     // run the test
                     //(*BuiltInFiles[CurrentFileIndex].function)();
                 }
                 else {
                     if (nRepeatCountMacro > 1 && bRunningMacro) {
-                        DisplayLine(5, String("Macro Repeats: ") + String(nMacroRepeatsLeft), TFT_WHITE);
+                        DisplayLine(5, String("Macro Repeats: ") + String(nMacroRepeatsLeft));
                     }
                     // output the file
 					SendFile(pFileMenu->getItemName(currentFileIndex));
@@ -1432,7 +1458,7 @@ void ProcessFileOrTest()
                         nTimerSeconds = ImgInfo.repeatDelay;
                         while (nTimerSeconds > 0 && !CheckCancel()) {
                             line = "Repeat Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
-                            DisplayLine(3, line, TFT_WHITE);
+                            DisplayLine(3, line);
                             line = "";
                             delay(100);
                             --nTimerSeconds;
@@ -1457,14 +1483,14 @@ void ProcessFileOrTest()
                 // handle any chain delay
                 for (int dly = ImgInfo.nChainDelay; dly > 0 && !CheckCancel(); --dly) {
                     line = "Chain Delay: " + String(dly / 10) + "." + String(dly % 10);
-                    DisplayLine(3, line, TFT_WHITE);
+                    DisplayLine(3, line);
                     delay(100);
                 }
                 // check for chain wait for keypress
                 if (chainCount && ImgInfo.bChainWaitKey) {
                     ez.msgBox("Chain", "Waiting for OK");
                     ez.buttons.show("Next");
-                    //DisplayLine(2, "Click: " + FileNames[CurrentFileIndex], TFT_WHITE);
+                    //DisplayLine(2, "Click: " + FileNames[CurrentFileIndex]);
                     bool waitNext = true;
                     while (waitNext) {
                         String str;
@@ -1495,7 +1521,7 @@ void ProcessFileOrTest()
             nTimerSeconds = ImgInfo.repeatDelay;
             while (nTimerSeconds > 0 && !CheckCancel()) {
                 line = "Repeat Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
-                DisplayLine(3, line, TFT_WHITE);
+                DisplayLine(3, line);
                 line = "";
                 delay(100);
                 --nTimerSeconds;

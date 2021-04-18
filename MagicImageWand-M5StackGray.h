@@ -28,8 +28,7 @@ struct IMG_INFO {
     bool bManualFrameAdvance = false;   // for click advancing of frame or frame wheel counter
     int nFramePulseCount = 0;
     bool bChainFiles = false;           // chain files in the same folder
-    int nChainRepeats = 0;              // how many times to repeat the chain
-    int chainRepeatCount = 0;
+    int nChainRepeats = 1;              // how many times to repeat the chain
     int nChainDelay = 0;
     bool bChainWaitKey = false;
     bool startDelay = 0;                // 1/10s seconds
