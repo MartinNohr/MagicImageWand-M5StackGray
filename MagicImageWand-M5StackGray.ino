@@ -676,7 +676,7 @@ void ShowBmp()
     uint16_t* scrBuf;
     scrBuf = (uint16_t*)calloc(320 * 144, sizeof(uint16_t));
     if (scrBuf == NULL) {
-        //WriteMessage("Not enough memory", true, 5000);
+        ez.msgBox("Error", "Not enough memory");
         return;
     }
     //bool bOldGamma = bGammaCorrection;
@@ -685,7 +685,7 @@ void ShowBmp()
     // if the file is available send it to the LED's
     if (!dataFile.available()) {
         free(scrBuf);
-        //WriteMessage("failed to open: " + currentFolder + FileNames[CurrentFileIndex], true);
+		ez.msgBox("Error", "failed to open:\n" + currentFolder + currentFile);
         return;
     }
     M5.Lcd.fillScreen(TFT_BLACK);
@@ -700,7 +700,7 @@ void ShowBmp()
     /* Check file header */
     if (bmpType != MYBMP_BF_TYPE) {
         free(scrBuf);
-        //WriteMessage(String("Invalid BMP:\n") + currentFolder + FileNames[CurrentFileIndex], true);
+		ez.msgBox("Error", String("Invalid BMP:\n") + currentFolder + currentFile);
         return;
     }
 
@@ -722,7 +722,7 @@ void ShowBmp()
         imgBitCount != 24 || imgCompression != MYBMP_BI_RGB || imgSizeImage == 0)
     {
         free(scrBuf);
-        //WriteMessage(String("Unsupported, must be 24bpp:\n") + currentFolder + FileNames[CurrentFileIndex], true);
+		ez.msgBox("Error", String("Unsupported, must be 24bpp:\n") + currentFolder + currentFile);
         return;
     }
 
@@ -750,7 +750,6 @@ void ShowBmp()
     // calculate display time
     float dspTime = ImgInfo.bFixedTime ? ImgInfo.nFixedImageTime : (imgHeight * ImgInfo.nColumnHoldTime / 1000.0 + imgHeight * .008);
     DisplayLine(9, "About " + String((int)round(dspTime)) + " Seconds");
-    ez.buttons.show("left # Start # Exit # # right # End");
     while (!done) {
         if (redraw) {
             // loop through the image, y is the image width, and x is the image height
@@ -779,6 +778,19 @@ void ShowBmp()
             m5.Lcd.pushRect(0, 0, 320, 144, scrBuf);
             redraw = false;
         }
+        String btns;
+        if (imgHeight > 320) {
+			if (imgOffset == 0)
+				btns = "# # Exit # # right # End";
+			else if (imgOffset >= imgHeight - 320)
+                btns = "left # Start # Exit # # #";
+            else
+				btns = "left # Start # Exit # # right # End";
+        }
+        else {
+            btns = "Exit";
+        }
+        ez.buttons.show(btns);
         String str = ez.buttons.poll();
         if (str == "Exit") {
             done = true;
