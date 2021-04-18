@@ -947,6 +947,11 @@ bool SetStartDelay(ezMenu* menu)
     return GetInteger(menu, "Start Delay (S)", ImgInfo.startDelay, 0, 1000, 1);
 }
 
+bool SetRepeatDelay(ezMenu* menu)
+{
+    return GetInteger(menu, "Start Delay (S)", ImgInfo.repeatDelay, 0, 100, 1);
+}
+
 // Strip settings
 void LEDStripSettings()
 {
@@ -969,6 +974,7 @@ void RepeatSettings()
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
     settings.addItem("Repeat Count\t" + String(ImgInfo.repeatCount), NULL, SetRepeatCount);
+	settings.addItem("Repeat Delay\t" + FormatInteger(ImgInfo.repeatDelay, 1), NULL, SetRepeatDelay);
 	settings.addItem("Chain Files\t" + String(ImgInfo.bChainFiles ? "Yes" : "No"), NULL, ToggleChain);
     while (settings.runOnce()) {
         String pick = settings.pickName();

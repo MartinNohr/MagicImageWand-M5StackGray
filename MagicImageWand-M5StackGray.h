@@ -29,11 +29,11 @@ struct IMG_INFO {
     int nFramePulseCount = 0;
     bool bChainFiles = false;           // chain files in the same folder
     int nChainRepeats = 1;              // how many times to repeat the chain
-    int nChainDelay = 0;
+    int nChainDelay = 0;                // 1/10 seconds
     bool bChainWaitKey = false;
-    int startDelay = 0;                // 1/10s seconds
+    int startDelay = 0;                 // 1/10 seconds
     int repeatCount = 1;
-    int repeatDelay = 0;
+    int repeatDelay = 0;                // 1/10 seconds
 };
 typedef IMG_INFO IMG_INFO;
 RTC_DATA_ATTR IMG_INFO ImgInfo;
