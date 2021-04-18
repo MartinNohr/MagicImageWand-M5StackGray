@@ -31,7 +31,7 @@ struct IMG_INFO {
     int nChainRepeats = 1;              // how many times to repeat the chain
     int nChainDelay = 0;
     bool bChainWaitKey = false;
-    bool startDelay = 0;                // 1/10s seconds
+    int startDelay = 0;                // 1/10s seconds
     int repeatCount = 1;
     int repeatDelay = 0;
 };
@@ -77,9 +77,10 @@ bool bRunningMacro = false;
 RTC_DATA_ATTR int nRepeatCountMacro = 1;                // repeat count for macros
 RTC_DATA_ATTR int nMacroRepeatsLeft = 0;
 
-                                                        // functions
+// functions
 void DisplayLine(int line, String text, int indent = 0, int16_t color = TFT_WHITE);
 void IRAM_ATTR SetPixel(int ix, CRGB pixel, int column = 0, int totalColumns = 1);
+bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval, int decimals = 0);
 
 // built-in "files"
 struct BuiltInItem {

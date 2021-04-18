@@ -339,7 +339,7 @@ void SettingsMenu()
 {
     ezMenu settings("Settings");
     settings.txtSmall();
-    settings.buttons("up # # Select # Back # down # ");
+    settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("Image Settings", ImageSettings);
     settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
@@ -830,18 +830,30 @@ void ShowBmp()
     M5.Lcd.fillScreen(TFT_BLACK);
 }
 
+String FormatInteger(int num, int decimals)
+{
+    String str;
+    if (decimals) {
+		str = String(num / (int)pow10(decimals)) + "." + String(num % (int)pow10(decimals));
+    }
+    else {
+        str = String(num);
+    }
+    return str;
+}
+
 // handle integer entry
-bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval)
+bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval, int decimals)
 {
     int inc = 1;
     int originalVal = value;
-	ezProgressBar bl(title, "From " + String(minval) + " to " + String(maxval), "left # - # OK # Cancel # right # +");
+	ezProgressBar bl(title, "From " + FormatInteger(minval, decimals) + " to " + FormatInteger(maxval, decimals), "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
     int lastVal = value;
     int lastInc = inc;
-    ez.canvas.x(100);
+    ez.canvas.x(140);
     ez.canvas.y(180);
-    ez.canvas.print("value: " + String(value) + "   ");
+	ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
     while (true) {
         String b = ez.buttons.poll();
         if (b == "right")
@@ -871,19 +883,22 @@ bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval)
         if (lastInc != inc) {
             ez.canvas.x(0);
             ez.canvas.y(180);
-            ez.canvas.print("inc " + String(inc) + "   ");
+            uint16_t oldcolor = ez.canvas.color();
+            ez.canvas.color(TFT_CYAN);
+			ez.canvas.print("+/- " + FormatInteger(inc, decimals) + "   ");
+            ez.canvas.color(oldcolor);
             lastInc = inc;
         }
         if (lastVal != value) {
-            ez.canvas.x(100);
+            ez.canvas.x(140);
             ez.canvas.y(180);
-            ez.canvas.print("value: " + String(value) + "   ");
+			ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
             lastVal = value;
         }
     }
     String caption = menu->pickCaption();
 	caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
-    menu->setCaption(menu->pickName(), caption + String(value));
+	menu->setCaption(menu->pickName(), caption + FormatInteger(value, decimals));
     return true;
 }
 
@@ -929,12 +944,17 @@ bool SetColumnHold(ezMenu* menu)
     return GetInteger(menu, "Column Hold Time (mS)", ImgInfo.nColumnHoldTime, 0, 100);
 }
 
+bool SetStartDelay(ezMenu* menu)
+{
+    return GetInteger(menu, "Start Delay (S)", ImgInfo.startDelay, 0, 1000, 1);
+}
+
 // Strip settings
 void LEDStripSettings()
 {
     ezMenu settings("LED Strip Settings");
     settings.txtSmall();
-    settings.buttons("up # # Select # Back # down # ");
+    settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("Brightness\t" + String(LedInfo.nLEDBrightness), NULL, SetLedBrightness);
 	settings.addItem("Second Controller\t" + String(LedInfo.bSecondController ? "On" : "Off"), NULL, ToggleSecondController);
 	settings.addItem("Pixel Count\t" + String(LedInfo.nPixelCount), NULL, SetLedPixelCount);
@@ -949,7 +969,7 @@ void RepeatSettings()
 {
     ezMenu settings("Repeat & Chain Settings");
     settings.txtSmall();
-    settings.buttons("up # # Select # Back # down # ");
+    settings.buttons("up # # Go # Back # down # ");
     settings.addItem("Repeat Count\t" + String(ImgInfo.repeatCount), NULL, SetRepeatCount);
 	settings.addItem("Chain Files\t" + String(ImgInfo.bChainFiles ? "Yes" : "No"), NULL, ToggleChain);
     while (settings.runOnce()) {
@@ -964,8 +984,9 @@ void ImageSettings()
 {
     ezMenu settings("Image Settings");
     settings.txtSmall();
-    settings.buttons("up # # Select # Back # down # ");
-	settings.addItem("Column Hold Time\t" + String(ImgInfo.nColumnHoldTime), NULL, SetColumnHold);
+    settings.buttons("up # # Go # Back # down # ");
+    settings.addItem("Column Hold Time\t" + String(ImgInfo.nColumnHoldTime), NULL, SetColumnHold);
+	settings.addItem("Start Delay\t" + FormatInteger(ImgInfo.startDelay, 1), NULL, SetStartDelay);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
@@ -1416,7 +1437,7 @@ void ProcessFileOrTest()
             delay(100);
             --nTimerSeconds;
         }
-        DisplayLine(4, "");
+        DisplayLine(3, "");
     }
     int currentFileIndex = pFileMenu->pick();
     int chainCount = ImgInfo.bChainFiles ? FileCountOnly(currentFileIndex) : 1;
