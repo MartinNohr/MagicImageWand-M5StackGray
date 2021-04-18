@@ -339,7 +339,7 @@ void SettingsMenu()
 {
     ezMenu settings("Settings");
     settings.txtSmall();
-    settings.buttons("up # Back # Select # # down # ");
+    settings.buttons("up # # Select # Back # down # ");
 	settings.addItem("Image Settings", ImageSettings);
     settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
@@ -679,8 +679,8 @@ void ShowBmp()
         ez.msgBox("Error", "Not enough memory");
         return;
     }
-    //bool bOldGamma = bGammaCorrection;
-    //bGammaCorrection = false;
+    bool bOldGamma = LedInfo.bGammaCorrection;
+    LedInfo.bGammaCorrection = false;
     dataFile = SD.open(fn);
     // if the file is available send it to the LED's
     if (!dataFile.available()) {
@@ -826,10 +826,11 @@ void ShowBmp()
     free(scrBuf);
     dataFile.close();
     readByte(true);
-    //bGammaCorrection = bOldGamma;
+    LedInfo.bGammaCorrection = bOldGamma;
     M5.Lcd.fillScreen(TFT_BLACK);
 }
 
+// handle integer entry
 bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval)
 {
     int inc = 1;
@@ -886,6 +887,26 @@ bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval)
     return true;
 }
 
+// handle boolean toggles
+bool ToggleBoolean(ezMenu* menu, bool& value, char* on, char* off)
+{
+    value = !value;
+    String caption = menu->pickCaption();
+    caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
+	menu->setCaption(menu->pickName(), caption + (value ? on : off));
+    return true;
+}
+
+bool ToggleSecondController(ezMenu* menu)
+{
+	return ToggleBoolean(menu, LedInfo.bSecondController, "On", "Off");
+}
+
+bool ToggleChain(ezMenu* menu)
+{
+    return ToggleBoolean(menu, ImgInfo.bChainFiles, "Yes", "No");
+}
+
 // set the LED brightness
 bool SetLedBrightness(ezMenu* menu)
 {
@@ -913,29 +934,24 @@ void LEDStripSettings()
 {
     ezMenu settings("LED Strip Settings");
     settings.txtSmall();
-    settings.buttons("up # Back # Select # # down # ");
+    settings.buttons("up # # Select # Back # down # ");
 	settings.addItem("Brightness\t" + String(LedInfo.nLEDBrightness), NULL, SetLedBrightness);
-	settings.addItem("Controllers\t" + String(LedInfo.bSecondController ? 2 : 1));
+	settings.addItem("Second Controller\t" + String(LedInfo.bSecondController ? "On" : "Off"), NULL, ToggleSecondController);
 	settings.addItem("Pixel Count\t" + String(LedInfo.nPixelCount), NULL, SetLedPixelCount);
 	while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
             break;
-        else if (pick == "Controllers") {
-            LedInfo.bSecondController = !LedInfo.bSecondController;
-			settings.setCaption("controllers", "Controllers\t" + String(LedInfo.bSecondController ? 2 : 1));
-        }
 	}
 }
-
 
 void RepeatSettings()
 {
     ezMenu settings("Repeat & Chain Settings");
     settings.txtSmall();
-    settings.buttons("up # Back # Select # # down # ");
+    settings.buttons("up # # Select # Back # down # ");
     settings.addItem("Repeat Count\t" + String(ImgInfo.repeatCount), NULL, SetRepeatCount);
-    //settings.addItem("Chain Files\t" + String(ImgInfo.bChainFiles), NULL, ToggleBoolean);
+	settings.addItem("Chain Files\t" + String(ImgInfo.bChainFiles ? "Yes" : "No"), NULL, ToggleChain);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
@@ -948,7 +964,7 @@ void ImageSettings()
 {
     ezMenu settings("Image Settings");
     settings.txtSmall();
-    settings.buttons("up # Back # Select # # down # ");
+    settings.buttons("up # # Select # Back # down # ");
 	settings.addItem("Column Hold Time\t" + String(ImgInfo.nColumnHoldTime), NULL, SetColumnHold);
     while (settings.runOnce()) {
         String pick = settings.pickName();
@@ -1420,6 +1436,12 @@ void ProcessFileOrTest()
             if (ImgInfo.bChainFiles && !bShowBuiltInTests) {
                 line = "Files: " + String(chainCount + 1);
                 DisplayLine(5, line);
+                if (chainCount) {
+					DisplayLine(6, "Next: " + pFileMenu->getItemName(currentFileIndex + 1));
+                }
+                else {
+                    DisplayLine(6, "");
+                }
                 line = "";
             }
             // process the repeats and waits for each file in the list
