@@ -1438,21 +1438,15 @@ void ProcessFileOrTest()
                 }
                 // check for chain wait for keypress
                 if (chainCount && ImgInfo.bChainWaitKey) {
-                    DisplayLine(2, "Click: " + FileNames[CurrentFileIndex], TFT_WHITE);
+                    ez.msgBox("Chain", "Waiting for OK");
+                    ez.buttons.show("Next");
+                    //DisplayLine(2, "Click: " + FileNames[CurrentFileIndex], TFT_WHITE);
                     bool waitNext = true;
-                    int wbtn;
                     while (waitNext) {
+                        String str;
                         delay(10);
-                        wbtn = ReadButton();
-                        if (wbtn == BTN_NONE)
-                            continue;
-                        if (wbtn == BTN_LONG) {
-                            CRotaryDialButton::pushButton(CRotaryDialButton::BTN_LONGPRESS);
-                        }
-                        else {
-                            waitNext = false;
-                        }
-                        if (CheckCancel()) {
+                        str = ez.buttons.poll();
+						if (str == "Next" || CheckCancel()) {
                             waitNext = false;
                         }
                     }
