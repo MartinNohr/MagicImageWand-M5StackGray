@@ -758,18 +758,16 @@ void ShowBmp()
                 CRGB pixel;
                 // get to start of pixel data for this column
                 FileSeekBuf((uint32_t)bmpOffBits + (y * lineLength));
-                for (int x = displayWidth - 1; x >= 0; --x) {
+                for (int row = displayWidth - 1; row >= 0; --row) {
                     // this reads three bytes
                     pixel = getRGBwithGamma();
                     // add to the display memory
-                    int row = x - 5;
-                    int col = y - imgOffset;
                     if (row >= 0 && row < 144) {
 						uint16_t color = m5.Lcd.color565(pixel.r, pixel.g, pixel.b);
                         uint16_t sbcolor;
                         // the memory image colors are byte swapped
                         swab(&color, &sbcolor, 2);
-                        scrBuf[(143 - row) * 320 + col] = sbcolor;
+                        scrBuf[(143 - row) * 320 + (y - imgOffset)] = sbcolor;
                     }
                 }
             }
