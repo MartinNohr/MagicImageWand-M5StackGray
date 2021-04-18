@@ -168,10 +168,7 @@ void loop() {
                 }
                 else {
                     // run the file
-                    // TODO: add repeats, chains, etc in a new function
-                    FastLED.setBrightness(LedInfo.nLEDBrightness);
-                    SendFile(currentFolder + currentFile);
-                    bCancelRun = false;
+                    ProcessFileOrTest();
                 }
             }
 			//ez.msgBox("run", (bShowBuiltInTests ? "" : String(currentFolder)) + currentFile);
@@ -988,8 +985,8 @@ void IRAM_ATTR FileSeekBuf(uint32_t place)
 // return true if current file is folder
 bool IsFolder(int index)
 {
-    return FileNames[index][0] == NEXT_FOLDER_CHAR
-        || FileNames[index][0] == PREVIOUS_FOLDER_CHAR;
+    return pFileMenu->getItemName(index)[0] == NEXT_FOLDER_CHAR
+        || pFileMenu->getItemName(index)[0] == PREVIOUS_FOLDER_CHAR;
 }
 
 // count the actual files, at a given starting point
@@ -997,7 +994,7 @@ int FileCountOnly(int start)
 {
     int count = 0;
     // ignore folders, at the end
-    for (int files = start; files < FileNames.size(); ++files) {
+    for (int files = start; files < pFileMenu->getItemCount(); ++files) {
         if (!IsFolder(files))
             ++count;
     }
@@ -1229,7 +1226,7 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
         if (secondsLeft != lastSeconds) {
             lastSeconds = secondsLeft;
             sprintf(num, "File Seconds: %d", secondsLeft);
-            DisplayLine(1, num);
+            DisplayLine(2, num);
         }
         percent = map(ImgInfo.bReverseImage ? imgHeight - y : y, 0, imgHeight, 0, 100);
         if (ImgInfo.bMirrorPlayImage) {
@@ -1346,15 +1343,15 @@ void ProcessFileOrTest()
         nTimerSeconds = ImgInfo.startDelay;
         while (nTimerSeconds && !CheckCancel()) {
             line = "Start Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
-            DisplayLine(2, line, TFT_WHITE);
+            DisplayLine(3, line, TFT_WHITE);
             delay(100);
             --nTimerSeconds;
         }
-        DisplayLine(3, "");
+        DisplayLine(4, "");
     }
-    int chainCount = ImgInfo.bChainFiles ? FileCountOnly(CurrentFileIndex) : 1;
+    int currentFileIndex = pFileMenu->pick();
+    int chainCount = ImgInfo.bChainFiles ? FileCountOnly(currentFileIndex) : 1;
     int chainRepeatCount = ImgInfo.bChainFiles ? ImgInfo.nChainRepeats : 1;
-    int lastFileIndex = CurrentFileIndex;
     // don't allow chaining for built-ins, although maybe we should
     if (bShowBuiltInTests) {
         chainCount = 1;
@@ -1366,10 +1363,10 @@ void ProcessFileOrTest()
     line = "";
     while (chainRepeatCount-- > 0) {
         while (chainCount-- > 0) {
-            DisplayCurrentFile();
+            DisplayLine(1, pFileMenu->getItemName(currentFileIndex));
             if (ImgInfo.bChainFiles && !bShowBuiltInTests) {
                 line = "Files: " + String(chainCount + 1);
-                DisplayLine(4, line, TFT_WHITE);
+                DisplayLine(5, line, TFT_WHITE);
                 line = "";
             }
             // process the repeats and waits for each file in the list
@@ -1383,18 +1380,18 @@ void ProcessFileOrTest()
                 if (!bShowBuiltInTests && ImgInfo.nChainRepeats > 1) {
                     line += "Chains: " + String(chainRepeatCount + 1);
                 }
-                DisplayLine(3, line, TFT_WHITE);
+                DisplayLine(4, line, TFT_WHITE);
                 if (bShowBuiltInTests) {
-                    DisplayLine(4, "Running (long cancel)", TFT_WHITE);
+                    DisplayLine(5, "Running (long cancel)", TFT_WHITE);
                     // run the test
-                    (*BuiltInFiles[CurrentFileIndex].function)();
+                    //(*BuiltInFiles[CurrentFileIndex].function)();
                 }
                 else {
                     if (nRepeatCountMacro > 1 && bRunningMacro) {
-                        DisplayLine(4, String("Macro Repeats: ") + String(nMacroRepeatsLeft), menuTextColor);
+                        DisplayLine(5, String("Macro Repeats: ") + String(nMacroRepeatsLeft), TFT_WHITE);
                     }
                     // output the file
-                    SendFile(FileNames[CurrentFileIndex]);
+					SendFile(pFileMenu->getItemName(currentFileIndex));
                 }
                 if (bCancelRun) {
                     break;
@@ -1408,7 +1405,7 @@ void ProcessFileOrTest()
                         nTimerSeconds = ImgInfo.repeatDelay;
                         while (nTimerSeconds > 0 && !CheckCancel()) {
                             line = "Repeat Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
-                            DisplayLine(2, line, TFT_WHITE);
+                            DisplayLine(3, line, TFT_WHITE);
                             line = "";
                             delay(100);
                             --nTimerSeconds;
@@ -1426,14 +1423,14 @@ void ProcessFileOrTest()
             // see if we are chaining, if so, get the next file, if a folder we're done
             if (ImgInfo.bChainFiles) {
                 // grab the next file
-                if (CurrentFileIndex < FileNames.size() - 1)
-                    ++CurrentFileIndex;
-                if (IsFolder(CurrentFileIndex))
+                if (currentFileIndex < pFileMenu->getItemCount() - 1)
+                    ++currentFileIndex;
+                if (IsFolder(currentFileIndex))
                     break;
                 // handle any chain delay
                 for (int dly = ImgInfo.nChainDelay; dly > 0 && !CheckCancel(); --dly) {
                     line = "Chain Delay: " + String(dly / 10) + "." + String(dly % 10);
-                    DisplayLine(2, line, TFT_WHITE);
+                    DisplayLine(3, line, TFT_WHITE);
                     delay(100);
                 }
                 // check for chain wait for keypress
@@ -1463,23 +1460,21 @@ void ProcessFileOrTest()
             break;
         }
         // start again
-        CurrentFileIndex = lastFileIndex;
-        chainCount = ImgInfo.bChainFiles ? FileCountOnly(CurrentFileIndex) : 1;
+        currentFileIndex = pFileMenu->pick();
+        chainCount = ImgInfo.bChainFiles ? FileCountOnly(currentFileIndex) : 1;
         if (ImgInfo.repeatDelay && (nRepeatsLeft > 1) || chainRepeatCount >= 1) {
             FastLED.clear(true);
             // start timer
             nTimerSeconds = ImgInfo.repeatDelay;
             while (nTimerSeconds > 0 && !CheckCancel()) {
                 line = "Repeat Delay: " + String(nTimerSeconds / 10) + "." + String(nTimerSeconds % 10);
-                DisplayLine(2, line, TFT_WHITE);
+                DisplayLine(3, line, TFT_WHITE);
                 line = "";
                 delay(100);
                 --nTimerSeconds;
             }
         }
     }
-    if (ImgInfo.bChainFiles)
-        CurrentFileIndex = lastFileIndex;
     FastLED.clear(true);
     m5.Lcd.fillScreen(TFT_BLACK);
     bIsRunning = false;

@@ -76,6 +76,7 @@ bool bIsRunning = false;                // system state, idle or running
 bool bRecordingMacro = false;
 bool bRunningMacro = false;
 RTC_DATA_ATTR int nRepeatCountMacro = 1;                // repeat count for macros
+RTC_DATA_ATTR int nMacroRepeatsLeft = 0;
 
                                                         // functions
 void DisplayLine(int line, String text, int indent = 0, int16_t color = TFT_WHITE);
