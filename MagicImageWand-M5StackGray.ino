@@ -830,20 +830,23 @@ void ShowBmp()
     M5.Lcd.fillScreen(TFT_BLACK);
 }
 
-void SetLedBrightness()
+bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval)
 {
     int inc = 1;
-    int originalVal = LedInfo.nLEDBrightness;
-    ezProgressBar bl("LED brightness", "Set brightness", "left # - # OK # Cancel # right # +");
+    int originalVal = value;
+	ezProgressBar bl(title, "From " + String(minval) + " to " + String(maxval), "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
-    int lastVal = LedInfo.nLEDBrightness;
+    int lastVal = value;
     int lastInc = inc;
+    ez.canvas.x(100);
+    ez.canvas.y(180);
+    ez.canvas.print("value: " + String(value) + "   ");
     while (true) {
         String b = ez.buttons.poll();
         if (b == "right")
-            LedInfo.nLEDBrightness += inc;
-        else if (b == "left")
-            LedInfo.nLEDBrightness -= inc;
+            value += inc;
+		else if (b == "left")
+            value -= inc;
         else if (b == "+") {
             inc *= 10;
         }
@@ -854,29 +857,45 @@ void SetLedBrightness()
             break;
         }
         else if (b == "Cancel") {
-			if (ez.msgBox("Restore original", "Cancel?", "Cancel # OK #") == "OK") {
-                LedInfo.nLEDBrightness = originalVal;
+            if (ez.msgBox("Restore original", "Cancel?", "Cancel # OK #") == "OK") {
+                value = originalVal;
                 break;
             }
             ez.buttons.show("left # - # OK # Cancel # right # +");
             ez.canvas.font(&FreeSans12pt7b);
         }
         inc = constrain(inc, 1, 100);
-        LedInfo.nLEDBrightness = constrain(LedInfo.nLEDBrightness, 1, 255);
-        bl.value((float)(LedInfo.nLEDBrightness / 2.55));
+        value = constrain(value, minval, maxval);
+		bl.value(((float)value / ((float)(maxval - minval) / 100.0)));
         if (lastInc != inc) {
             ez.canvas.x(0);
             ez.canvas.y(180);
             ez.canvas.print("inc " + String(inc) + "   ");
             lastInc = inc;
         }
-        if (lastVal != LedInfo.nLEDBrightness) {
+        if (lastVal != value) {
             ez.canvas.x(100);
             ez.canvas.y(180);
-            ez.canvas.print("val " + String(LedInfo.nLEDBrightness) + "   ");
-            lastVal = LedInfo.nLEDBrightness;
+            ez.canvas.print("value: " + String(value) + "   ");
+            lastVal = value;
         }
     }
+    String caption = menu->pickCaption();
+	caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
+    menu->setCaption(menu->pickName(), caption + String(value));
+    return true;
+}
+
+// set the LED brightness
+bool SetLedBrightness(ezMenu* menu)
+{
+	return GetInteger(menu, "LED Brightness", LedInfo.nLEDBrightness, 1, 255);
+}
+
+// set the pixel count
+bool SetLedPixelCount(ezMenu* menu)
+{
+    return GetInteger(menu, "Total Pixels", LedInfo.nPixelCount, 1, 512);
 }
 
 // Strip settings
@@ -885,18 +904,14 @@ void LEDStripSettings()
     ezMenu settings("LED Strip Settings");
     settings.txtSmall();
     settings.buttons("up # Back # Select # # down # ");
-    settings.addItem("brightness | Brightness\t" + String(LedInfo.nLEDBrightness));
-	settings.addItem("controllers | Controllers\t" + String(LedInfo.bSecondController ? 2 : 1));
-    settings.addItem("Pixels\t" + String(LedInfo.nPixelCount));
+	settings.addItem("Brightness\t" + String(LedInfo.nLEDBrightness), NULL, SetLedBrightness);
+	settings.addItem("Controllers\t" + String(LedInfo.bSecondController ? 2 : 1));
+	settings.addItem("Pixel Count\t" + String(LedInfo.nPixelCount), NULL, SetLedPixelCount);
 	while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
             break;
-		else if (pick == "brightness") {
-            SetLedBrightness();
-            settings.setCaption("brightness","Brightness\t" + String(LedInfo.nLEDBrightness));
-		}
-        else if (pick == "controllers") {
+        else if (pick == "Controllers") {
             LedInfo.bSecondController = !LedInfo.bSecondController;
 			settings.setCaption("controllers", "Controllers\t" + String(LedInfo.bSecondController ? 2 : 1));
         }
