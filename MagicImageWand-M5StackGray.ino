@@ -10,8 +10,8 @@
 //#define M5STACK_200Q
 
 #include <stack>
-
-#include <M5ez.h>
+#include "ezMenuPlus.h"
+//#include <M5ez.h>
 #include <M5Stack.h>
 #include <EEPROM.h>
 
@@ -25,7 +25,7 @@
 #define MAIN_DECLARED
 String exit_button = "Exit";
 
-ezMenu builtinMenu("Built-Ins");
+ezMenuPlus builtinMenu("Built-Ins");
 
 float accX = 0.0F;
 float accY = 0.0F;
@@ -104,9 +104,9 @@ void setup() {
     FastLED.clear(true);
 }
 
-ezMenu* pFileMenu = NULL;
+ezMenuPlus* pFileMenu = NULL;
 
-ezMenu* activeMenu;
+ezMenuPlus* activeMenu;
 
 void loop() {
     static std::stack<int> selectionStack;
@@ -121,7 +121,7 @@ void loop() {
         if (bReloadSD) {
             if (pFileMenu != NULL)
                 delete pFileMenu;
-			pFileMenu = new ezMenu(currentFolder);
+			pFileMenu = new ezMenuPlus(currentFolder);
             pFileMenu->setSortFunction(CompareNames);
             if (!GetFileNames(currentFolder, pFileMenu)) {
                 bRetry = true;
@@ -338,7 +338,7 @@ void LevelDisplay()
 // handle the settings menu
 void SettingsMenu()
 {
-    ezMenu settings("Settings");
+    ezMenuPlus settings("Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("Image Settings", ImageSettings);
@@ -361,7 +361,7 @@ void reboot()
 }
 
 //void mainmenu_menus() {
-//    ezMenu submenu("This is a sub menu");
+//    ezMenuPlus submenu("This is a sub menu");
 //    submenu.txtSmall();
 //    submenu.buttons("up#Back#select##down#");
 //    submenu.addItem("You can make small menus");
@@ -385,7 +385,7 @@ void reboot()
 //    ez.header.show("A simple menu in code...");
 //    ez.canvas.lmargin(10);
 //    ez.canvas.println("");
-//    ez.canvas.println("ezMenu menu(\"Main menu\");");
+//    ez.canvas.println("ezMenuPlus menu(\"Main menu\");");
 //    ez.canvas.println("menu.addItem(\"Option 1\");");
 //    ez.canvas.println("menu.addItem(\"Option 2\");");
 //    ez.canvas.println("menu.addItem(\"Option 3\");");
@@ -396,13 +396,13 @@ void reboot()
 //    ez.canvas.println("}");
 //    ez.buttons.wait("OK");
 //
-//    ezMenu fontmenu("Menus can change looks");
+//    ezMenuPlus fontmenu("Menus can change looks");
 //    fontmenu.txtFont(&Satisfy_24);
 //    fontmenu.addItem("Menus can use");
 //    fontmenu.addItem("Various Fonts");
 //    fontmenu.runOnce();
 //
-//    ezMenu delmenu("Menus are dynamic");
+//    ezMenuPlus delmenu("Menus are dynamic");
 //    delmenu.txtSmall();
 //    delmenu.addItem("You can delete items");
 //    delmenu.addItem("While the menu runs");
@@ -418,7 +418,7 @@ void reboot()
 //}
 
 //void mainmenu_image() {
-//    ezMenu images;
+//    ezMenuPlus images;
 //    images.imgBackground(TFT_BLACK);
 //    images.imgFromTop(40);
 //    images.imgCaptionColor(TFT_WHITE);
@@ -568,7 +568,7 @@ void sysInfoPage2() {
 
 // read the files from the card or list the built-ins
 // look for start.MIW, and process it, but don't add it to the list
-bool GetFileNames(String dir, ezMenu* menu) {
+bool GetFileNames(String dir, ezMenuPlus* menu) {
 	//if (nBootCount == 0)
 	//	CurrentFileIndex = 0;
     uint8_t cardType = SD.cardType();
@@ -956,7 +956,7 @@ bool SetRepeatDelay(ezMenu* menu)
 // Strip settings
 void LEDStripSettings()
 {
-    ezMenu settings("LED Strip Settings");
+    ezMenuPlus settings("LED Strip Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("Brightness\t" + String(LedInfo.nLEDBrightness), NULL, SetLedBrightness);
@@ -971,7 +971,7 @@ void LEDStripSettings()
 
 void RepeatSettings()
 {
-    ezMenu settings("Repeat & Chain Settings");
+    ezMenuPlus settings("Repeat & Chain Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
     settings.addItem("Repeat Count\t" + String(ImgInfo.repeatCount), NULL, SetRepeatCount);
@@ -987,7 +987,7 @@ void RepeatSettings()
 // Image settings
 void ImageSettings()
 {
-    ezMenu settings("Image Settings");
+    ezMenuPlus settings("Image Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
     settings.addItem("Column Hold Time\t" + String(ImgInfo.nColumnHoldTime), NULL, SetColumnHold);
