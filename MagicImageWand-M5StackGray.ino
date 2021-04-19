@@ -76,30 +76,31 @@ void setup() {
     leds = (CRGB*)calloc(LedInfo.nPixelCount, sizeof(CRGB));
     FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, LedInfo.nPixelCount);
     FastLED.setBrightness(LedInfo.nLEDBrightness);
-    for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
-        SetPixel(ix, CRGB::Blue);
-        FastLED.show();
-        SetPixel(ix, CRGB::Black);
-        delayMicroseconds(50);
-    }
-	for (int ix = LedInfo.nPixelCount - 1; ix >= 0; --ix) {
-        SetPixel(ix, CRGB::Green);
-        FastLED.show();
-        SetPixel(ix, CRGB::Black);
-        delayMicroseconds(50);
-    }
-    for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
-        SetPixel(ix, CRGB::Red);
-        FastLED.show();
-        SetPixel(ix, CRGB::Black);
-        delayMicroseconds(50);
-    }
-    for (int ix = LedInfo.nPixelCount - 1; ix >= 0; --ix) {
-        SetPixel(ix, CRGB::Yellow);
-        FastLED.show();
-        SetPixel(ix, CRGB::Black);
-        delayMicroseconds(50);
-    }
+ //   for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
+ //       // note that SetPixel protects out of range locations
+	//	SetPixel(ix, CRGB::Red);
+	//	//SetPixel(ix + 1, CRGB::Green);
+	//	//SetPixel(ix + 2, CRGB::Blue);
+	//	FastLED.show();
+	//	SetPixel(ix, CRGB::Black);
+	//	//SetPixel(ix + 1, CRGB::Black);
+	//	//SetPixel(ix + 2, CRGB::Black);
+	//	delayMicroseconds(50);
+ //   }
+	//for (int ix = LedInfo.nPixelCount - 1; ix >= 0; --ix) {
+ //       // note that SetPixel protects out of range locations
+ //       SetPixel(ix, CRGB::Red);
+ //       //SetPixel(ix + 1, CRGB::Green);
+ //       //SetPixel(ix + 2, CRGB::Blue);
+ //       FastLED.show();
+ //       SetPixel(ix, CRGB::Black);
+ //       //SetPixel(ix + 1, CRGB::Black);
+ //       //SetPixel(ix + 2, CRGB::Black);
+ //       delayMicroseconds(50);
+ //   }
+    fill_rainbow(leds, LedInfo.nPixelCount, 0);
+    FastLED.show();
+    delay(1500);
     FastLED.clear(true);
 }
 
@@ -343,11 +344,11 @@ void SettingsMenu()
 	settings.addItem("Image Settings", ImageSettings);
     settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
-    settings.addItem("System Settings", ez.settings.menu);
     settings.addItem("Level", LevelDisplay);
-    settings.addItem("SysInfo", sysInfo);
+    settings.addItem("System Settings", ez.settings.menu);
     settings.addItem("Power Off", powerOff);
     settings.addItem("Reboot", reboot);
+    settings.addItem("SysInfo", sysInfo);
     //settings.addItem("Exit | Go back to main menu");
     settings.run();
 }
