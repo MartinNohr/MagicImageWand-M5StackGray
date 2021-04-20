@@ -10,8 +10,7 @@
 //#define M5STACK_200Q
 
 #include <stack>
-#include "ezMenuPlus.h"
-//#include <M5ez.h>
+#include <M5ez.h>
 #include <M5Stack.h>
 #include <EEPROM.h>
 
@@ -25,7 +24,7 @@
 #define MAIN_DECLARED
 String exit_button = "Exit";
 
-ezMenuPlus builtinMenu("Built-Ins");
+ezMenu builtinMenu("Built-Ins");
 
 float accX = 0.0F;
 float accY = 0.0F;
@@ -104,9 +103,9 @@ void setup() {
     FastLED.clear(true);
 }
 
-ezMenuPlus* pFileMenu = NULL;
+ezMenu* pFileMenu = NULL;
 
-ezMenuPlus* activeMenu;
+ezMenu* activeMenu;
 
 void loop() {
     static std::stack<int> selectionStack;
@@ -121,7 +120,7 @@ void loop() {
         if (bReloadSD) {
             if (pFileMenu != NULL)
                 delete pFileMenu;
-			pFileMenu = new ezMenuPlus(currentFolder);
+			pFileMenu = new ezMenu(currentFolder);
             pFileMenu->setSortFunction(CompareNames);
             if (!GetFileNames(currentFolder, pFileMenu)) {
                 bRetry = true;
@@ -338,7 +337,7 @@ void LevelDisplay()
 // handle the settings menu
 void SettingsMenu()
 {
-    ezMenuPlus settings("Settings");
+    ezMenu settings("Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("Image Settings", ImageSettings);
@@ -361,7 +360,7 @@ void reboot()
 }
 
 //void mainmenu_menus() {
-//    ezMenuPlus submenu("This is a sub menu");
+//    ezMenu submenu("This is a sub menu");
 //    submenu.txtSmall();
 //    submenu.buttons("up#Back#select##down#");
 //    submenu.addItem("You can make small menus");
@@ -385,7 +384,7 @@ void reboot()
 //    ez.header.show("A simple menu in code...");
 //    ez.canvas.lmargin(10);
 //    ez.canvas.println("");
-//    ez.canvas.println("ezMenuPlus menu(\"Main menu\");");
+//    ez.canvas.println("ezMenu menu(\"Main menu\");");
 //    ez.canvas.println("menu.addItem(\"Option 1\");");
 //    ez.canvas.println("menu.addItem(\"Option 2\");");
 //    ez.canvas.println("menu.addItem(\"Option 3\");");
@@ -396,13 +395,13 @@ void reboot()
 //    ez.canvas.println("}");
 //    ez.buttons.wait("OK");
 //
-//    ezMenuPlus fontmenu("Menus can change looks");
+//    ezMenu fontmenu("Menus can change looks");
 //    fontmenu.txtFont(&Satisfy_24);
 //    fontmenu.addItem("Menus can use");
 //    fontmenu.addItem("Various Fonts");
 //    fontmenu.runOnce();
 //
-//    ezMenuPlus delmenu("Menus are dynamic");
+//    ezMenu delmenu("Menus are dynamic");
 //    delmenu.txtSmall();
 //    delmenu.addItem("You can delete items");
 //    delmenu.addItem("While the menu runs");
@@ -418,7 +417,7 @@ void reboot()
 //}
 
 //void mainmenu_image() {
-//    ezMenuPlus images;
+//    ezMenu images;
 //    images.imgBackground(TFT_BLACK);
 //    images.imgFromTop(40);
 //    images.imgCaptionColor(TFT_WHITE);
@@ -568,7 +567,7 @@ void sysInfoPage2() {
 
 // read the files from the card or list the built-ins
 // look for start.MIW, and process it, but don't add it to the list
-bool GetFileNames(String dir, ezMenuPlus* menu) {
+bool GetFileNames(String dir, ezMenu* menu) {
 	//if (nBootCount == 0)
 	//	CurrentFileIndex = 0;
     uint8_t cardType = SD.cardType();
@@ -841,23 +840,26 @@ String FormatInteger(int num, int decimals)
     return str;
 }
 
-// handle integer entry
-bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval, int decimals)
+bool HandleMenuInteger(ezMenu* menu)
 {
+    int minVal = menu->getItemMinVal();
+    int maxVal = menu->getItemMaxVal();
+    int decimals = menu->getItemDecimals();
+    int value = *menu->getItemValue();
     int inc = 1;
     int originalVal = value;
-	ezProgressBar bl(title, "From " + FormatInteger(minval, decimals) + " to " + FormatInteger(maxval, decimals), "left # - # OK # Cancel # right # +");
+    ezProgressBar bl(menu->getItemName(), "From " + FormatInteger(minVal, decimals) + " to " + FormatInteger(maxVal, decimals), "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
     int lastVal = value;
     int lastInc = inc;
     ez.canvas.x(140);
     ez.canvas.y(180);
-	ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
+    ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
     while (true) {
         String b = ez.buttons.poll();
         if (b == "right")
             value += inc;
-		else if (b == "left")
+        else if (b == "left")
             value -= inc;
         else if (b == "+") {
             inc *= 10;
@@ -877,27 +879,32 @@ bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval, i
             ez.canvas.font(&FreeSans12pt7b);
         }
         inc = constrain(inc, 1, 100);
-        value = constrain(value, minval, maxval);
-		bl.value(((float)value / ((float)(maxval - minval) / 100.0)));
+        value = constrain(value, minVal, maxVal);
+        bl.value(((float)value / ((float)(maxVal - minVal) / 100.0)));
         if (lastInc != inc) {
             ez.canvas.x(0);
             ez.canvas.y(180);
             uint16_t oldcolor = ez.canvas.color();
             ez.canvas.color(TFT_CYAN);
-			ez.canvas.print("+/- " + FormatInteger(inc, decimals) + "   ");
+            ez.canvas.print("+/- " + FormatInteger(inc, decimals) + "   ");
             ez.canvas.color(oldcolor);
             lastInc = inc;
         }
         if (lastVal != value) {
             ez.canvas.x(140);
             ez.canvas.y(180);
-			ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
+            ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
             lastVal = value;
         }
     }
     String caption = menu->pickCaption();
-	caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
-	menu->setCaption(menu->pickName(), caption + FormatInteger(value, decimals));
+    caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
+    String name = menu->pickName();
+    // strip the \t stuff from the name first, ezMenu concats the value
+    name = name.substring(0, name.lastIndexOf('\t'));
+    menu->setCaption(menu->pickName(), caption + FormatInteger(value, decimals));
+    // store the new value
+    *menu->getItemValue() = value;
     return true;
 }
 
@@ -921,48 +928,16 @@ bool ToggleChain(ezMenu* menu)
     return ToggleBoolean(menu, ImgInfo.bChainFiles, "Yes", "No");
 }
 
-// set the LED brightness
-bool SetLedBrightness(ezMenu* menu)
-{
-	return GetInteger(menu, "LED Brightness", LedInfo.nLEDBrightness, 1, 255);
-}
-
-// set the pixel count
-bool SetLedPixelCount(ezMenu* menu)
-{
-    return GetInteger(menu, "Total Pixels", LedInfo.nPixelCount, 1, 512);
-}
-
-bool SetRepeatCount(ezMenu* menu)
-{
-    return GetInteger(menu, "Image Repeat Count", ImgInfo.repeatCount, 1, 100);
-}
-
-bool SetColumnHold(ezMenu* menu)
-{
-    return GetInteger(menu, "Column Hold Time (mS)", ImgInfo.nColumnHoldTime, 0, 100);
-}
-
-bool SetStartDelay(ezMenu* menu)
-{
-    return GetInteger(menu, "Start Delay (S)", ImgInfo.startDelay, 0, 1000, 1);
-}
-
-bool SetRepeatDelay(ezMenu* menu)
-{
-    return GetInteger(menu, "Start Delay (S)", ImgInfo.repeatDelay, 0, 100, 1);
-}
-
 // Strip settings
 void LEDStripSettings()
 {
-    ezMenuPlus settings("LED Strip Settings");
+    ezMenu settings("LED Strip Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
-	settings.addItem("Brightness\t" + String(LedInfo.nLEDBrightness), NULL, SetLedBrightness);
+	settings.addItem("LED Brightness", &LedInfo.nLEDBrightness, 1, 255, 0, HandleMenuInteger);
 	settings.addItem("Second Controller\t" + String(LedInfo.bSecondController ? "On" : "Off"), NULL, ToggleSecondController);
-	settings.addItem("Pixel Count\t" + String(LedInfo.nPixelCount), NULL, SetLedPixelCount);
-	while (settings.runOnce()) {
+	settings.addItem("Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
+    while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
             break;
@@ -971,12 +946,12 @@ void LEDStripSettings()
 
 void RepeatSettings()
 {
-    ezMenuPlus settings("Repeat & Chain Settings");
+    ezMenu settings("Repeat & Chain Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
-    settings.addItem("Repeat Count\t" + String(ImgInfo.repeatCount), NULL, SetRepeatCount);
-	settings.addItem("Repeat Delay\t" + FormatInteger(ImgInfo.repeatDelay, 1), NULL, SetRepeatDelay);
-	settings.addItem("Chain Files\t" + String(ImgInfo.bChainFiles ? "Yes" : "No"), NULL, ToggleChain);
+	settings.addItem("Repeat Count", &ImgInfo.repeatCount, 1, 100, 0, HandleMenuInteger);
+	settings.addItem("Repeat Delay", &ImgInfo.repeatDelay, 0, 100, 1, HandleMenuInteger);
+    settings.addItem("Chain Files\t" + String(ImgInfo.bChainFiles ? "Yes" : "No"), NULL, ToggleChain);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
@@ -987,11 +962,11 @@ void RepeatSettings()
 // Image settings
 void ImageSettings()
 {
-    ezMenuPlus settings("Image Settings");
+    ezMenu settings("Image Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
-    settings.addItem("Column Hold Time\t" + String(ImgInfo.nColumnHoldTime), NULL, SetColumnHold);
-	settings.addItem("Start Delay\t" + FormatInteger(ImgInfo.startDelay, 1), NULL, SetStartDelay);
+	settings.addItem("Column Hold Time", &ImgInfo.nColumnHoldTime, 0, 100, 0, HandleMenuInteger);
+	settings.addItem("Start Delay", &ImgInfo.startDelay, 0, 1000, 1, HandleMenuInteger);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
