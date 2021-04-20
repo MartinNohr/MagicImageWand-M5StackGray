@@ -842,13 +842,13 @@ String FormatInteger(int num, int decimals)
 
 bool HandleMenuInteger(ezMenu* menu)
 {
-    int minVal = menu->getItemMinVal();
-    int maxVal = menu->getItemMaxVal();
-    int decimals = menu->getItemDecimals();
-    int value = *menu->getItemValue();
+    int minVal = menu->getIntMinVal();
+    int maxVal = menu->getIntMaxVal();
+    int decimals = menu->getIntDecimals();
+    int value = *menu->getIntValue();
     int inc = 1;
     int originalVal = value;
-    ezProgressBar bl(menu->getItemName(), "From " + FormatInteger(minVal, decimals) + " to " + FormatInteger(maxVal, decimals), "left # - # OK # Cancel # right # +");
+    ezProgressBar bl(menu->pickCaption(), "From " + FormatInteger(minVal, decimals) + " to " + FormatInteger(maxVal, decimals), "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
     int lastVal = value;
     int lastInc = inc;
@@ -899,33 +899,20 @@ bool HandleMenuInteger(ezMenu* menu)
     }
     String caption = menu->pickCaption();
     caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
-    String name = menu->pickName();
-    // strip the \t stuff from the name first, ezMenu concats the value
-    name = name.substring(0, name.lastIndexOf('\t'));
     menu->setCaption(menu->pickName(), caption + FormatInteger(value, decimals));
     // store the new value
-    *menu->getItemValue() = value;
+    *menu->getIntValue() = value;
     return true;
 }
 
 // handle boolean toggles
-bool ToggleBoolean(ezMenu* menu, bool& value, char* on, char* off)
+bool ToggleBool(ezMenu* menu)
 {
-    value = !value;
+    *menu->getBoolValue() = !*menu->getBoolValue();
     String caption = menu->pickCaption();
     caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
-	menu->setCaption(menu->pickName(), caption + (value ? on : off));
+    menu->setCaption(menu->pickName(), caption + (*menu->getBoolValue() ? menu->getBoolTrue() : menu->getBoolFalse()));
     return true;
-}
-
-bool ToggleSecondController(ezMenu* menu)
-{
-	return ToggleBoolean(menu, LedInfo.bSecondController, "On", "Off");
-}
-
-bool ToggleChain(ezMenu* menu)
-{
-    return ToggleBoolean(menu, ImgInfo.bChainFiles, "Yes", "No");
 }
 
 // Strip settings
@@ -935,7 +922,7 @@ void LEDStripSettings()
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("LED Brightness", &LedInfo.nLEDBrightness, 1, 255, 0, HandleMenuInteger);
-	settings.addItem("Second Controller\t" + String(LedInfo.bSecondController ? "On" : "Off"), NULL, ToggleSecondController);
+	settings.addItem("Second Controller", &LedInfo.bSecondController, "On", "Off", ToggleBool);
 	settings.addItem("Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
     while (settings.runOnce()) {
         String pick = settings.pickName();
@@ -951,7 +938,7 @@ void RepeatSettings()
     settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("Repeat Count", &ImgInfo.repeatCount, 1, 100, 0, HandleMenuInteger);
 	settings.addItem("Repeat Delay", &ImgInfo.repeatDelay, 0, 100, 1, HandleMenuInteger);
-    settings.addItem("Chain Files\t" + String(ImgInfo.bChainFiles ? "Yes" : "No"), NULL, ToggleChain);
+    settings.addItem("Chain Files", &ImgInfo.bChainFiles, "Yes", "No", ToggleBool);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
