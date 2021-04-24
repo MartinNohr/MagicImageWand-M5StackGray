@@ -175,6 +175,9 @@ void loop() {
             if (BuiltInFiles[ix].menu) {
                 (*BuiltInFiles[ix].menu)();
             }
+            else {
+                ez.msgBox("Built-In Settings", "No settings available", "OK", true, 0, TFT_WHITE);
+            }
         }
 		else {
 			ez.msgBox("How did we get here?", btnpressed);
