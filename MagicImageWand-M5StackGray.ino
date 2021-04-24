@@ -923,16 +923,13 @@ void LEDStripSettings()
     settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("LED Brightness", &LedInfo.nLEDBrightness, 1, 255, 0, HandleMenuInteger);
 	settings.addItem("Second Controller", &LedInfo.bSecondController, "On", "Off", ToggleBool);
-	settings.addItem("Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
+	settings.addItem("Total Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
 	settings.addItem("Gamma Correction", &LedInfo.bGammaCorrection, "On", "Off", ToggleBool);
     settings.addItem("Strip Wiring Mode", &LedInfo.stripsMode, 0, 2, 0, HandleMenuInteger);
     settings.addItem("White Balance Red", &LedInfo.whiteBalance.r, 0, 255, 0, HandleMenuInteger);
     settings.addItem("White Balance Green", &LedInfo.whiteBalance.g, 0, 255, 0, HandleMenuInteger);
     settings.addItem("White Balance Blue", &LedInfo.whiteBalance.b, 0, 255, 0, HandleMenuInteger);
     while (settings.runOnce()) {
-        String pick = settings.pickName();
-        if (pick == "Back")
-            break;
 	}
 }
 
@@ -980,9 +977,6 @@ void ImageSettings()
     settings.addItem("Manual Frame Advance", &ImgInfo.bManualFrameAdvance, "Yes", "No", ToggleBool);
     settings.addItem("Manual Frame Clicks", &ImgInfo.nFramePulseCount, 0, 10, 0, HandleMenuInteger);
     while (settings.runOnce()) {
-        String pick = settings.pickName();
-        if (pick == "Back")
-            break;
     }
 }
 
