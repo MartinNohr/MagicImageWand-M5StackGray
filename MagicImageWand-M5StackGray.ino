@@ -939,9 +939,8 @@ void LEDStripSettings()
 void RepeatSettings()
 {
     ezMenu* pSettings;
-    bool done = false;
     int16_t ix = 1;
-    while (!done) {
+	while (ix != 0) {
 		pSettings = new ezMenu("Repeat & Chain Settings");
 		pSettings->txtSmall();
 		pSettings->buttons("up # # Go # Back # down # ");
@@ -955,13 +954,8 @@ void RepeatSettings()
             pSettings->addItem("Chain Delay", &ImgInfo.nChainDelay, 0, 100, 1, HandleMenuInteger);
             pSettings->addItem("Chain Wait for Key", &ImgInfo.bChainWaitKey, "Yes", "No", ToggleBool);
         }
-        pSettings->setItem(ix);
-		if ((ix = pSettings->runOnce())) {
-			String pick = pSettings->pickName();
-			if (pick == "Back") {
-				done = true;
-			}
-		}
+		pSettings->setItem(ix);
+		ix = pSettings->runOnce();
         delete pSettings;
 	}
 }
