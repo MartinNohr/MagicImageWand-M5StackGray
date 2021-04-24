@@ -960,23 +960,36 @@ void RepeatSettings()
 // Image settings
 void ImageSettings()
 {
-    ezMenu settings("Image Settings");
-    settings.txtSmall();
-    settings.buttons("up # # Go # Back # down # ");
-	settings.addItem("Column Hold Time", &ImgInfo.nColumnHoldTime, 0, 100, 0, HandleMenuInteger);
-    settings.addItem("Fixed Column Time", &ImgInfo.bFixedTime, "Yes", "No", ToggleBool);
-    settings.addItem("Fixed Image Time", &ImgInfo.nFixedImageTime, 0, 30, 0, HandleMenuInteger);
-    settings.addItem("Fade In/Out Frames", &ImgInfo.nFadeInOutFrames, 0, 50, 0, HandleMenuInteger);
-    settings.addItem("Start Delay", &ImgInfo.startDelay, 0, 1000, 1, HandleMenuInteger);
-    settings.addItem("Walk Direction", &ImgInfo.bReverseImage, "Right to Left", "Left to Right", ToggleBool);
-    settings.addItem("Upside Down", &ImgInfo.bUpsideDown, "Yes", "No", ToggleBool);
-    settings.addItem("Double Pixels", &ImgInfo.bDoublePixels, "Yes", "No", ToggleBool);
-    settings.addItem("Mirror Image", &ImgInfo.bMirrorPlayImage, "Yes", "No", ToggleBool);
-    settings.addItem("Mirror Delay", &ImgInfo.nMirrorDelay, 0, 100, 1, HandleMenuInteger);
-    settings.addItem("Divide Height by 2", &ImgInfo.bScaleHeight, "Yes", "No", ToggleBool);
-    settings.addItem("Manual Frame Advance", &ImgInfo.bManualFrameAdvance, "Yes", "No", ToggleBool);
-    settings.addItem("Manual Frame Clicks", &ImgInfo.nFramePulseCount, 0, 10, 0, HandleMenuInteger);
-    while (settings.runOnce()) {
+    ezMenu* pSettings;
+    int16_t ix = 1;
+    while (ix != 0) {
+        pSettings = new ezMenu("Image Settings");
+        pSettings->txtSmall();
+        pSettings->buttons("up # # Go # Back # down # ");
+        pSettings->addItem("Fixed Column Time", &ImgInfo.bFixedTime, "Yes", "No", ToggleBool);
+        if (ImgInfo.bFixedTime) {
+            pSettings->addItem("Fixed Image Time (S)", &ImgInfo.nFixedImageTime, 0, 30, 0, HandleMenuInteger);
+        }
+        else {
+            pSettings->addItem("Column Hold Time (mS)", &ImgInfo.nColumnHoldTime, 0, 100, 0, HandleMenuInteger);
+        }
+        pSettings->addItem("Fade In/Out Frames", &ImgInfo.nFadeInOutFrames, 0, 50, 0, HandleMenuInteger);
+        pSettings->addItem("Start Delay", &ImgInfo.startDelay, 0, 1000, 1, HandleMenuInteger);
+        pSettings->addItem("Walk Direction", &ImgInfo.bReverseImage, "Right to Left", "Left to Right", ToggleBool);
+        pSettings->addItem("Upside Down", &ImgInfo.bUpsideDown, "Yes", "No", ToggleBool);
+        pSettings->addItem("Double Pixels", &ImgInfo.bDoublePixels, "Yes", "No", ToggleBool);
+        pSettings->addItem("Mirror Image", &ImgInfo.bMirrorPlayImage, "Yes", "No", ToggleBool);
+        if (ImgInfo.bMirrorPlayImage) {
+            pSettings->addItem("Mirror Delay", &ImgInfo.nMirrorDelay, 0, 100, 1, HandleMenuInteger);
+        }
+        pSettings->addItem("Divide Height by 2", &ImgInfo.bScaleHeight, "Yes", "No", ToggleBool);
+        pSettings->addItem("Manual Frame Advance", &ImgInfo.bManualFrameAdvance, "Yes", "No", ToggleBool);
+        if (ImgInfo.bManualFrameAdvance) {
+            pSettings->addItem("Manual Frame Clicks", &ImgInfo.nFramePulseCount, 0, 10, 0, HandleMenuInteger);
+        }
+        pSettings->setItem(ix);
+        ix = pSettings->runOnce();
+        delete pSettings;
     }
 }
 
