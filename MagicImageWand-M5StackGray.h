@@ -83,6 +83,17 @@ void DisplayLine(int line, String text, int indent = 0, int16_t color = TFT_WHIT
 void IRAM_ATTR SetPixel(int ix, CRGB pixel, int column = 0, int totalColumns = 1);
 bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval, int decimals = 0);
 
+// adjustment values for builtins
+RTC_DATA_ATTR uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+// bouncing balls
+RTC_DATA_ATTR int nBouncingBallsCount = 4;
+RTC_DATA_ATTR int nBouncingBallsDecay = 1000;
+RTC_DATA_ATTR int nBouncingBallsFirstColor = 0;   // first color, wraps to get all 32
+RTC_DATA_ATTR int nBouncingBallsChangeColors = 0; // how many 100 count cycles to wait for change
+// bpm
+RTC_DATA_ATTR int nBpmBeatsPerMinute = 62;
+RTC_DATA_ATTR bool bBpmCycleHue = false;
+
 // built-in "files"
 struct BuiltInItem {
     const char* text;
@@ -91,7 +102,8 @@ struct BuiltInItem {
 };
 typedef BuiltInItem BuiltInItem;
 void BarberPole();
-void TestBouncingBalls() {};
+void TestBpm();
+void TestBouncingBalls();
 void CheckerBoard() {};
 void RandomBars() {};
 void RunningDot() {};
@@ -102,7 +114,6 @@ void TestCylon() {};
 void TestRainbow() {};
 void TestJuggle() {};
 void TestSine() {};
-void TestBpm() {};
 void TestConfetti() {};
 void DisplayLedLightBar() {};
 void TestStripes() {};

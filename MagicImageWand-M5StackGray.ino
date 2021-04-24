@@ -1524,3 +1524,147 @@ CRGB:CRGB red, white, blue;
         delay(ImgInfo.nColumnHoldTime);
     }
 }
+
+void TestBpm()
+{
+    gHue = 0;
+    bool done = false;
+    while (!done) {
+        EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
+            bpm();
+            FastLED.show();
+        }
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+    }
+}
+
+void bpm()
+{
+    // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+    CRGBPalette16 palette = PartyColors_p;
+    uint8_t beat = beatsin8(nBpmBeatsPerMinute, 64, 255);
+    for (int i = 0; i < LedInfo.nPixelCount; i++) { //9948
+        SetPixel(i, ColorFromPalette(palette, gHue + (i * 2), beat - gHue + (i * 10)));
+    }
+    if (bBpmCycleHue)
+        ++gHue;
+}
+
+// up to 32 bouncing balls
+void TestBouncingBalls() {
+    CRGB colors[] = {
+        CRGB::White,
+        CRGB::Red,
+        CRGB::Green,
+        CRGB::Blue,
+        CRGB::Yellow,
+        CRGB::Cyan,
+        CRGB::Magenta,
+        CRGB::Grey,
+        CRGB::RosyBrown,
+        CRGB::RoyalBlue,
+        CRGB::SaddleBrown,
+        CRGB::Salmon,
+        CRGB::SandyBrown,
+        CRGB::SeaGreen,
+        CRGB::Seashell,
+        CRGB::Sienna,
+        CRGB::Silver,
+        CRGB::SkyBlue,
+        CRGB::SlateBlue,
+        CRGB::SlateGray,
+        CRGB::SlateGrey,
+        CRGB::Snow,
+        CRGB::SpringGreen,
+        CRGB::SteelBlue,
+        CRGB::Tan,
+        CRGB::Teal,
+        CRGB::Thistle,
+        CRGB::Tomato,
+        CRGB::Turquoise,
+        CRGB::Violet,
+        CRGB::Wheat,
+        CRGB::WhiteSmoke,
+    };
+
+    BouncingColoredBalls(nBouncingBallsCount, colors);
+    FastLED.clear(true);
+}
+
+void BouncingColoredBalls(int balls, CRGB colors[]) {
+    time_t startsec = time(NULL);
+    float Gravity = -9.81;
+    int StartHeight = 1;
+
+    float* Height = (float*)calloc(balls, sizeof(float));
+    float* ImpactVelocity = (float*)calloc(balls, sizeof(float));
+    float* TimeSinceLastBounce = (float*)calloc(balls, sizeof(float));
+    int* Position = (int*)calloc(balls, sizeof(int));
+    long* ClockTimeSinceLastBounce = (long*)calloc(balls, sizeof(long));
+    float* Dampening = (float*)calloc(balls, sizeof(float));
+    float ImpactVelocityStart = sqrt(-2 * Gravity * StartHeight);
+
+    for (int i = 0; i < balls; i++) {
+        ClockTimeSinceLastBounce[i] = millis();
+        Height[i] = StartHeight;
+        Position[i] = 0;
+        ImpactVelocity[i] = ImpactVelocityStart;
+        TimeSinceLastBounce[i] = 0;
+        Dampening[i] = 0.90 - float(i) / pow(balls, 2);
+    }
+
+    long percent;
+    int colorChangeCounter = 0;
+    bool done = false;
+    while (!done) {
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+        for (int i = 0; i < balls; i++) {
+            if (CheckCancel()) {
+                done = true;
+                break;
+            }
+            TimeSinceLastBounce[i] = millis() - ClockTimeSinceLastBounce[i];
+            Height[i] = 0.5 * Gravity * pow(TimeSinceLastBounce[i] / nBouncingBallsDecay, 2.0) + ImpactVelocity[i] * TimeSinceLastBounce[i] / nBouncingBallsDecay;
+
+            if (Height[i] < 0) {
+                Height[i] = 0;
+                ImpactVelocity[i] = Dampening[i] * ImpactVelocity[i];
+                ClockTimeSinceLastBounce[i] = millis();
+
+                if (ImpactVelocity[i] < 0.01) {
+                    ImpactVelocity[i] = ImpactVelocityStart;
+                }
+            }
+            Position[i] = round(Height[i] * (LedInfo.nPixelCount - 1) / StartHeight);
+        }
+
+        for (int i = 0; i < balls; i++) {
+            int ix;
+            if (CheckCancel()) {
+                done = true;
+                break;
+            }
+            ix = (i + nBouncingBallsFirstColor) % 32;
+            SetPixel(Position[i], colors[ix]);
+        }
+        if (nBouncingBallsChangeColors && colorChangeCounter++ > (nBouncingBallsChangeColors * 100)) {
+            ++nBouncingBallsFirstColor;
+            colorChangeCounter = 0;
+        }
+        FastLED.show();
+        delayMicroseconds(50);
+        FastLED.clear();
+    }
+    free(Height);
+    free(ImpactVelocity);
+    free(TimeSinceLastBounce);
+    free(Position);
+    free(ClockTimeSinceLastBounce);
+    free(Dampening);
+}
