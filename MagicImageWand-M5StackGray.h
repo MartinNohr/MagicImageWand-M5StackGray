@@ -90,7 +90,7 @@ struct BuiltInItem {
     //MenuItem* menu;
 };
 typedef BuiltInItem BuiltInItem;
-void BarberPole() {};
+void BarberPole();
 void TestBouncingBalls() {};
 void CheckerBoard() {};
 void RandomBars() {};
