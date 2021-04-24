@@ -116,11 +116,12 @@ RTC_DATA_ATTR int nRainbowPulseStartColor = 0;
 struct BuiltInItem {
     const char* text;
     void(*function)();
-    //MenuItem* menu;
+	void(*menu)();
 };
 typedef BuiltInItem BuiltInItem;
 void BarberPole();
 void TestBpm();
+void BpmMenu();
 void TestBouncingBalls();
 void CheckerBoard() {};
 void RandomBars() {};
@@ -140,7 +141,7 @@ void RainbowPulse();
 void TestWedge() {};
 BuiltInItem BuiltInFiles[] = {
     {"Barber Pole",BarberPole},
-    {"Beats",TestBpm/*,BpmMenu*/},
+    {"Beats",TestBpm,BpmMenu},
     {"Bouncy Balls",TestBouncingBalls/*,BouncingBallsMenu*/},
     {"CheckerBoard",CheckerBoard/*,CheckerBoardMenu*/},
     {"Confetti",TestConfetti/*,ConfettiMenu*/},

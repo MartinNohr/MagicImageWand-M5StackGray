@@ -169,6 +169,13 @@ void loop() {
             ShowBmp();
 			//ez.msgBox("preview: ", String(activeMenu->pickName()));
 		}
+        else if (btnpressed == "Settings") {
+            // internal settings
+            int ix = activeMenu->pick() - 1;
+            if (BuiltInFiles[ix].menu) {
+                (*BuiltInFiles[ix].menu)();
+            }
+        }
 		else {
 			ez.msgBox("How did we get here?", btnpressed);
 		}
@@ -1536,6 +1543,22 @@ void bpm()
     }
     if (bBpmCycleHue)
         ++gHue;
+}
+
+void BpmMenu()
+{
+    ezMenu* pSettings;
+    int16_t ix = 1;
+    while (ix != 0) {
+        pSettings = new ezMenu("Beats Settings");
+        pSettings->txtSmall();
+        pSettings->buttons("up # # Go # Back # down # ");
+        pSettings->addItem("Beats per minute:", &nBpmBeatsPerMinute, 1, 300, 0, HandleMenuInteger);
+		pSettings->addItem("Cycle Hue:", &bBpmCycleHue, "Yes", "No", ToggleBool);
+		pSettings->setItem(ix);
+        ix = pSettings->runOnce();
+        delete pSettings;
+    }
 }
 
 // up to 32 bouncing balls
