@@ -924,6 +924,11 @@ void LEDStripSettings()
 	settings.addItem("LED Brightness", &LedInfo.nLEDBrightness, 1, 255, 0, HandleMenuInteger);
 	settings.addItem("Second Controller", &LedInfo.bSecondController, "On", "Off", ToggleBool);
 	settings.addItem("Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
+	settings.addItem("Gamma Correction", &LedInfo.bGammaCorrection, "On", "Off", ToggleBool);
+    settings.addItem("Strip Wiring Mode", &LedInfo.stripsMode, 0, 2, 0, HandleMenuInteger);
+    settings.addItem("White Balance Red", &LedInfo.whiteBalance.r, 0, 255, 0, HandleMenuInteger);
+    settings.addItem("White Balance Green", &LedInfo.whiteBalance.g, 0, 255, 0, HandleMenuInteger);
+    settings.addItem("White Balance Blue", &LedInfo.whiteBalance.b, 0, 255, 0, HandleMenuInteger);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
@@ -939,6 +944,9 @@ void RepeatSettings()
 	settings.addItem("Repeat Count", &ImgInfo.repeatCount, 1, 100, 0, HandleMenuInteger);
 	settings.addItem("Repeat Delay", &ImgInfo.repeatDelay, 0, 100, 1, HandleMenuInteger);
     settings.addItem("Chain Files", &ImgInfo.bChainFiles, "Yes", "No", ToggleBool);
+    settings.addItem("Chain Repeats", &ImgInfo.nChainRepeats, 0, 100, 0, HandleMenuInteger);
+    settings.addItem("Chain Delay", &ImgInfo.nChainDelay, 0, 100, 1, HandleMenuInteger);
+    settings.addItem("Chain Wait for Key", &ImgInfo.bChainWaitKey, "Yes", "No", ToggleBool);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")
@@ -953,7 +961,18 @@ void ImageSettings()
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
 	settings.addItem("Column Hold Time", &ImgInfo.nColumnHoldTime, 0, 100, 0, HandleMenuInteger);
-	settings.addItem("Start Delay", &ImgInfo.startDelay, 0, 1000, 1, HandleMenuInteger);
+    settings.addItem("Fixed Column Time", &ImgInfo.bFixedTime, "Yes", "No", ToggleBool);
+    settings.addItem("Fixed Image Time", &ImgInfo.nFixedImageTime, 0, 30, 0, HandleMenuInteger);
+    settings.addItem("Fade In/Out Frames", &ImgInfo.nFadeInOutFrames, 0, 50, 0, HandleMenuInteger);
+    settings.addItem("Start Delay", &ImgInfo.startDelay, 0, 1000, 1, HandleMenuInteger);
+    settings.addItem("Walk Direction", &ImgInfo.bReverseImage, "Right to Left", "Left to Right", ToggleBool);
+    settings.addItem("Upside Down", &ImgInfo.bUpsideDown, "Yes", "No", ToggleBool);
+    settings.addItem("Double Pixels", &ImgInfo.bDoublePixels, "Yes", "No", ToggleBool);
+    settings.addItem("Mirror Image", &ImgInfo.bMirrorPlayImage, "Yes", "No", ToggleBool);
+    settings.addItem("Mirror Delay", &ImgInfo.nMirrorDelay, 0, 100, 1, HandleMenuInteger);
+    settings.addItem("Divide Height by 2", &ImgInfo.bScaleHeight, "Yes", "No", ToggleBool);
+    settings.addItem("Manual Frame Advance", &ImgInfo.bManualFrameAdvance, "Yes", "No", ToggleBool);
+    settings.addItem("Manual Frame Clicks", &ImgInfo.nFramePulseCount, 0, 10, 0, HandleMenuInteger);
     while (settings.runOnce()) {
         String pick = settings.pickName();
         if (pick == "Back")

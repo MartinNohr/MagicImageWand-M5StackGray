@@ -117,12 +117,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\libraries\M5ez\examples\M5ez-demo\raw_githubusercontent_com.h" />
-    <ClInclude Include="..\libraries\M5ez\src\M5ez.h" />
     <ClInclude Include="MagicImageWand-M5StackGray.h" />
     <ClInclude Include="__vm\.MagicImageWand-M5StackGray.vsarduino.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\libraries\M5ez\src\M5ez.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
