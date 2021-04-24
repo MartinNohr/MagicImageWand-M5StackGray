@@ -66,7 +66,8 @@ void setup() {
     esp_timer_create(&oneshot_LED_timer_args, &oneshot_LED_timer);
     builtinMenu.txtSmall();
     ez.msgBox("Initializing", "LED test", "", false);
-    builtinMenu.setSortFunction(CompareNames);
+    // don't sort, we need the list in the same order as the one in the .h list of built-ins
+    //builtinMenu.setSortFunction(CompareNames);
     for (BuiltInItem bi : BuiltInFiles) {
         builtinMenu.addItem(bi.text);
     }
@@ -113,7 +114,7 @@ void loop() {
     static bool bReloadSD = true;
     bool bRetry = false;
     if (bShowBuiltInTests) {
-        builtinMenu.buttons("up # # Go # Menu # down # SD");
+        builtinMenu.buttons("up # Settings # Go # Menu # down # SD");
         activeMenu = &builtinMenu;
     }
     else {
@@ -768,7 +769,7 @@ void LEDStripSettings()
 	settings.addItem("LED Brightness", &LedInfo.nLEDBrightness, 1, 255, 0, HandleMenuInteger);
 	settings.addItem("Second Controller", &LedInfo.bSecondController, "On", "Off", ToggleBool);
 	settings.addItem("Total Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
-    settings.addItem("Maximum Current (mA)", &LedInfo.nStripMaxCurrent, 100, 10000, 0, HandleMenuInteger);
+    settings.addItem("Maximum Current (mA)", &LedInfo.nStripMaxCurrent, 100, 20000, 0, HandleMenuInteger);
 	settings.addItem("Gamma Correction", &LedInfo.bGammaCorrection, "On", "Off", ToggleBool);
     settings.addItem("Strip Wiring Mode", &LedInfo.stripsMode, 0, 2, 0, HandleMenuInteger);
     settings.addItem("White Balance Red", &LedInfo.whiteBalance.r, 0, 255, 0, HandleMenuInteger);
@@ -1323,10 +1324,9 @@ void ProcessFileOrTest()
                 }
                 DisplayLine(4, line);
                 if (bShowBuiltInTests) {
-                    ez.buttons.show(ImgInfo.bManualFrameAdvance ? "-Column # # # Cancel # +Column #" : "# # # Cancel # #");
+                    ez.buttons.show("# # # Cancel # #");
                     // run the test
-                    BarberPole();
-                    //(*BuiltInFiles[CurrentFileIndex].function)();
+					(*BuiltInFiles[currentFileIndex - 1].function)();
                 }
                 else {
                     if (nRepeatCountMacro > 1 && bRunningMacro) {
