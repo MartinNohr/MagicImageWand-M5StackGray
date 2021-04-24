@@ -938,20 +938,30 @@ void LEDStripSettings()
 
 void RepeatSettings()
 {
-    ezMenu settings("Repeat & Chain Settings");
-    settings.txtSmall();
-    settings.buttons("up # # Go # Back # down # ");
-	settings.addItem("Repeat Count", &ImgInfo.repeatCount, 1, 100, 0, HandleMenuInteger);
-	settings.addItem("Repeat Delay", &ImgInfo.repeatDelay, 0, 100, 1, HandleMenuInteger);
-    settings.addItem("Chain Files", &ImgInfo.bChainFiles, "Yes", "No", ToggleBool);
-    settings.addItem("Chain Repeats", &ImgInfo.nChainRepeats, 0, 100, 0, HandleMenuInteger);
-    settings.addItem("Chain Delay", &ImgInfo.nChainDelay, 0, 100, 1, HandleMenuInteger);
-    settings.addItem("Chain Wait for Key", &ImgInfo.bChainWaitKey, "Yes", "No", ToggleBool);
-    while (settings.runOnce()) {
-        String pick = settings.pickName();
-        if (pick == "Back")
-            break;
-    }
+    ezMenu* pSettings;
+    bool done = false;
+    int16_t ix = 1;
+    while (!done) {
+		pSettings = new ezMenu("Repeat & Chain Settings");
+		pSettings->txtSmall();
+		pSettings->buttons("up # # Go # Back # down # ");
+		pSettings->addItem("Repeat Count", &ImgInfo.repeatCount, 1, 100, 0, HandleMenuInteger);
+		pSettings->addItem("Repeat Delay", &ImgInfo.repeatDelay, 0, 100, 1, HandleMenuInteger);
+		pSettings->addItem("Chain Files", &ImgInfo.bChainFiles, "Yes", "No", ToggleBool);
+        if (ImgInfo.bChainFiles) {
+            pSettings->addItem("Chain Repeats", &ImgInfo.nChainRepeats, 0, 100, 0, HandleMenuInteger);
+            pSettings->addItem("Chain Delay", &ImgInfo.nChainDelay, 0, 100, 1, HandleMenuInteger);
+            pSettings->addItem("Chain Wait for Key", &ImgInfo.bChainWaitKey, "Yes", "No", ToggleBool);
+        }
+        pSettings->setItem(ix);
+		if ((ix = pSettings->runOnce())) {
+			String pick = pSettings->pickName();
+			if (pick == "Back") {
+				done = true;
+			}
+		}
+        delete pSettings;
+	}
 }
 
 // Image settings
