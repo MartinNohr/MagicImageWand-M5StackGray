@@ -55,6 +55,7 @@ struct LED_INFO {
         int g;
         int b;
     } whiteBalance = { 255,255,255 };
+    int nStripMaxCurrent = 2000;              // maximum milliamps to allow
 };
 typedef LED_INFO LED_INFO;
 RTC_DATA_ATTR LED_INFO LedInfo;

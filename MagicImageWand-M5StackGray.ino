@@ -75,7 +75,8 @@ void setup() {
     leds = (CRGB*)calloc(LedInfo.nPixelCount, sizeof(CRGB));
     FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, LedInfo.nPixelCount);
     FastLED.setBrightness(LedInfo.nLEDBrightness);
- //   for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
+	FastLED.setMaxPowerInVoltsAndMilliamps(5, LedInfo.nStripMaxCurrent);
+    //   for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
  //       // note that SetPixel protects out of range locations
 	//	SetPixel(ix, CRGB::Red);
 	//	//SetPixel(ix + 1, CRGB::Green);
@@ -878,7 +879,7 @@ bool HandleMenuInteger(ezMenu* menu)
             ez.buttons.show("left # - # OK # Cancel # right # +");
             ez.canvas.font(&FreeSans12pt7b);
         }
-        inc = constrain(inc, 1, 100);
+        inc = constrain(inc, 1, maxVal);
         value = constrain(value, minVal, maxVal);
         bl.value(((float)value / ((float)(maxVal - minVal) / 100.0)));
         if (lastInc != inc) {
@@ -924,6 +925,7 @@ void LEDStripSettings()
 	settings.addItem("LED Brightness", &LedInfo.nLEDBrightness, 1, 255, 0, HandleMenuInteger);
 	settings.addItem("Second Controller", &LedInfo.bSecondController, "On", "Off", ToggleBool);
 	settings.addItem("Total Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
+    settings.addItem("Maximum Current (mA)", &LedInfo.nStripMaxCurrent, 100, 10000, 0, HandleMenuInteger);
 	settings.addItem("Gamma Correction", &LedInfo.bGammaCorrection, "On", "Off", ToggleBool);
     settings.addItem("Strip Wiring Mode", &LedInfo.stripsMode, 0, 2, 0, HandleMenuInteger);
     settings.addItem("White Balance Red", &LedInfo.whiteBalance.r, 0, 255, 0, HandleMenuInteger);
@@ -1449,6 +1451,7 @@ void ProcessFileOrTest()
     // set the basic LED info
     FastLED.setTemperature(CRGB(LedInfo.whiteBalance.r, LedInfo.whiteBalance.g, LedInfo.whiteBalance.b));
     FastLED.setBrightness(LedInfo.nLEDBrightness);
+    FastLED.setMaxPowerInVoltsAndMilliamps(5, LedInfo.nStripMaxCurrent);
     line = "";
     while (chainRepeatCount-- > 0) {
         while (chainCount-- > 0) {
