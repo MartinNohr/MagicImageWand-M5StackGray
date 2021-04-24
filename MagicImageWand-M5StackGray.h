@@ -1,8 +1,21 @@
 #pragma once
 
 #define MIW_VERSION "1.00"
+// define must first #include <M5Stack.h>
+//#define M5STACK_MPU6886 
+#define M5STACK_MPU9250 
+//#define M5STACK_MPU6050
+//#define M5STACK_200Q
 
+#include <stack>
+#include <M5ez.h>
+#include <M5Stack.h>
+#include <EEPROM.h>
+#include <ezTime.h>
+#include "images.h"
 #include <FastLED.h>
+//#include <SPIFFS.h>
+#include <SD.h>
 
 bool bSdCardValid = false;
 #define NEXT_FOLDER_CHAR '>'
@@ -93,6 +106,11 @@ RTC_DATA_ATTR int nBouncingBallsChangeColors = 0; // how many 100 count cycles t
 // bpm
 RTC_DATA_ATTR int nBpmBeatsPerMinute = 62;
 RTC_DATA_ATTR bool bBpmCycleHue = false;
+// rainbow pulse settings
+RTC_DATA_ATTR int nRainbowPulseColorScale = 10;
+RTC_DATA_ATTR int nRainbowPulsePause = 5;
+RTC_DATA_ATTR int nRainbowPulseSaturation = 255;
+RTC_DATA_ATTR int nRainbowPulseStartColor = 0;
 
 // built-in "files"
 struct BuiltInItem {
@@ -118,7 +136,7 @@ void TestConfetti() {};
 void DisplayLedLightBar() {};
 void TestStripes() {};
 void TestLines() {};
-void RainbowPulse() {};
+void RainbowPulse();
 void TestWedge() {};
 BuiltInItem BuiltInFiles[] = {
     {"Barber Pole",BarberPole},

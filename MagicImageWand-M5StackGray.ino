@@ -3,23 +3,7 @@
  Created:	3/29/2021 4:08:35 PM
  Author:	Martin
 */
-// define must ahead #include <M5Stack.h>
-//#define M5STACK_MPU6886 
-#define M5STACK_MPU9250 
-//#define M5STACK_MPU6050
-//#define M5STACK_200Q
-
-#include <stack>
-#include <M5ez.h>
-#include <M5Stack.h>
-#include <EEPROM.h>
-
-#include <ezTime.h>
-
-#include "images.h"
 #include "MagicImageWand-M5StackGray.h"
-//#include <SPIFFS.h>
-#include <SD.h>
 
 #define MAIN_DECLARED
 String exit_button = "Exit";
@@ -99,9 +83,10 @@ void setup() {
  //       //SetPixel(ix + 2, CRGB::Black);
  //       delayMicroseconds(50);
  //   }
-    fill_rainbow(leds, LedInfo.nPixelCount, 0);
-    FastLED.show();
-    delay(1500);
+    RainbowPulse();
+    //fill_rainbow(leds, LedInfo.nPixelCount, 0);
+    //FastLED.show();
+    //delay(1500);
     FastLED.clear(true);
 }
 
@@ -1667,4 +1652,36 @@ void BouncingColoredBalls(int balls, CRGB colors[]) {
     free(Position);
     free(ClockTimeSinceLastBounce);
     free(Dampening);
+}
+
+// grow and shrink a rainbow type pattern
+#define PI_SCALE 2
+#define TWO_HUNDRED_PI (628*PI_SCALE)
+void RainbowPulse()
+{
+    int element = 0;
+    int last_element = 0;
+    int highest_element = 0;
+    //Serial.println("second: " + String(bSecondStrip));
+    //Serial.println("Len: " + String(STRIPLENGTH));
+    for (int i = 0; i < TWO_HUNDRED_PI; i++) {
+        element = round((LedInfo.nPixelCount - 1) / 2 * (-cos(i / (PI_SCALE * 100.0)) + 1));
+        //Serial.println("elements: " + String(element) + " " + String(last_element));
+        if (element > last_element) {
+            SetPixel(element, CHSV(element * nRainbowPulseColorScale + nRainbowPulseStartColor, nRainbowPulseSaturation, 255));
+            FastLED.show();
+            highest_element = max(highest_element, element);
+        }
+        if (CheckCancel()) {
+            break;
+        }
+        delayMicroseconds(nRainbowPulsePause * 10);
+        if (element < last_element) {
+            // cleanup the highest one
+            SetPixel(highest_element, CRGB::Black);
+            SetPixel(element, CRGB::Black);
+            FastLED.show();
+        }
+        last_element = element;
+    }
 }
