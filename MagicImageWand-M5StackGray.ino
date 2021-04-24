@@ -946,7 +946,9 @@ void RepeatSettings()
 		pSettings->txtSmall();
 		pSettings->buttons("up # # Go # Back # down # ");
 		pSettings->addItem("Repeat Count", &ImgInfo.repeatCount, 1, 100, 0, HandleMenuInteger);
-		pSettings->addItem("Repeat Delay", &ImgInfo.repeatDelay, 0, 100, 1, HandleMenuInteger);
+        if (ImgInfo.repeatCount > 1) {
+            pSettings->addItem("Repeat Delay", &ImgInfo.repeatDelay, 0, 100, 1, HandleMenuInteger);
+        }
 		pSettings->addItem("Chain Files", &ImgInfo.bChainFiles, "Yes", "No", ToggleBool);
         if (ImgInfo.bChainFiles) {
             pSettings->addItem("Chain Repeats", &ImgInfo.nChainRepeats, 0, 100, 0, HandleMenuInteger);
