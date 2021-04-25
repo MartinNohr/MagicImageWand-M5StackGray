@@ -113,6 +113,7 @@ bool CheckCancel();
 bool HandleMenuInteger(ezMenu* menu);
 bool ToggleBool(ezMenu* menu);
 void fixRGBwithGamma(byte* rp, byte* gp, byte* bp);
+int AdjustStripIndex(int ix);
 
 // adjustment values for builtins
 EXTERN RTC_DATA_ATTR uint8_t gHue; // rotating "base color" used by many of the patterns
@@ -293,7 +294,7 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
 	{"CheckerBoard",CheckerBoard,CheckerBoardMenu},
     {"Confetti",TestConfetti,ConfettiMenu},
     {"Cylon Eye",TestCylon,CylonEyeMenu},
-    {"Juggle"/*,TestJuggle*/},
+    {"Juggle",TestJuggle},
     {"Lines"/*,TestLines*//*,LinesMenu*/},
     {"Meteor"/*,TestMeteor*//*,MeteorMenu*/},
     {"One Dot"/*,RunningDot*/},

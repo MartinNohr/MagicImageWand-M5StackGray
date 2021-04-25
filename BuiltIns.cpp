@@ -5,7 +5,6 @@ void OppositeRunningDots() {};
 void TestTwinkle() {};
 void TestMeteor() {};
 void TestRainbow() {};
-void TestJuggle() {};
 void TestSine() {};
 void DisplayLedLightBar() {};
 void TestStripes() {};
@@ -359,4 +358,34 @@ void CylonBounce(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, i
 void TestCylon()
 {
     CylonBounce(nCylonEyeRed, nCylonEyeGreen, nCylonEyeBlue, nCylonEyeSize, ImgInfo.nColumnHoldTime, 50);
+}
+
+void juggle()
+{
+    // eight colored dots, weaving in and out of sync with each other
+    fadeToBlackBy(leds, LedInfo.nPixelCount, 20);
+    byte dothue = 0;
+    uint16_t index;
+    for (int i = 0; i < 8; i++) {
+        index = beatsin16(i + 7, 0, LedInfo.nPixelCount);
+        // use AdjustStripIndex to get the right one
+        SetPixel(index, leds[AdjustStripIndex(index)] | CHSV(dothue, 255, 255));
+        //leds[beatsin16(i + 7, 0, STRIPLENGTH)] |= CHSV(dothue, 255, 255);
+        dothue += 32;
+    }
+}
+
+void TestJuggle()
+{
+    bool done = false;
+    while (!done) {
+        EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
+            juggle();
+            FastLED.show();
+        }
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+    }
 }
