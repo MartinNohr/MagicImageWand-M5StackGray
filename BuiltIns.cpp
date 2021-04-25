@@ -620,3 +620,210 @@ void TestSine()
         }
     }
 }
+
+// handle rollover when -ve
+// inc 1 gives 255, inc 10 gives 250, inc 100 gives 200
+int RollDownRollOver(int inc)
+{
+    if (inc == 1)
+        return 255;
+    int retval = 256;
+    retval -= retval % inc;
+    return retval;
+}
+
+// utility for DisplayLedLightBar()
+void FillLightBar()
+{
+    int offset = bDisplayAllFromMiddle ? (LedInfo.nPixelCount - nDisplayAllPixelCount) / 2 : 0;
+    if (!bDisplayAllFromMiddle && ImgInfo.bUpsideDown)
+        offset = LedInfo.nPixelCount - nDisplayAllPixelCount;
+    FastLED.clear();
+    for (int ix = 0; ix < nDisplayAllPixelCount; ++ix) {
+        SetPixel(ix + offset, bDisplayAllRGB ? CRGB(nDisplayAllRed, nDisplayAllGreen, nDisplayAllBlue) : CHSV(nDisplayAllHue, nDisplayAllSaturation, nDisplayAllBrightness));
+    }
+    FastLED.show();
+}
+
+// Used LEDs as a light bar
+void DisplayLedLightBar()
+{
+    DisplayLine(1, "");
+    FillLightBar();
+    // show until cancelled, but check for rotations of the knob
+    ez.buttons.show("left # # Go # Cancel # right #");
+    int what = 0;	// 0 for hue, 1 for saturation, 2 for brightness, 3 for pixels, 4 for increment
+    int increment = 10;
+    bool bChange = true;
+    while (true) {
+        if (bChange) {
+            String line;
+            switch (what) {
+            case 0:
+                if (bDisplayAllRGB)
+                    line = "Red: " + String(nDisplayAllRed);
+                else
+                    line = "HUE: " + String(nDisplayAllHue);
+                break;
+            case 1:
+                if (bDisplayAllRGB)
+                    line = "Green: " + String(nDisplayAllGreen);
+                else
+                    line = "Saturation: " + String(nDisplayAllSaturation);
+                break;
+            case 2:
+                if (bDisplayAllRGB)
+                    line = "Blue: " + String(nDisplayAllBlue);
+                else
+                    line = "Brightness: " + String(nDisplayAllBrightness);
+                break;
+            case 3:
+                line = "Pixels: " + String(nDisplayAllPixelCount);
+                break;
+            case 4:
+                line = "From: " + String((bDisplayAllFromMiddle ? "Middle" : "End"));
+                break;
+            case 5:
+                line = " (step size: " + String(increment) + ")";
+                break;
+            }
+			DisplayLine(2, line, 0, TFT_WHITE);
+            bChange = false;
+        }
+        String str = ez.buttons.poll();
+        if (str == "right") {
+            bChange = true;
+            switch (what) {
+            case 0:
+                if (bDisplayAllRGB)
+                    nDisplayAllRed += increment;
+                else
+                    nDisplayAllHue += increment;
+                break;
+            case 1:
+                if (bDisplayAllRGB)
+                    nDisplayAllGreen += increment;
+                else
+                    nDisplayAllSaturation += increment;
+                break;
+            case 2:
+                if (bDisplayAllRGB)
+                    nDisplayAllBlue += increment;
+                else
+                    nDisplayAllBrightness += increment;
+                break;
+            case 3:
+                nDisplayAllPixelCount += increment;
+                break;
+            case 4:
+                bDisplayAllFromMiddle = true;
+                break;
+            case 5:
+                increment *= 10;
+                break;
+            }
+        }
+        else if (str == "left") {
+            bChange = true;
+            switch (what) {
+            case 0:
+                if (bDisplayAllRGB)
+                    nDisplayAllRed -= increment;
+                else
+                    nDisplayAllHue -= increment;
+                break;
+            case 1:
+                if (bDisplayAllRGB)
+                    nDisplayAllGreen -= increment;
+                else
+                    nDisplayAllSaturation -= increment;
+                break;
+            case 2:
+                if (bDisplayAllRGB)
+                    nDisplayAllBlue -= increment;
+                else
+                    nDisplayAllBrightness -= increment;
+                break;
+            case 3:
+                nDisplayAllPixelCount -= increment;
+                break;
+            case 4:
+                bDisplayAllFromMiddle = false;
+                break;
+            case 5:
+                increment /= 10;
+                break;
+            }
+        }
+        else if (str == "Go") {
+            bChange = true;
+            // switch to the next selection, wrapping around if necessary
+            what = ++what % 6;
+        }
+        else if (str == "Cancel") {
+            return;
+        }
+        else {
+            bChange = false;
+        }
+        if (CheckCancel())
+            return;
+        if (bChange) {
+            nDisplayAllPixelCount = constrain(nDisplayAllPixelCount, 1, LedInfo.nPixelCount);
+            increment = constrain(increment, 1, 100);
+            if (bDisplayAllRGB) {
+                if (bAllowRollover) {
+                    if (nDisplayAllRed < 0)
+                        nDisplayAllRed = RollDownRollOver(increment);
+                    if (nDisplayAllRed > 255)
+                        nDisplayAllRed = 0;
+                    if (nDisplayAllGreen < 0)
+                        nDisplayAllGreen = RollDownRollOver(increment);
+                    if (nDisplayAllGreen > 255)
+                        nDisplayAllGreen = 0;
+                    if (nDisplayAllBlue < 0)
+                        nDisplayAllBlue = RollDownRollOver(increment);
+                    if (nDisplayAllBlue > 255)
+                        nDisplayAllBlue = 0;
+                }
+                else {
+                    nDisplayAllRed = constrain(nDisplayAllRed, 0, 255);
+                    nDisplayAllGreen = constrain(nDisplayAllGreen, 0, 255);
+                    nDisplayAllBlue = constrain(nDisplayAllBlue, 0, 255);
+                }
+                FillLightBar();
+            }
+            else {
+                if (bAllowRollover) {
+                    if (nDisplayAllHue < 0)
+                        nDisplayAllHue = RollDownRollOver(increment);
+                    if (nDisplayAllHue > 255)
+                        nDisplayAllHue = 0;
+                    if (nDisplayAllSaturation < 0)
+                        nDisplayAllSaturation = RollDownRollOver(increment);
+                    if (nDisplayAllSaturation > 255)
+                        nDisplayAllSaturation = 0;
+                }
+                else {
+                    nDisplayAllHue = constrain(nDisplayAllHue, 0, 255);
+                    nDisplayAllSaturation = constrain(nDisplayAllSaturation, 0, 255);
+                }
+                nDisplayAllBrightness = constrain(nDisplayAllBrightness, 0, 255);
+                FillLightBar();
+            }
+        }
+        delay(10);
+    }
+}
+
+//void LightBar(MenuItem* menu)
+//{
+//    tft.fillScreen(TFT_BLACK);
+//    DisplayLine(0, "LED Light Bar", menuTextColor);
+//    DisplayLine(3, "Rotate Dial to Change", menuTextColor);
+//    DisplayLine(4, "Click to Set Operation", menuTextColor);
+//    DisplayLedLightBar();
+//    FastLED.clear(true);
+//    // these were set by CheckCancel() in DisplayAllColor() and need to be cleared
+//    bCancelMacro = bCancelRun = false;
+//}

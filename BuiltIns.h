@@ -146,6 +146,49 @@ EXTERN RTC_DATA_ATTR int nSineSpeed
 = 13
 #endif
 ;
+// display all color
+EXTERN RTC_DATA_ATTR bool bAllowRollover
+#ifdef MIW_MAIN
+= true
+#endif
+;       // lets 255->0 and 0->255
+EXTERN RTC_DATA_ATTR bool bDisplayAllRGB;    // true for RGB, else HSV
+EXTERN RTC_DATA_ATTR int nDisplayAllRed
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nDisplayAllGreen
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nDisplayAllBlue
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nDisplayAllHue;
+EXTERN RTC_DATA_ATTR int nDisplayAllSaturation
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nDisplayAllBrightness
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nDisplayAllPixelCount
+#ifdef MIW_MAIN
+= 288
+#endif
+;
+EXTERN RTC_DATA_ATTR bool bDisplayAllFromMiddle
+#ifdef MIW_MAIN
+= true
+#endif
+;
 
 struct BI_MENU {
     char* title;
@@ -271,6 +314,26 @@ EXTERN BiMenu SineMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+EXTERN BiMenu LedLightBarMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Allow rollover",&bAllowRollover,0,0,0,"Yes","No"},
+    {"Color Mode",&bDisplayAllRGB,0,0,0,"RGB","HSL"},
+    //{eIfEqual,"",NULL,&bDisplayAllRGB,true},
+        {"Red",&nDisplayAllRed,0,255},
+        {"Green",&nDisplayAllGreen,0,255},
+        {"Blue",&nDisplayAllBlue,0,255},
+    //{eElse},
+        {"Hue",&nDisplayAllHue,0,255},
+        {"Saturation",&nDisplayAllSaturation,0,255},
+        {"Brightness",&nDisplayAllBrightness,0,255},
+    //{eEndif},
+    {"Pixels",&nDisplayAllPixelCount,1,288},
+    {"From",&bDisplayAllFromMiddle,0,0,0,"Middle","End"},
+}
+#endif
+;
 
 // built-in "files"
 struct BuiltInItem {
@@ -316,8 +379,8 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"Rainbow Pulse",RainbowPulse,RainbowPulseMenu},
     {"Random Bars",RandomBars,RandomBarsMenu},
     {"Sine Trails",TestSine,SineMenu},
-    {"Solid Color"/*,DisplayLedLightBar*//*,LedLightBarMenu*/},
-    {"Stripes"/*,TestStripes*/},
+    {"Solid Color",DisplayLedLightBar,LedLightBarMenu},
+    {"Stripes",/*TestStripes*/},
     {"Twinkle"/*,TestTwinkle*//*,TwinkleMenu*/},
     {"Two Dots"/*,OppositeRunningDots*/},
     {"Wedge"/*,TestWedge*//*,WedgeMenu*/},
