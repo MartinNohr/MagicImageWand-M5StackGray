@@ -1,16 +1,4 @@
 #include "MagicImageWand-M5StackGray.h"
-void RandomBars() {};
-void RunningDot() {};
-void OppositeRunningDots() {};
-void TestTwinkle() {};
-void TestMeteor() {};
-void TestRainbow() {};
-void TestSine() {};
-void DisplayLedLightBar() {};
-void TestStripes() {};
-void TestLines() {};
-void TestWedge() {};
-
 
 #define BARBERSIZE 10
 #define BARBERCOUNT 40
@@ -388,4 +376,33 @@ void TestJuggle()
             break;
         }
     }
+}
+
+// alternating white and black lines
+void TestLines()
+{
+    FastLED.clear(true);
+    bool bWhite = true;
+    for (int pix = 0; pix < LedInfo.nPixelCount; ++pix) {
+        // fill in each block of pixels
+        for (int len = 0; len < (bWhite ? nLinesWhite : nLinesBlack); ++len) {
+            SetPixel(pix++, bWhite ? CRGB::White : CRGB::Black);
+        }
+        bWhite = !bWhite;
+    }
+    FastLED.show();
+    bool done = false;
+    while (!done) {
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+        delay(1000);
+        // might make this work to toggle blacks and whites eventually
+        //for (int ix = 0; ix < STRIPLENGTH; ++ix) {
+        //	leds[ix] = (leds[ix] == CRGB::White) ? CRGB::Black : CRGB::White;
+        //}
+        FastLED.show();
+    }
+    FastLED.clear(true);
 }

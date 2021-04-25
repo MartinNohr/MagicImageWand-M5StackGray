@@ -191,6 +191,17 @@ EXTERN RTC_DATA_ATTR int nCylonEyeRed
 ;
 EXTERN RTC_DATA_ATTR int nCylonEyeGreen;
 EXTERN RTC_DATA_ATTR int nCylonEyeBlue;
+// black and white lines
+EXTERN RTC_DATA_ATTR int nLinesWhite
+#ifdef MIW_MAIN
+= 5
+#endif
+;
+EXTERN RTC_DATA_ATTR int nLinesBlack
+#ifdef MIW_MAIN
+= 5
+#endif
+;
 
 struct BI_MENU {
     char* title;
@@ -254,6 +265,15 @@ EXTERN BiMenu CylonEyeMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+EXTERN BiMenu LinesMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"White Pixels:",&nLinesWhite,0,288},
+    {"Black Pixels:",&nLinesBlack,0,288},
+}
+#endif
+;
 
 // the built-in menu handler
 void BuiltInMenu(String hdr, BiMenu* menuList);
@@ -295,7 +315,7 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"Confetti",TestConfetti,ConfettiMenu},
     {"Cylon Eye",TestCylon,CylonEyeMenu},
     {"Juggle",TestJuggle},
-    {"Lines"/*,TestLines*//*,LinesMenu*/},
+    {"Lines",TestLines,LinesMenu},
     {"Meteor"/*,TestMeteor*//*,MeteorMenu*/},
     {"One Dot"/*,RunningDot*/},
     {"Rainbow"/*,TestRainbow*//*,RainbowMenu*/},
