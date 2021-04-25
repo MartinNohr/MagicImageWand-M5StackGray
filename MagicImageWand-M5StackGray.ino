@@ -175,8 +175,10 @@ void loop() {
         else if (btnpressed == "Settings") {
             // internal settings
             int ix = activeMenu->pick() - 1;
-            if (BuiltInFiles[ix].menu) {
-                (*BuiltInFiles[ix].menu)();
+            if (BuiltInFiles[ix].menuList) {
+                // build and run the menu
+                String hdr = activeMenu->getTitle();
+                BuiltInMenu(hdr, BuiltInFiles[ix].menuList);
             }
             else {
                 ez.msgBox("Built-In Settings", "No settings available", "OK", true, 0, TFT_WHITE);

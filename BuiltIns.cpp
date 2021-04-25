@@ -89,21 +89,6 @@ void TestBpm()
     }
 }
 
-struct BI_MENU {
-    char* title;
-    void* pData;
-    int min, max, decimals; // all 0 for booleans
-    char* yes;              // null for integers
-    char* no;               // null for integers
-};
-typedef BI_MENU BiMenu;
-BiMenu BpmMenuList[] =
-{
-    {"Beats per minute: ",&nBpmBeatsPerMinute,1,300,0},
-    {"Cycle Hue:",&bBpmCycleHue,0,0,0,"Yes","No"},
-    {NULL}
-};
-
 // create the menu from the list
 void BuiltInMenu(String hdr, BiMenu* menuList)
 {
@@ -124,22 +109,6 @@ void BuiltInMenu(String hdr, BiMenu* menuList)
                 pSettings->addItem(menuList[ix].title, (bool*)menuList[ix].pData, menuList[ix].yes, menuList[ix].no, ToggleBool);
             }
         }
-        pSettings->setItem(ix);
-        ix = pSettings->runOnce();
-        delete pSettings;
-    }
-}
-
-void BpmMenu()
-{
-    ezMenu* pSettings;
-    int16_t ix = 1;
-    while (ix != 0) {
-        pSettings = new ezMenu("Beats Settings");
-        pSettings->txtSmall();
-        pSettings->buttons("up # # Go # Back # down # ");
-        pSettings->addItem("Beats per minute:", &nBpmBeatsPerMinute, 1, 300, 0, HandleMenuInteger);
-        pSettings->addItem("Cycle Hue:", &bBpmCycleHue, "Yes", "No", ToggleBool);
         pSettings->setItem(ix);
         ix = pSettings->runOnce();
         delete pSettings;

@@ -154,16 +154,35 @@ EXTERN RTC_DATA_ATTR int nRainbowPulseSaturation
 ;
 EXTERN RTC_DATA_ATTR int nRainbowPulseStartColor;
 
+struct BI_MENU {
+    char* title;
+    void* pData;
+    int min, max, decimals; // all 0 for booleans
+    char* yes;              // null for integers
+    char* no;               // null for integers
+};
+typedef BI_MENU BiMenu;
+#define MAX_BI_MENUS 10
+EXTERN BiMenu BpmMenuList[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Beats per minute: ",&nBpmBeatsPerMinute,1,300,0},
+    {"Cycle Hue:",&bBpmCycleHue,0,0,0,"Yes","No"},
+}
+#endif
+;
+void BuiltInMenu(String hdr, BiMenu* menuList);
+
 // built-in "files"
 struct BuiltInItem {
     const char* text;
     void(*function)();
-	void(*menu)();
+	BiMenu* menuList;
 };
 typedef BuiltInItem BuiltInItem;
 void BarberPole();
 void TestBpm();
-void BpmMenu();
 void TestBouncingBalls();
 void CheckerBoard();
 void RandomBars();
@@ -186,7 +205,7 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
 #ifdef MIW_MAIN
 = {
     {"Barber Pole",BarberPole},
-    {"Beats",TestBpm,BpmMenu},
+    {"Beats",TestBpm,BpmMenuList},
     {"Bouncy Balls",TestBouncingBalls/*,BouncingBallsMenu*/},
 	{"CheckerBoard"/*,CheckerBoard*//*,CheckerBoardMenu*/},
     {"Confetti"/*,TestConfetti*//*,ConfettiMenu*/},
