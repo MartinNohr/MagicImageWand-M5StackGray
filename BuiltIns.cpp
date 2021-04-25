@@ -101,7 +101,34 @@ BiMenu BpmMenuList[] =
 {
     {"Beats per minute: ",&nBpmBeatsPerMinute,1,300,0},
     {"Cycle Hue:",&bBpmCycleHue,0,0,0,"Yes","No"},
+    {NULL}
 };
+
+// create the menu from the list
+void BuiltInMenu(String hdr, BiMenu* menuList)
+{
+    ezMenu* pSettings;
+    int16_t ix = 1;
+    while (ix != 0) {
+        pSettings = new ezMenu(hdr);
+        pSettings->txtSmall();
+        pSettings->buttons("up # # Go # Back # down # ");
+        for (int ix = 0; menuList[ix].title; ++ix) {
+            // is this bool or int?
+            if (menuList[ix].yes == NULL) {
+                // add int
+                pSettings->addItem(menuList[ix].title, (int*)menuList[ix].pData, menuList[ix].min, menuList[ix].max, menuList[ix].decimals, HandleMenuInteger);
+            }
+            else {
+                // add bool
+                pSettings->addItem(menuList[ix].title, (bool*)menuList[ix].pData, menuList[ix].yes, menuList[ix].no, ToggleBool);
+            }
+        }
+        pSettings->setItem(ix);
+        ix = pSettings->runOnce();
+        delete pSettings;
+    }
+}
 
 void BpmMenu()
 {
