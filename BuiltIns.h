@@ -152,8 +152,8 @@ EXTERN BiMenu BpmMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Beats per minute: ",&nBpmBeatsPerMinute,1,300},
-    {"Cycle Hue:",&bBpmCycleHue,0,0,0,"Yes","No"},
+    {"Beats per minute",&nBpmBeatsPerMinute,1,300},
+    {"Cycle Hue",&bBpmCycleHue,0,0,0,"Yes","No"},
 }
 #endif
 ;
@@ -162,10 +162,10 @@ EXTERN BiMenu BouncingBallsMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Ball Count:",&nBouncingBallsCount,1,32},
-    {"Decay:",&nBouncingBallsDecay,500,10000},
-    {"First Color:",&nBouncingBallsFirstColor,0,31},
-    {"Change Color Rate:",&nBouncingBallsChangeColors,0,10,0},
+    {"Ball Count",&nBouncingBallsCount,1,32},
+    {"Decay",&nBouncingBallsDecay,500,10000},
+    {"First Color",&nBouncingBallsFirstColor,0,31},
+    {"Change Color Rate",&nBouncingBallsChangeColors,0,10,0},
 }
 #endif
 ;
@@ -174,11 +174,11 @@ EXTERN BiMenu CheckerBoardMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Hold Frames:",&nCheckerboardHoldframes,1,100},
-    {"Black Width (pixels):",&nCheckboardBlackWidth,1,288},
-    {"White Width (pixels):",&nCheckboardWhiteWidth,1,288},
-    {"Add Pixels per Cycle:",&nCheckerboardAddPixels,0,144},
-    {"Alternate per Cycle:",&bCheckerBoardAlternate,0,0,0,"Yes","No"},
+    {"Hold Frames",&nCheckerboardHoldframes,1,100},
+    {"Black Width (pixels)",&nCheckboardBlackWidth,1,288},
+    {"White Width (pixels)",&nCheckboardWhiteWidth,1,288},
+    {"Add Pixels per Cycle",&nCheckerboardAddPixels,0,144},
+    {"Alternate per Cycle",&bCheckerBoardAlternate,0,0,0,"Yes","No"},
 }
 #endif
 ;
@@ -186,7 +186,7 @@ EXTERN BiMenu ConfettiMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Cycle Hue:",&bConfettiCycleHue,0,0,0,"Yes","No"},
+    {"Cycle Hue",&bConfettiCycleHue,0,0,0,"Yes","No"},
 }
 #endif
 ;
@@ -194,10 +194,10 @@ EXTERN BiMenu CylonEyeMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Eye Size:",&nCylonEyeSize,1,100},
-    {"Eye Red:",&nCylonEyeRed,0,255},
-    {"Eye Green:",&nCylonEyeGreen,0,255},
-    {"Eye Blue:",&nCylonEyeBlue,0,255},
+    {"Eye Size",&nCylonEyeSize,1,100},
+    {"Eye Red",&nCylonEyeRed,0,255},
+    {"Eye Green",&nCylonEyeGreen,0,255},
+    {"Eye Blue",&nCylonEyeBlue,0,255},
 }
 #endif
 ;
@@ -205,8 +205,8 @@ EXTERN BiMenu LinesMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"White Pixels:",&nLinesWhite,0,288},
-    {"Black Pixels:",&nLinesBlack,0,288},
+    {"White Pixels",&nLinesWhite,0,288},
+    {"Black Pixels",&nLinesBlack,0,288},
 }
 #endif
 ;
@@ -214,10 +214,10 @@ EXTERN BiMenu MeteorMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Meteor Size:",&nMeteorSize,1,100},
-    {"Meteor Red:",&nMeteorRed,0,255},
-    {"Meteor Green:",&nMeteorGreen,0,255},
-    {"Meteor Blue:",&nMeteorBlue,0,255},
+    {"Meteor Size",&nMeteorSize,1,100},
+    {"Meteor Red",&nMeteorRed,0,255},
+    {"Meteor Green",&nMeteorGreen,0,255},
+    {"Meteor Blue",&nMeteorBlue,0,255},
 }
 #endif
 ;
@@ -225,11 +225,11 @@ EXTERN BiMenu RainbowMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Fade Time (S):",&nRainbowFadeTime, 0, 100, 1},
-    {"Starting Hue:",&nRainbowInitialHue,0,255 },
-    {"Cycle Hue:",&bRainbowCycleHue,0,0,0,"Yes","No" },
-    {"Hue Delta Size:",&nRainbowHueDelta,1,255 },
-    {"Add Glitter:",&bRainbowAddGlitter,0,0,0,"Yes","No" },
+    {"Fade Time (S)",&nRainbowFadeTime, 0, 100, 1},
+    {"Starting Hue",&nRainbowInitialHue,0,255 },
+    {"Cycle Hue",&bRainbowCycleHue,0,0,0,"Yes","No" },
+    {"Hue Delta Size",&nRainbowHueDelta,1,255 },
+    {"Add Glitter",&bRainbowAddGlitter,0,0,0,"Yes","No" },
 }
 #endif
 ;
@@ -237,8 +237,19 @@ EXTERN BiMenu RandomBarsMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Hold Frames:",&nRandomBarsHoldframes, 1, 100},
-    {"Alternating Black:",&bRandomBarsBlacks,0,0,0,"Yes","No" },
+    {"Hold Frames",&nRandomBarsHoldframes, 1, 100},
+    {"Alternating Black",&bRandomBarsBlacks,0,0,0,"Yes","No" },
+}
+#endif
+;
+EXTERN BiMenu RainbowPulseMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Step Pause",&nRainbowPulsePause,0,1000},
+    {"Color Rate Scale",&nRainbowPulseColorScale,0,256},
+    {"Start Color",&nRainbowPulseStartColor,0,255},
+    {"Color Saturation",&nRainbowPulseSaturation,0,255},
 }
 #endif
 ;
@@ -284,7 +295,7 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"Meteor",TestMeteor,MeteorMenu},
     {"One Dot",RunningDot},
     {"Rainbow",TestRainbow,RainbowMenu},
-    {"Rainbow Pulse",RainbowPulse/*,RainbowPulseMenu*/},
+    {"Rainbow Pulse",RainbowPulse,RainbowPulseMenu},
     {"Random Bars",RandomBars,RandomBarsMenu},
     {"Sine Trails"/*,TestSine*//*,SineMenu*/},
     {"Solid Color"/*,DisplayLedLightBar*//*,LedLightBarMenu*/},

@@ -177,7 +177,7 @@ void loop() {
             int ix = activeMenu->pick() - 1;
             if (BuiltInFiles[ix].menuList) {
                 // build and run the menu
-                String hdr = activeMenu->getTitle();
+				String hdr = activeMenu->getItemName() + " Settings";
                 BuiltInMenu(hdr, BuiltInFiles[ix].menuList);
             }
             else {
