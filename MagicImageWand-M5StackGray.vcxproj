@@ -120,6 +120,9 @@
     <ClInclude Include="MagicImageWand-M5StackGray.h" />
     <ClInclude Include="__vm\.MagicImageWand-M5StackGray.vsarduino.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BuiltIns.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
