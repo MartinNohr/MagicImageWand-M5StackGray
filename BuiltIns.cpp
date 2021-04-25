@@ -406,3 +406,40 @@ void TestLines()
     }
     FastLED.clear(true);
 }
+
+void fadeToBlack(int ledNo, byte fadeValue) {
+    // FastLED
+    leds[ledNo].fadeToBlackBy(fadeValue);
+}
+
+void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTrailDecay, boolean meteorRandomDecay, int SpeedDelay)
+{
+    FastLED.clear(true);
+
+    for (int i = 0; i < LedInfo.nPixelCount + LedInfo.nPixelCount; i++) {
+        if (CheckCancel())
+            break;;
+        // fade brightness all LEDs one step
+        for (int j = 0; j < LedInfo.nPixelCount; j++) {
+            if (CheckCancel())
+                break;
+            if ((!meteorRandomDecay) || (random(10) > 5)) {
+                fadeToBlack(j, meteorTrailDecay);
+            }
+        }
+        // draw meteor
+        for (int j = 0; j < meteorSize; j++) {
+            if (CheckCancel())
+                break;
+            if ((i - j < LedInfo.nPixelCount) && (i - j >= 0)) {
+                SetPixel(i - j, CRGB(red, green, blue));
+            }
+        }
+        FastLED.show();
+        delay(SpeedDelay);
+    }
+}
+
+void TestMeteor() {
+    meteorRain(nMeteorRed, nMeteorGreen, nMeteorBlue, nMeteorSize, 64, true, 30);
+}

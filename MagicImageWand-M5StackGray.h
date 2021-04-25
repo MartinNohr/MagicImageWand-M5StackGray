@@ -202,6 +202,27 @@ EXTERN RTC_DATA_ATTR int nLinesBlack
 = 5
 #endif
 ;
+// meteor
+EXTERN RTC_DATA_ATTR int nMeteorSize
+#ifdef MIW_MAIN
+= 10
+#endif
+;
+EXTERN RTC_DATA_ATTR int nMeteorRed
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nMeteorGreen
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nMeteorBlue
+#ifdef MIW_MAIN
+= 255
+#endif
+;
 
 struct BI_MENU {
     char* title;
@@ -274,6 +295,17 @@ EXTERN BiMenu LinesMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+EXTERN BiMenu MeteorMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Meteor Size:",&nMeteorSize,1,100},
+    {"Meteor Red:",&nMeteorRed,0,255},
+    {"Meteor Green:",&nMeteorGreen,0,255},
+    {"Meteor Blue:",&nMeteorBlue,0,255},
+}
+#endif
+;
 
 // the built-in menu handler
 void BuiltInMenu(String hdr, BiMenu* menuList);
@@ -316,7 +348,7 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"Cylon Eye",TestCylon,CylonEyeMenu},
     {"Juggle",TestJuggle},
     {"Lines",TestLines,LinesMenu},
-    {"Meteor"/*,TestMeteor*//*,MeteorMenu*/},
+    {"Meteor",TestMeteor,MeteorMenu},
     {"One Dot"/*,RunningDot*/},
     {"Rainbow"/*,TestRainbow*//*,RainbowMenu*/},
     {"Rainbow Pulse",RainbowPulse/*,RainbowPulseMenu*/},
