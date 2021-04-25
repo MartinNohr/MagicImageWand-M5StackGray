@@ -113,6 +113,20 @@ EXTERN RTC_DATA_ATTR int nMeteorBlue
 = 255
 #endif
 ;
+// rainbow
+EXTERN RTC_DATA_ATTR int nRainbowHueDelta
+#ifdef MIW_MAIN
+= 4
+#endif
+;
+EXTERN RTC_DATA_ATTR int nRainbowInitialHue;
+EXTERN RTC_DATA_ATTR int nRainbowFadeTime
+#ifdef MIW_MAIN
+= 10
+#endif
+;       // fade in out 0.1 Sec
+EXTERN RTC_DATA_ATTR bool bRainbowAddGlitter;
+EXTERN RTC_DATA_ATTR bool bRainbowCycleHue;
 
 struct BI_MENU {
     char* title;
@@ -196,6 +210,18 @@ EXTERN BiMenu MeteorMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+EXTERN BiMenu RainbowMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Fade Time (S):",&nRainbowFadeTime, 0, 100, 1},
+    {"Starting Hue:",&nRainbowInitialHue,0,255 },
+    {"Cycle Hue:",&bRainbowCycleHue,0,0,0,"Yes","No" },
+    {"Hue Delta Size:",&nRainbowHueDelta,1,255 },
+    {"Add Glitter:",&bRainbowAddGlitter,0,0,0,"Yes","No" },
+}
+#endif
+;
 
 // built-in "files"
 struct BuiltInItem {
@@ -236,8 +262,8 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"Juggle",TestJuggle},
     {"Lines",TestLines,LinesMenu},
     {"Meteor",TestMeteor,MeteorMenu},
-    {"One Dot"/*,RunningDot*/},
-    {"Rainbow"/*,TestRainbow*//*,RainbowMenu*/},
+    {"One Dot",RunningDot},
+    {"Rainbow",TestRainbow,RainbowMenu},
     {"Rainbow Pulse",RainbowPulse/*,RainbowPulseMenu*/},
     {"Random Bars"/*,RandomBars*//*,RandomBarsMenu*/},
     {"Sine Trails"/*,TestSine*//*,SineMenu*/},

@@ -443,3 +443,116 @@ void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTra
 void TestMeteor() {
     meteorRain(nMeteorRed, nMeteorGreen, nMeteorBlue, nMeteorSize, 64, true, 30);
 }
+
+// running dot
+void RunningDot()
+{
+    for (int colorvalue = 0; colorvalue <= 3; ++colorvalue) {
+        // RGBW
+        byte r, g, b;
+        switch (colorvalue) {
+        case 0: // red
+            r = 255;
+            g = 0;
+            b = 0;
+            break;
+        case 1: // green
+            r = 0;
+            g = 255;
+            b = 0;
+            break;
+        case 2: // blue
+            r = 0;
+            g = 0;
+            b = 255;
+            break;
+        case 3: // white
+            r = 255;
+            g = 255;
+            b = 255;
+            break;
+        }
+        fixRGBwithGamma(&r, &g, &b);
+        char line[10];
+        for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
+            if (CheckCancel()) {
+                break;
+            }
+            if (ix > 0) {
+                SetPixel(ix - 1, CRGB::Black);
+            }
+            SetPixel(ix, CRGB(r, g, b));
+            FastLED.show();
+            delay(ImgInfo.nColumnHoldTime);
+        }
+        // remember the last one, turn it off
+        SetPixel(LedInfo.nPixelCount - 1, CRGB::Black);
+        FastLED.show();
+    }
+    FastLED.clear(true);
+}
+
+void FillRainbow(struct CRGB* pFirstLED, int numToFill,
+    uint8_t initialhue,
+    int deltahue)
+{
+    CHSV hsv;
+    hsv.hue = initialhue;
+    hsv.val = 255;
+    hsv.sat = 240;
+    for (int i = 0; i < numToFill; i++) {
+        pFirstLED[AdjustStripIndex(i)] = hsv;
+        hsv.hue += deltahue;
+    }
+}
+
+// time is in mSec
+void FadeInOut(int time, bool in)
+{
+    if (in) {
+        for (int i = 0; i <= LedInfo.nLEDBrightness; ++i) {
+            FastLED.setBrightness(i);
+            FastLED.show();
+            delay(time / LedInfo.nLEDBrightness);
+        }
+    }
+    else {
+        for (int i = LedInfo.nLEDBrightness; i >= 0; --i) {
+            FastLED.setBrightness(i);
+            FastLED.show();
+            delay(time / LedInfo.nLEDBrightness);
+        }
+    }
+}
+
+void addGlitter(fract8 chanceOfGlitter)
+{
+    if (random8() < chanceOfGlitter) {
+        leds[random16(LedInfo.nPixelCount)] += CRGB::White;
+    }
+}
+
+void TestRainbow()
+{
+    gHue = nRainbowInitialHue;
+    FillRainbow(leds, LedInfo.nPixelCount, gHue, nRainbowHueDelta);
+    FadeInOut(nRainbowFadeTime * 100, true);
+    bool done = false;
+    while (!done) {
+        EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
+            if (bRainbowCycleHue)
+                ++gHue;
+            FillRainbow(leds, LedInfo.nPixelCount, gHue, nRainbowHueDelta);
+            if (bRainbowAddGlitter)
+                addGlitter(80);
+            FastLED.show();
+        }
+        if (CheckCancel()) {
+            done = true;
+            FastLED.setBrightness(LedInfo.nLEDBrightness);
+            break;
+        }
+    }
+    FadeInOut(nRainbowFadeTime * 100, false);
+    FastLED.setBrightness(LedInfo.nLEDBrightness);
+}
