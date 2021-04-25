@@ -556,3 +556,41 @@ void TestRainbow()
     FadeInOut(nRainbowFadeTime * 100, false);
     FastLED.setBrightness(LedInfo.nLEDBrightness);
 }
+
+// show random bars of lights with optional blacks between
+void ShowRandomBars(bool blacks)
+{
+    time_t start = time(NULL);
+    byte r, g, b;
+    srand(millis());
+    char line[40];
+    bool done = false;
+    for (int pass = 0; !done; ++pass) {
+        if (blacks && (pass % 2)) {
+            // odd numbers, clear
+            FastLED.clear(true);
+        }
+        else {
+            // even numbers, show bar
+            r = random(0, 255);
+            g = random(0, 255);
+            b = random(0, 255);
+            fixRGBwithGamma(&r, &g, &b);
+            // fill the strip color
+            FastLED.showColor(CRGB(r, g, b));
+        }
+        int count = nRandomBarsHoldframes;
+        while (count-- > 0) {
+            delay(ImgInfo.nColumnHoldTime);
+            if (CheckCancel()) {
+                done = true;
+                break;
+            }
+        }
+    }
+}
+
+void RandomBars()
+{
+    ShowRandomBars(bRandomBarsBlacks);
+}

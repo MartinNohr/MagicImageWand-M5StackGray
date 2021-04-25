@@ -127,6 +127,17 @@ EXTERN RTC_DATA_ATTR int nRainbowFadeTime
 ;       // fade in out 0.1 Sec
 EXTERN RTC_DATA_ATTR bool bRainbowAddGlitter;
 EXTERN RTC_DATA_ATTR bool bRainbowCycleHue;
+// random bars
+EXTERN RTC_DATA_ATTR bool bRandomBarsBlacks
+#ifdef MIW_MAIN
+= true
+#endif
+;
+EXTERN RTC_DATA_ATTR int nRandomBarsHoldframes
+#ifdef MIW_MAIN
+= 10
+#endif
+;
 
 struct BI_MENU {
     char* title;
@@ -222,6 +233,15 @@ EXTERN BiMenu RainbowMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+EXTERN BiMenu RandomBarsMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Hold Frames:",&nRandomBarsHoldframes, 1, 100},
+    {"Alternating Black:",&bRandomBarsBlacks,0,0,0,"Yes","No" },
+}
+#endif
+;
 
 // built-in "files"
 struct BuiltInItem {
@@ -265,7 +285,7 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"One Dot",RunningDot},
     {"Rainbow",TestRainbow,RainbowMenu},
     {"Rainbow Pulse",RainbowPulse/*,RainbowPulseMenu*/},
-    {"Random Bars"/*,RandomBars*//*,RandomBarsMenu*/},
+    {"Random Bars",RandomBars,RandomBarsMenu},
     {"Sine Trails"/*,TestSine*//*,SineMenu*/},
     {"Solid Color"/*,DisplayLedLightBar*//*,LedLightBarMenu*/},
     {"Stripes"/*,TestStripes*/},
