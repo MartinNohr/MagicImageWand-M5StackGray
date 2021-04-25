@@ -138,6 +138,14 @@ EXTERN RTC_DATA_ATTR int nRandomBarsHoldframes
 = 10
 #endif
 ;
+// sine
+EXTERN RTC_DATA_ATTR int nSineStartingHue;
+EXTERN RTC_DATA_ATTR bool bSineCycleHue;
+EXTERN RTC_DATA_ATTR int nSineSpeed
+#ifdef MIW_MAIN
+= 13
+#endif
+;
 
 struct BI_MENU {
     char* title;
@@ -253,6 +261,16 @@ EXTERN BiMenu RainbowPulseMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+EXTERN BiMenu SineMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Starting Hue",&nSineStartingHue,0,255},
+    {"Cycle Hue",&bSineCycleHue,0,0,0,"Yes","No"},
+    {"Speed",&nSineSpeed,1,500},
+}
+#endif
+;
 
 // built-in "files"
 struct BuiltInItem {
@@ -297,7 +315,7 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"Rainbow",TestRainbow,RainbowMenu},
     {"Rainbow Pulse",RainbowPulse,RainbowPulseMenu},
     {"Random Bars",RandomBars,RandomBarsMenu},
-    {"Sine Trails"/*,TestSine*//*,SineMenu*/},
+    {"Sine Trails",TestSine,SineMenu},
     {"Solid Color"/*,DisplayLedLightBar*//*,LedLightBarMenu*/},
     {"Stripes"/*,TestStripes*/},
     {"Twinkle"/*,TestTwinkle*//*,TwinkleMenu*/},

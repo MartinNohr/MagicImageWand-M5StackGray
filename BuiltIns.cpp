@@ -594,3 +594,29 @@ void RandomBars()
 {
     ShowRandomBars(bRandomBarsBlacks);
 }
+
+void sinelon()
+{
+    // a colored dot sweeping back and forth, with fading trails
+    fadeToBlackBy(leds, LedInfo.nPixelCount, 20);
+    int pos = beatsin16(nSineSpeed, 0, LedInfo.nPixelCount);
+    leds[AdjustStripIndex(pos)] += CHSV(gHue, 255, 192);
+    if (bSineCycleHue)
+        ++gHue;
+}
+
+void TestSine()
+{
+    gHue = nSineStartingHue;
+    bool done = false;
+    while (!done) {
+        EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
+            sinelon();
+            FastLED.show();
+        }
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+    }
+}
