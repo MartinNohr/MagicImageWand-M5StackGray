@@ -153,6 +153,30 @@ EXTERN RTC_DATA_ATTR int nRainbowPulseSaturation
 #endif
 ;
 EXTERN RTC_DATA_ATTR int nRainbowPulseStartColor;
+// checkerboard/bars
+EXTERN RTC_DATA_ATTR int nCheckerboardHoldframes
+#ifdef MIW_MAIN
+= 10
+#endif
+;
+EXTERN RTC_DATA_ATTR int nCheckboardBlackWidth
+#ifdef MIW_MAIN
+= 12
+#endif
+;
+EXTERN RTC_DATA_ATTR int nCheckboardWhiteWidth
+#ifdef MIW_MAIN
+= 12
+#endif
+;
+EXTERN RTC_DATA_ATTR bool bCheckerBoardAlternate
+#ifdef MIW_MAIN
+= true
+#endif
+;
+EXTERN RTC_DATA_ATTR int nCheckerboardAddPixels;
+// confetti
+EXTERN RTC_DATA_ATTR bool bConfettiCycleHue;
 
 struct BI_MENU {
     char* title;
@@ -163,15 +187,50 @@ struct BI_MENU {
 };
 typedef BI_MENU BiMenu;
 #define MAX_BI_MENUS 10
-EXTERN BiMenu BpmMenuList[MAX_BI_MENUS]
+EXTERN BiMenu BpmMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Beats per minute: ",&nBpmBeatsPerMinute,1,300,0},
+    {"Beats per minute: ",&nBpmBeatsPerMinute,1,300},
     {"Cycle Hue:",&bBpmCycleHue,0,0,0,"Yes","No"},
 }
 #endif
 ;
+
+EXTERN BiMenu BouncingBallsMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Ball Count:",&nBouncingBallsCount,1,32},
+    {"Decay:",&nBouncingBallsDecay,500,10000},
+    {"First Color:",&nBouncingBallsFirstColor,0,31},
+    {"Change Color Rate:",&nBouncingBallsChangeColors,0,10,0},
+}
+#endif
+;
+
+EXTERN BiMenu CheckerBoardMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Hold Frames:",&nCheckerboardHoldframes,1,100},
+    {"Black Width (pixels):",&nCheckboardBlackWidth,1,288},
+    {"White Width (pixels):",&nCheckboardWhiteWidth,1,288},
+    {"Add Pixels per Cycle:",&nCheckerboardAddPixels,0,144},
+    {"Alternate per Cycle:",&bCheckerBoardAlternate,0,0,0,"Yes","No"},
+}
+#endif
+;
+EXTERN BiMenu ConfettiMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Cycle Hue:",&bConfettiCycleHue,0,0,0,"Yes","No"},
+}
+#endif
+;
+
+// the built-in menu handler
 void BuiltInMenu(String hdr, BiMenu* menuList);
 
 // built-in "files"
@@ -205,10 +264,10 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
 #ifdef MIW_MAIN
 = {
     {"Barber Pole",BarberPole},
-    {"Beats",TestBpm,BpmMenuList},
-    {"Bouncy Balls",TestBouncingBalls/*,BouncingBallsMenu*/},
-	{"CheckerBoard"/*,CheckerBoard*//*,CheckerBoardMenu*/},
-    {"Confetti"/*,TestConfetti*//*,ConfettiMenu*/},
+    {"Beats",TestBpm,BpmMenu},
+    {"Bouncy Balls",TestBouncingBalls,BouncingBallsMenu},
+	{"CheckerBoard",CheckerBoard,CheckerBoardMenu},
+    {"Confetti",TestConfetti,ConfettiMenu},
     {"Cylon Eye"/*,TestCylon*//*,CylonEyeMenu*/},
     {"Juggle"/*,TestJuggle*/},
     {"Lines"/*,TestLines*//*,LinesMenu*/},

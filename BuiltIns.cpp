@@ -1,5 +1,4 @@
 #include "MagicImageWand-M5StackGray.h"
-void CheckerBoard() {};
 void RandomBars() {};
 void RunningDot() {};
 void OppositeRunningDots() {};
@@ -9,7 +8,6 @@ void TestCylon() {};
 void TestRainbow() {};
 void TestJuggle() {};
 void TestSine() {};
-void TestConfetti() {};
 void DisplayLedLightBar() {};
 void TestStripes() {};
 void TestLines() {};
@@ -261,4 +259,68 @@ void RainbowPulse()
         }
         last_element = element;
     }
+}
+
+// checkerboard
+void CheckerBoard()
+{
+    int width = nCheckboardBlackWidth + nCheckboardWhiteWidth;
+    int times = 0;
+    CRGB color1 = CRGB::Black, color2 = CRGB::White;
+    int addPixels = 0;
+    bool done = false;
+    while (!done) {
+        for (int y = 0; y < LedInfo.nPixelCount; ++y) {
+            SetPixel(y, ((y + addPixels) % width) < nCheckboardBlackWidth ? color1 : color2);
+        }
+        FastLED.show();
+        int count = nCheckerboardHoldframes;
+        while (count-- > 0) {
+            delay(ImgInfo.nColumnHoldTime);
+            if (CheckCancel()) {
+                done = true;
+                break;
+            }
+        }
+        if (bCheckerBoardAlternate && (times++ % 2)) {
+            // swap colors
+            CRGB temp = color1;
+            color1 = color2;
+            color2 = temp;
+        }
+        addPixels += nCheckerboardAddPixels;
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+    }
+}
+
+void confetti()
+{
+    // random colored speckles that blink in and fade smoothly
+    fadeToBlackBy(leds, LedInfo.nPixelCount, 10);
+    int pos = random16(LedInfo.nPixelCount);
+    leds[pos] += CHSV(gHue + random8(64), 200, 255);
+}
+
+void TestConfetti()
+{
+    time_t start = time(NULL);
+    gHue = 0;
+    bool done = false;
+    while (!done) {
+        EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
+            if (bConfettiCycleHue)
+                ++gHue;
+            confetti();
+            FastLED.show();
+        }
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+    }
+    // wait for timeout so strip will be blank
+    delay(100);
 }
