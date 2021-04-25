@@ -117,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\libraries\M5ez\examples\M5ez-demo\raw_githubusercontent_com.h" />
+    <ClInclude Include="BuiltIns.h" />
     <ClInclude Include="MagicImageWand-M5StackGray.h" />
     <ClInclude Include="__vm\.MagicImageWand-M5StackGray.vsarduino.h" />
   </ItemGroup>

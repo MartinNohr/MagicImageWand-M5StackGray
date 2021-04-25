@@ -30,6 +30,9 @@
     <ClInclude Include="MagicImageWand-M5StackGray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BuiltIns.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BuiltIns.cpp">
