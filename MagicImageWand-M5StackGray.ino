@@ -339,6 +339,7 @@ void SettingsMenu()
 	settings.addItem("Image Settings", ImageSettings);
     settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
+    settings.addItem("Light Bar", DisplayLedLightBar);
     settings.addItem("Level", LevelDisplay);
     settings.addItem("System Settings", ez.settings.menu);
     settings.addItem("Power Off", powerOff);

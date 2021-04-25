@@ -146,12 +146,7 @@ EXTERN RTC_DATA_ATTR int nSineSpeed
 = 13
 #endif
 ;
-// display all color
-EXTERN RTC_DATA_ATTR bool bAllowRollover
-#ifdef MIW_MAIN
-= true
-#endif
-;       // lets 255->0 and 0->255
+// display all color and lightbar
 EXTERN RTC_DATA_ATTR bool bDisplayAllRGB;    // true for RGB, else HSV
 EXTERN RTC_DATA_ATTR int nDisplayAllRed
 #ifdef MIW_MAIN
@@ -318,7 +313,6 @@ EXTERN BiMenu LedLightBarMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Allow rollover",&bAllowRollover,0,0,0,"Yes","No"},
     {"Color Mode",&bDisplayAllRGB,0,0,0,"RGB","HSL"},
     //{eIfEqual,"",NULL,&bDisplayAllRGB,true},
         {"Red",&nDisplayAllRed,0,255},
