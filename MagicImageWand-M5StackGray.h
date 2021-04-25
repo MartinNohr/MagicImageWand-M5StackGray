@@ -177,6 +177,19 @@ EXTERN RTC_DATA_ATTR bool bCheckerBoardAlternate
 EXTERN RTC_DATA_ATTR int nCheckerboardAddPixels;
 // confetti
 EXTERN RTC_DATA_ATTR bool bConfettiCycleHue;
+// cylon eye
+EXTERN RTC_DATA_ATTR int nCylonEyeSize
+#ifdef MIW_MAIN
+= 10
+#endif
+;
+EXTERN RTC_DATA_ATTR int nCylonEyeRed
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nCylonEyeGreen;
+EXTERN RTC_DATA_ATTR int nCylonEyeBlue;
 
 struct BI_MENU {
     char* title;
@@ -229,6 +242,17 @@ EXTERN BiMenu ConfettiMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+EXTERN BiMenu CylonEyeMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Eye Size:",&nCylonEyeSize,1,100},
+    {"Eye Red:",&nCylonEyeRed,0,255},
+    {"Eye Green:",&nCylonEyeGreen,0,255},
+    {"Eye Blue:",&nCylonEyeBlue,0,255},
+}
+#endif
+;
 
 // the built-in menu handler
 void BuiltInMenu(String hdr, BiMenu* menuList);
@@ -268,7 +292,7 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"Bouncy Balls",TestBouncingBalls,BouncingBallsMenu},
 	{"CheckerBoard",CheckerBoard,CheckerBoardMenu},
     {"Confetti",TestConfetti,ConfettiMenu},
-    {"Cylon Eye"/*,TestCylon*//*,CylonEyeMenu*/},
+    {"Cylon Eye",TestCylon,CylonEyeMenu},
     {"Juggle"/*,TestJuggle*/},
     {"Lines"/*,TestLines*//*,LinesMenu*/},
     {"Meteor"/*,TestMeteor*//*,MeteorMenu*/},

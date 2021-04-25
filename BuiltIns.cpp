@@ -4,7 +4,6 @@ void RunningDot() {};
 void OppositeRunningDots() {};
 void TestTwinkle() {};
 void TestMeteor() {};
-void TestCylon() {};
 void TestRainbow() {};
 void TestJuggle() {};
 void TestSine() {};
@@ -323,4 +322,41 @@ void TestConfetti()
     }
     // wait for timeout so strip will be blank
     delay(100);
+}
+
+void CylonBounce(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, int ReturnDelay)
+{
+    for (int i = 0; i < LedInfo.nPixelCount - EyeSize - 2; i++) {
+        if (CheckCancel()) {
+            break;
+        }
+        FastLED.clear();
+        SetPixel(i, CRGB(red / 10, green / 10, blue / 10));
+        for (int j = 1; j <= EyeSize; j++) {
+            SetPixel(i + j, CRGB(red, green, blue));
+        }
+        SetPixel(i + EyeSize + 1, CRGB(red / 10, green / 10, blue / 10));
+        FastLED.show();
+        delay(SpeedDelay);
+    }
+    delay(ReturnDelay);
+    for (int i = LedInfo.nPixelCount - EyeSize - 2; i > 0; i--) {
+        if (CheckCancel()) {
+            break;
+        }
+        FastLED.clear();
+        SetPixel(i, CRGB(red / 10, green / 10, blue / 10));
+        for (int j = 1; j <= EyeSize; j++) {
+            SetPixel(i + j, CRGB(red, green, blue));
+        }
+        SetPixel(i + EyeSize + 1, CRGB(red / 10, green / 10, blue / 10));
+        FastLED.show();
+        delay(SpeedDelay);
+    }
+    FastLED.clear(true);
+}
+
+void TestCylon()
+{
+    CylonBounce(nCylonEyeRed, nCylonEyeGreen, nCylonEyeBlue, nCylonEyeSize, ImgInfo.nColumnHoldTime, 50);
 }
