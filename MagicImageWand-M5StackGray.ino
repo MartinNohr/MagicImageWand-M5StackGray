@@ -64,6 +64,15 @@ void setup() {
     FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, LedInfo.nPixelCount);
     FastLED.setBrightness(LedInfo.nLEDBrightness);
 	FastLED.setMaxPowerInVoltsAndMilliamps(5, LedInfo.nStripMaxCurrent);
+    rainbow_fill();
+    //m5.Lcd.setTextColor(TFT_BLACK, TFT_TRANSPARENT);
+	ez.canvas.font(&Satisfy_24);
+    ez.canvas.x(40);
+    ez.canvas.y(50);
+    ez.canvas.write("Magic Image Wand");
+    ez.canvas.x(70);
+    ez.canvas.y(100);
+    ez.canvas.write(MIW_VERSION);
     //   for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
  //       // note that SetPixel protects out of range locations
 	//	SetPixel(ix, CRGB::Red);
@@ -1483,4 +1492,69 @@ void DrawProgressBar(int x, int y, int dx, int dy, int percent)
     m5.Lcd.fillRect(x + 1, y + 1, fill, dy - 2, TFT_GREEN);
     // blank the empty part
     m5.Lcd.fillRect(x + 1 + fill, y + 1, dx - 2 - fill, dy - 2, TFT_BLACK);
+}
+
+// #########################################################################
+// Fill screen with a rainbow pattern
+// #########################################################################
+byte red = 31;
+byte green = 0;
+byte blue = 0;
+byte state = 0;
+unsigned int colour = red << 11; // Colour order is RGB 5+6+5 bits each
+
+void rainbow_fill()
+{
+    // The colours and state are not initialised so the start colour changes each time the function is called
+
+    for (int i = 319; i >= 0; i--) {
+        // Draw a vertical line 1 pixel wide in the selected colour
+		m5.Lcd.drawFastHLine(0, i, m5.Lcd.width(), colour); // in this example tft.width() returns the pixel width of the display
+        // This is a "state machine" that ramps up/down the colour brightnesses in sequence
+        switch (state) {
+        case 0:
+            green++;
+            if (green == 64) {
+                green = 63;
+                state = 1;
+            }
+            break;
+        case 1:
+            red--;
+            if (red == 255) {
+                red = 0;
+                state = 2;
+            }
+            break;
+        case 2:
+            blue++;
+            if (blue == 32) {
+                blue = 31;
+                state = 3;
+            }
+            break;
+        case 3:
+            green--;
+            if (green == 255) {
+                green = 0;
+                state = 4;
+            }
+            break;
+        case 4:
+            red++;
+            if (red == 32) {
+                red = 31;
+                state = 5;
+            }
+            break;
+        case 5:
+            blue--;
+            if (blue == 255) {
+                blue = 0;
+                state = 0;
+            }
+            break;
+        }
+        colour = red << 11 | green << 5 | blue;
+    }
 }
