@@ -689,14 +689,133 @@ void DisplayLedLightBar()
     delete pMenu;
 }
 
-//void LightBar(MenuItem* menu)
-//{
-//    tft.fillScreen(TFT_BLACK);
-//    DisplayLine(0, "LED Light Bar", menuTextColor);
-//    DisplayLine(3, "Rotate Dial to Change", menuTextColor);
-//    DisplayLine(4, "Click to Set Operation", menuTextColor);
-//    DisplayLedLightBar();
-//    FastLED.clear(true);
-//    // these were set by CheckCancel() in DisplayAllColor() and need to be cleared
-//    bCancelMacro = bCancelRun = false;
-//}
+// create a user defined stripe set
+// it consists of a list of stripes, each of which have a width and color
+// there can be up to 10 of these
+#define NUM_STRIPES 20
+struct {
+    int start;
+    int length;
+    CHSV color;
+} Stripes[NUM_STRIPES];
+
+void TestStripes()
+{
+    // let's fill in some data
+    for (int ix = 0; ix < NUM_STRIPES; ++ix) {
+        Stripes[ix].start = ix * 20;
+        Stripes[ix].length = 12;
+        Stripes[ix].color = CHSV(0, 0, 255);
+    }
+    int pix = 0;	// pixel address
+    FastLED.clear(true);
+    for (int ix = 0; ix < NUM_STRIPES; ++ix) {
+        pix = Stripes[ix].start;
+        // fill in each block of pixels
+        for (int len = 0; len < Stripes[ix].length; ++len) {
+            SetPixel(pix++, CRGB(Stripes[ix].color));
+        }
+    }
+    FastLED.show();
+    bool done = false;
+    while (!done) {
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+        delay(1000);
+    }
+}
+
+void TwinkleRandom(int SpeedDelay, boolean OnlyOne) {
+    time_t start = time(NULL);
+    bool done = false;
+    while (!done) {
+        SetPixel(random(LedInfo.nPixelCount), CRGB(random(0, 255), random(0, 255), random(0, 255)));
+        FastLED.show();
+        delay(SpeedDelay);
+        if (OnlyOne) {
+            FastLED.clear(true);
+        }
+        if (CheckCancel()) {
+            done = true;
+            break;
+        }
+    }
+}
+
+void TestTwinkle() {
+    TwinkleRandom(ImgInfo.nColumnHoldTime, bTwinkleOnlyOne);
+}
+
+void OppositeRunningDots()
+{
+    for (int mode = 0; mode <= 3; ++mode) {
+        if (CheckCancel())
+            break;;
+        // RGBW
+        byte r, g, b;
+        switch (mode) {
+        case 0: // red
+            r = 255;
+            g = 0;
+            b = 0;
+            break;
+        case 1: // green
+            r = 0;
+            g = 255;
+            b = 0;
+            break;
+        case 2: // blue
+            r = 0;
+            g = 0;
+            b = 255;
+            break;
+        case 3: // white
+            r = 255;
+            g = 255;
+            b = 255;
+            break;
+        }
+        fixRGBwithGamma(&r, &g, &b);
+        for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
+            if (CheckCancel())
+                return;
+            if (ix > 0) {
+                SetPixel(ix - 1, CRGB::Black);
+                SetPixel(LedInfo.nPixelCount - ix + 1, CRGB::Black);
+            }
+            SetPixel(LedInfo.nPixelCount - ix, CRGB(r, g, b));
+            SetPixel(ix, CRGB(r, g, b));
+            FastLED.show();
+            delay(ImgInfo.nColumnHoldTime);
+        }
+    }
+}
+
+/*
+    Write a wedge in time, from the middle out
+*/
+void TestWedge()
+{
+    int midPoint = LedInfo.nPixelCount / 2 - 1;
+    for (int ix = 0; ix < LedInfo.nPixelCount / 2; ++ix) {
+        SetPixel(midPoint + ix, CRGB(nWedgeRed, nWedgeGreen, nWedgeBlue));
+        SetPixel(midPoint - ix, CRGB(nWedgeRed, nWedgeGreen, nWedgeBlue));
+        if (!bWedgeFill) {
+            if (ix > 1) {
+                SetPixel(midPoint + ix - 1, CRGB::Black);
+                SetPixel(midPoint - ix + 1, CRGB::Black);
+            }
+            else {
+                SetPixel(midPoint, CRGB::Black);
+            }
+        }
+        FastLED.show();
+        delay(ImgInfo.nColumnHoldTime);
+        if (CheckCancel()) {
+            return;
+        }
+    }
+    FastLED.clear(true);
+}

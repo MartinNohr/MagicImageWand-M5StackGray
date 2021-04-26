@@ -184,6 +184,25 @@ EXTERN RTC_DATA_ATTR bool bDisplayAllFromMiddle
 = true
 #endif
 ;
+// twinkle
+EXTERN RTC_DATA_ATTR bool bTwinkleOnlyOne;
+// wedge data
+EXTERN RTC_DATA_ATTR bool bWedgeFill;
+EXTERN RTC_DATA_ATTR int nWedgeRed
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nWedgeGreen
+#ifdef MIW_MAIN
+= 255
+#endif
+;
+EXTERN RTC_DATA_ATTR int nWedgeBlue
+#ifdef MIW_MAIN
+= 255
+#endif
+;
 
 struct BI_MENU {
     char* title;
@@ -328,6 +347,25 @@ EXTERN BiMenu LedLightBarMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+EXTERN BiMenu TwinkleMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"One or Many",&bTwinkleOnlyOne,0,0,0,"One","Many"},
+}
+#endif
+;
+EXTERN BiMenu WedgeMenu[MAX_BI_MENUS]
+#ifdef MIW_MAIN
+=
+{
+    {"Fill Wedge",&bWedgeFill,0,0,0,"Solid","<"},
+    {"Red: %d",&nWedgeRed,0,255},
+    {"Green: %d",&nWedgeGreen,0,255},
+    {"Blue: %d",&nWedgeBlue,0,255},
+}
+#endif
+;
 
 // built-in "files"
 struct BuiltInItem {
@@ -374,10 +412,10 @@ EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
     {"Random Bars",RandomBars,RandomBarsMenu},
     {"Sine Trails",TestSine,SineMenu},
     {"Solid Color",DisplayLedLightBar,LedLightBarMenu},
-    {"Stripes",/*TestStripes*/},
-    {"Twinkle"/*,TestTwinkle*//*,TwinkleMenu*/},
-    {"Two Dots"/*,OppositeRunningDots*/},
-    {"Wedge"/*,TestWedge*//*,WedgeMenu*/},
+    {"Stripes",TestStripes},
+    {"Twinkle",TestTwinkle,TwinkleMenu},
+    {"Two Dots",OppositeRunningDots},
+    {"Wedge",TestWedge,WedgeMenu},
 }
 #endif
 ;
