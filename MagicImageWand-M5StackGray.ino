@@ -1478,7 +1478,6 @@ void ProcessFileOrTest()
                 DisplayLine(3, "");
                 // check for chain wait for keypress
                 if (chainCount && ImgInfo.bChainWaitKey) {
-                    ez.msgBox("Chain", "Waiting for OK");
                     ez.buttons.show("Next");
                     //DisplayLine(2, "Click: " + FileNames[CurrentFileIndex]);
                     bool waitNext = true;
@@ -1488,6 +1487,7 @@ void ProcessFileOrTest()
                         str = ez.buttons.poll();
 						if (str == "Next" || CheckCancel()) {
                             waitNext = false;
+                            ez.buttons.clear();
                         }
                     }
                 }
