@@ -5,10 +5,11 @@
 */
 #define MIW_MAIN 1
 #include "MagicImageWand-M5StackGray.h"
+#include <Preferences.h>
 
 #define MAIN_DECLARED
 String exit_button = "Exit";
-
+char* prefsName = "MIW";
 ezMenu builtinMenu("Built-Ins");
 
 float accX = 0.0F;
@@ -67,7 +68,7 @@ void setup() {
     rainbow_fill();
     //m5.Lcd.setTextColor(TFT_BLACK, TFT_TRANSPARENT);
 	ez.canvas.font(&Satisfy_24);
-    ez.canvas.x(40);
+    ez.canvas.x(50);
     ez.canvas.y(50);
     ez.canvas.write("Magic Image Wand");
     ez.canvas.x(70);
@@ -100,6 +101,23 @@ void setup() {
     //FastLED.show();
     //delay(1500);
     FastLED.clear(true);
+    Preferences prefs;
+    prefs.begin(prefsName);
+    // check the version string
+    String vsn = prefs.getString("version", "");
+    if (String(MIW_VERSION) != vsn) {
+        prefs.putString("version", MIW_VERSION);
+        ez.msgBox("Saved Settings", "no saved settings");
+    }
+    else {
+        // see if the values need to be loaded
+        if (prefs.getBool("autoload")) {
+            // get all the defaults
+            SaveLoadSettings(NULL);
+            ez.msgBox("Saved Settings", "Settngs Loaded");
+        }
+    }
+    prefs.end();
 }
 
 ezMenu* pFileMenu = NULL;
@@ -348,6 +366,7 @@ void SettingsMenu()
 	settings.addItem("Image Settings", ImageSettings);
     settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
+    settings.addItem("Saved Settings", SavedSettings);
     settings.addItem("Light Bar", DisplayLedLightBar);
     settings.addItem("Level", LevelDisplay);
     settings.addItem("System Settings", ez.settings.menu);
@@ -768,6 +787,73 @@ bool ToggleBool(ezMenu* menu)
     caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
     menu->setCaption(menu->pickName(), caption + (*menu->getBoolValue() ? menu->getBoolTrue() : menu->getBoolFalse()));
     return true;
+}
+
+// save/load settings
+// call with NULL to load
+bool SaveLoadSettings(ezMenu* pMenu)
+{
+    char* title = "Saved Settings";
+    Preferences prefs;
+    // see if save or load
+    String str;
+    if (pMenu == NULL)
+        str = "Load";
+    else
+		str = pMenu->getItemName();
+	if (str == "Save") {
+		// save things
+        prefs.begin(prefsName);
+        prefs.putBytes("ledinfo", &LedInfo, sizeof(LedInfo));
+        prefs.putBytes("imginfo", &ImgInfo, sizeof(ImgInfo));
+        prefs.putBool("valid", true);
+	}
+	else if (str == "Load") {
+		// load things
+		prefs.begin(prefsName, true);
+        bool isValid = prefs.getBool("valid");
+        if (isValid) {
+            prefs.getBytes("ledinfo", &LedInfo, sizeof(LedInfo));
+            prefs.getBytes("imginfo", &ImgInfo, sizeof(ImgInfo));
+        }
+        else {
+            ez.msgBox(title, "Settings not saved yet");
+        }
+    }
+    prefs.end();
+    return true;
+}
+
+// delete saved settings
+void FactorySettings()
+{
+	String str = ez.msgBox("Saved Settings", "Restore Factory Settings?\nwill reboot automatically", "Cancel#OK#");
+    if (str == "OK") {
+        Preferences prefs;
+        prefs.begin(prefsName);
+        prefs.clear();
+        prefs.end();
+        ESP.restart();
+    }
+}
+
+// saved settings handler
+void SavedSettings()
+{
+    Preferences prefs;
+    prefs.begin(prefsName);
+    bool bAutoLoad = prefs.getBool("autoload");
+    ezMenu settings("Saved Settings");
+    settings.txtSmall();
+    settings.buttons("up # # Go # Back # down # ");
+    settings.addItem("Autoload", &bAutoLoad, "Yes", "No", ToggleBool);
+    settings.addItem("Save", NULL, SaveLoadSettings);
+    settings.addItem("Load", NULL, SaveLoadSettings);
+    settings.addItem("Factory Defaults", FactorySettings);
+    while (settings.runOnce()) {
+    }
+    prefs.putBool("autoload", bAutoLoad);
+    prefs.end();
 }
 
 // Strip settings
