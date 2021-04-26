@@ -1475,6 +1475,7 @@ void ProcessFileOrTest()
                     DisplayLine(3, line);
                     delay(100);
                 }
+                DisplayLine(3, "");
                 // check for chain wait for keypress
                 if (chainCount && ImgInfo.bChainWaitKey) {
                     ez.msgBox("Chain", "Waiting for OK");
