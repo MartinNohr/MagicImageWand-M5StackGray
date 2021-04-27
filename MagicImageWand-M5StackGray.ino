@@ -36,6 +36,8 @@ void IRAM_ATTR oneshot_LED_timer_callback(void* arg)
     //ESP_LOGI(TAG, "One-shot timer called, time since boot: %lld us", time_since_boot);
 }
 
+TFT_eSprite img = TFT_eSprite(&M5.Lcd);  // Create Sprite object "img" with pointer to "tft" object
+
 void setup() {
 #include <themes/default.h>
 #include <themes/dark.h>
@@ -51,7 +53,7 @@ void setup() {
     };
     esp_timer_create(&oneshot_LED_timer_args, &oneshot_LED_timer);
     builtinMenu.txtSmall();
-    ez.msgBox("Initializing", "LED test", "", false);
+    //ez.msgBox("Initializing", "LED test", "", false);
     // don't sort, we need the list in the same order as the one in the .h list of built-ins
     //builtinMenu.setSortFunction(CompareNames);
     for (BuiltInItem bi : BuiltInFiles) {
@@ -66,14 +68,28 @@ void setup() {
     FastLED.setBrightness(LedInfo.nLEDBrightness);
 	FastLED.setMaxPowerInVoltsAndMilliamps(5, LedInfo.nStripMaxCurrent);
     rainbow_fill();
-    //m5.Lcd.setTextColor(TFT_BLACK, TFT_TRANSPARENT);
-	ez.canvas.font(&Satisfy_24);
-    ez.canvas.x(50);
-    ez.canvas.y(50);
-    ez.canvas.write("Magic Image Wand");
-    ez.canvas.x(70);
-    ez.canvas.y(100);
-    ez.canvas.write(MIW_VERSION);
+
+    img.setColorDepth(8);
+    img.createSprite(220, 100);
+    // Fill Sprite with a "transparent" colour
+    // TFT_TRANSPARENT is already defined for convenience
+    // We could also fill with any colour as "transparent" and later specify that
+    // same colour when we push the Sprite onto the screen.
+    img.fillSprite(TFT_TRANSPARENT);
+    img.setFreeFont(&Satisfy_24);
+    img.setTextColor(TFT_CYAN);
+    img.setCursor(0, 50);
+    img.print("Magic Image Wand");
+    img.pushSprite(50, 40, TFT_TRANSPARENT);
+    img.deleteSprite();
+
+	//ez.canvas.font(&Satisfy_24);
+ //   ez.canvas.x(50);
+ //   ez.canvas.y(50);
+ //   ez.canvas.write("Magic Image Wand");
+ //   ez.canvas.x(70);
+ //   ez.canvas.y(100);
+ //   ez.canvas.write(MIW_VERSION);
     //   for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
  //       // note that SetPixel protects out of range locations
 	//	SetPixel(ix, CRGB::Red);
