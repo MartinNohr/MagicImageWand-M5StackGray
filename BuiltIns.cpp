@@ -677,16 +677,16 @@ void DisplayLedLightBar()
 		String str = ez.buttons.poll();
 		//Serial.println("str: " + str);
 		if (ix == 0) {
-			delete pMenu;
-			return;
+			break;
 		}
 		if (CheckCancel()) {
-			delete pMenu;
-			return;
+			break;
 		}
 		FillLightBar();
 	}
-    delete pMenu;
+	if (pMenu)
+		delete pMenu;
+    FastLED.clear(true);
 }
 
 // create a user defined stripe set
