@@ -49,17 +49,17 @@ void bpm()
 {
     // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
     CRGBPalette16 palette = PartyColors_p;
-    uint8_t beat = beatsin8(nBpmBeatsPerMinute, 64, 255);
+    uint8_t beat = beatsin8(BuiltinInfo.nBpmBeatsPerMinute, 64, 255);
     for (int i = 0; i < LedInfo.nPixelCount; i++) { //9948
-        SetPixel(i, ColorFromPalette(palette, gHue + (i * 2), beat - gHue + (i * 10)));
+        SetPixel(i, ColorFromPalette(palette, BuiltinInfo.gHue + (i * 2), beat - BuiltinInfo.gHue + (i * 10)));
     }
-    if (bBpmCycleHue)
-        ++gHue;
+    if (BuiltinInfo.bBpmCycleHue)
+        ++BuiltinInfo.gHue;
 }
 
 void TestBpm()
 {
-    gHue = 0;
+    BuiltinInfo.gHue = 0;
     bool done = false;
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
@@ -135,7 +135,7 @@ void BouncingColoredBalls(int balls, CRGB colors[]) {
                 break;
             }
             TimeSinceLastBounce[i] = millis() - ClockTimeSinceLastBounce[i];
-            Height[i] = 0.5 * Gravity * pow(TimeSinceLastBounce[i] / nBouncingBallsDecay, 2.0) + ImpactVelocity[i] * TimeSinceLastBounce[i] / nBouncingBallsDecay;
+            Height[i] = 0.5 * Gravity * pow(TimeSinceLastBounce[i] / BuiltinInfo.nBouncingBallsDecay, 2.0) + ImpactVelocity[i] * TimeSinceLastBounce[i] / BuiltinInfo.nBouncingBallsDecay;
 
             if (Height[i] < 0) {
                 Height[i] = 0;
@@ -155,11 +155,11 @@ void BouncingColoredBalls(int balls, CRGB colors[]) {
                 done = true;
                 break;
             }
-            ix = (i + nBouncingBallsFirstColor) % 32;
+            ix = (i + BuiltinInfo.nBouncingBallsFirstColor) % 32;
             SetPixel(Position[i], colors[ix]);
         }
-        if (nBouncingBallsChangeColors && colorChangeCounter++ > (nBouncingBallsChangeColors * 100)) {
-            ++nBouncingBallsFirstColor;
+        if (BuiltinInfo.nBouncingBallsChangeColors && colorChangeCounter++ > (BuiltinInfo.nBouncingBallsChangeColors * 100)) {
+            ++BuiltinInfo.nBouncingBallsFirstColor;
             colorChangeCounter = 0;
         }
         FastLED.show();
@@ -211,7 +211,7 @@ void TestBouncingBalls() {
         CRGB::WhiteSmoke,
     };
 
-    BouncingColoredBalls(nBouncingBallsCount, colors);
+    BouncingColoredBalls(BuiltinInfo.nBouncingBallsCount, colors);
     FastLED.clear(true);
 }
 
@@ -229,14 +229,14 @@ void RainbowPulse()
         element = round((LedInfo.nPixelCount - 1) / 2 * (-cos(i / (PI_SCALE * 100.0)) + 1));
         //Serial.println("elements: " + String(element) + " " + String(last_element));
         if (element > last_element) {
-            SetPixel(element, CHSV(element * nRainbowPulseColorScale + nRainbowPulseStartColor, nRainbowPulseSaturation, 255));
+            SetPixel(element, CHSV(element * BuiltinInfo.nRainbowPulseColorScale + BuiltinInfo.nRainbowPulseStartColor, BuiltinInfo.nRainbowPulseSaturation, 255));
             FastLED.show();
             highest_element = max(highest_element, element);
         }
         if (CheckCancel()) {
             break;
         }
-        delayMicroseconds(nRainbowPulsePause * 10);
+        delayMicroseconds(BuiltinInfo.nRainbowPulsePause * 10);
         if (element < last_element) {
             // cleanup the highest one
             SetPixel(highest_element, CRGB::Black);
@@ -287,18 +287,18 @@ void confetti()
     // random colored speckles that blink in and fade smoothly
     fadeToBlackBy(leds, LedInfo.nPixelCount, 10);
     int pos = random16(LedInfo.nPixelCount);
-    leds[pos] += CHSV(gHue + random8(64), 200, 255);
+    leds[pos] += CHSV(BuiltinInfo.gHue + random8(64), 200, 255);
 }
 
 void TestConfetti()
 {
     time_t start = time(NULL);
-    gHue = 0;
+    BuiltinInfo.gHue = 0;
     bool done = false;
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
             if (bConfettiCycleHue)
-                ++gHue;
+                ++BuiltinInfo.gHue;
             confetti();
             FastLED.show();
         }
@@ -534,15 +534,15 @@ void addGlitter(fract8 chanceOfGlitter)
 
 void TestRainbow()
 {
-    gHue = nRainbowInitialHue;
-    FillRainbow(leds, LedInfo.nPixelCount, gHue, nRainbowHueDelta);
+    BuiltinInfo.gHue = nRainbowInitialHue;
+    FillRainbow(leds, LedInfo.nPixelCount, BuiltinInfo.gHue, nRainbowHueDelta);
     FadeInOut(nRainbowFadeTime * 100, true);
     bool done = false;
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
             if (bRainbowCycleHue)
-                ++gHue;
-            FillRainbow(leds, LedInfo.nPixelCount, gHue, nRainbowHueDelta);
+                ++BuiltinInfo.gHue;
+            FillRainbow(leds, LedInfo.nPixelCount, BuiltinInfo.gHue, nRainbowHueDelta);
             if (bRainbowAddGlitter)
                 addGlitter(80);
             FastLED.show();
@@ -600,14 +600,14 @@ void sinelon()
     // a colored dot sweeping back and forth, with fading trails
     fadeToBlackBy(leds, LedInfo.nPixelCount, 20);
     int pos = beatsin16(nSineSpeed, 0, LedInfo.nPixelCount);
-    leds[AdjustStripIndex(pos)] += CHSV(gHue, 255, 192);
+    leds[AdjustStripIndex(pos)] += CHSV(BuiltinInfo.gHue, 255, 192);
     if (bSineCycleHue)
-        ++gHue;
+        ++BuiltinInfo.gHue;
 }
 
 void TestSine()
 {
-    gHue = nSineStartingHue;
+	BuiltinInfo.gHue = nSineStartingHue;
     bool done = false;
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {

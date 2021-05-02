@@ -826,6 +826,7 @@ bool SaveLoadSettings(ezMenu* pMenu)
         prefs.begin(prefsName);
         prefs.putBytes("ledinfo", &LedInfo, sizeof(LedInfo));
         prefs.putBytes("imginfo", &ImgInfo, sizeof(ImgInfo));
+        prefs.putBytes("builtininfo", &BuiltinInfo, sizeof(BuiltinInfo));
         prefs.putBool("valid", true);
 	}
 	else if (str == "Load") {
@@ -835,6 +836,7 @@ bool SaveLoadSettings(ezMenu* pMenu)
         if (isValid) {
             prefs.getBytes("ledinfo", &LedInfo, sizeof(LedInfo));
             prefs.getBytes("imginfo", &ImgInfo, sizeof(ImgInfo));
+            prefs.getBytes("builtininfo", &BuiltinInfo, sizeof(BuiltinInfo));
         }
         else {
             ez.msgBox(title, "Settings not saved yet");

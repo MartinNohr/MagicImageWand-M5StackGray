@@ -5,45 +5,26 @@
 #define EXTERN extern
 #endif
 
+struct BUILTIN_INFO {
+	uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+    // bouncing balls
+	int nBouncingBallsCount = 4;
+	int nBouncingBallsDecay = 1000;
+	int nBouncingBallsFirstColor;   // first color, wraps to get all 32
+	int nBouncingBallsChangeColors; // how many 100 count cycles to wait for change
+	// bpm
+	int nBpmBeatsPerMinute = 62;
+	bool bBpmCycleHue;
+    // rainbow pulse settings
+	int nRainbowPulseColorScale = 10;
+	int nRainbowPulsePause = 5;
+	int nRainbowPulseSaturation = 255;
+	int nRainbowPulseStartColor = 0;
+};
+typedef BUILTIN_INFO BUILTIN_INFO;
+EXTERN RTC_DATA_ATTR BUILTIN_INFO BuiltinInfo;
+
 // adjustment values for builtins
-EXTERN RTC_DATA_ATTR uint8_t gHue; // rotating "base color" used by many of the patterns
-// bouncing balls
-EXTERN RTC_DATA_ATTR int nBouncingBallsCount
-#ifdef MIW_MAIN
-= 4
-#endif
-;
-EXTERN RTC_DATA_ATTR int nBouncingBallsDecay
-#ifdef MIW_MAIN
-= 1000
-#endif
-;
-EXTERN RTC_DATA_ATTR int nBouncingBallsFirstColor;   // first color, wraps to get all 32
-EXTERN RTC_DATA_ATTR int nBouncingBallsChangeColors; // how many 100 count cycles to wait for change
-// bpm
-EXTERN RTC_DATA_ATTR int nBpmBeatsPerMinute
-#ifdef MIW_MAIN
-= 62
-#endif
-;
-EXTERN RTC_DATA_ATTR bool bBpmCycleHue;
-// rainbow pulse settings
-EXTERN RTC_DATA_ATTR int nRainbowPulseColorScale
-#ifdef MIW_MAIN
-= 10
-#endif
-;
-EXTERN RTC_DATA_ATTR int nRainbowPulsePause
-#ifdef MIW_MAIN
-= 5
-#endif
-;
-EXTERN RTC_DATA_ATTR int nRainbowPulseSaturation
-#ifdef MIW_MAIN
-= 255
-#endif
-;
-EXTERN RTC_DATA_ATTR int nRainbowPulseStartColor;
 // checkerboard/bars
 EXTERN RTC_DATA_ATTR int nCheckerboardHoldframes
 #ifdef MIW_MAIN
@@ -217,8 +198,8 @@ EXTERN BiMenu BpmMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Beats per minute",&nBpmBeatsPerMinute,1,300},
-    {"Cycle Hue",&bBpmCycleHue,0,0,0,"Yes","No"},
+    {"Beats per minute",&BuiltinInfo.nBpmBeatsPerMinute,1,300},
+    {"Cycle Hue",&BuiltinInfo.bBpmCycleHue,0,0,0,"Yes","No"},
 }
 #endif
 ;
@@ -227,10 +208,10 @@ EXTERN BiMenu BouncingBallsMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Ball Count",&nBouncingBallsCount,1,32},
-    {"Decay",&nBouncingBallsDecay,500,10000},
-    {"First Color",&nBouncingBallsFirstColor,0,31},
-    {"Change Color Rate",&nBouncingBallsChangeColors,0,10,0},
+    {"Ball Count",&BuiltinInfo.nBouncingBallsCount,1,32},
+    {"Decay",&BuiltinInfo.nBouncingBallsDecay,500,10000},
+    {"First Color",&BuiltinInfo.nBouncingBallsFirstColor,0,31},
+    {"Change Color Rate",&BuiltinInfo.nBouncingBallsChangeColors,0,10,0},
 }
 #endif
 ;
@@ -311,10 +292,10 @@ EXTERN BiMenu RainbowPulseMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
-    {"Step Pause",&nRainbowPulsePause,0,1000},
-    {"Color Rate Scale",&nRainbowPulseColorScale,0,256},
-    {"Start Color",&nRainbowPulseStartColor,0,255},
-    {"Color Saturation",&nRainbowPulseSaturation,0,255},
+    {"Step Pause",&BuiltinInfo.nRainbowPulsePause,0,1000},
+    {"Color Rate Scale",&BuiltinInfo.nRainbowPulseColorScale,0,256},
+    {"Start Color",&BuiltinInfo.nRainbowPulseStartColor,0,255},
+    {"Color Saturation",&BuiltinInfo.nRainbowPulseSaturation,0,255},
 }
 #endif
 ;
