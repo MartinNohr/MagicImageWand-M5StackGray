@@ -250,17 +250,17 @@ void RainbowPulse()
 // checkerboard
 void CheckerBoard()
 {
-    int width = nCheckboardBlackWidth + nCheckboardWhiteWidth;
+    int width = BuiltinInfo.nCheckboardBlackWidth + BuiltinInfo.nCheckboardWhiteWidth;
     int times = 0;
     CRGB color1 = CRGB::Black, color2 = CRGB::White;
     int addPixels = 0;
     bool done = false;
     while (!done) {
         for (int y = 0; y < LedInfo.nPixelCount; ++y) {
-            SetPixel(y, ((y + addPixels) % width) < nCheckboardBlackWidth ? color1 : color2);
+            SetPixel(y, ((y + addPixels) % width) < BuiltinInfo.nCheckboardBlackWidth ? color1 : color2);
         }
         FastLED.show();
-        int count = nCheckerboardHoldframes;
+        int count = BuiltinInfo.nCheckerboardHoldframes;
         while (count-- > 0) {
             delay(ImgInfo.nColumnHoldTime);
             if (CheckCancel()) {
@@ -268,13 +268,13 @@ void CheckerBoard()
                 break;
             }
         }
-        if (bCheckerBoardAlternate && (times++ % 2)) {
+        if (BuiltinInfo.bCheckerBoardAlternate && (times++ % 2)) {
             // swap colors
             CRGB temp = color1;
             color1 = color2;
             color2 = temp;
         }
-        addPixels += nCheckerboardAddPixels;
+        addPixels += BuiltinInfo.nCheckerboardAddPixels;
         if (CheckCancel()) {
             done = true;
             break;
@@ -297,7 +297,7 @@ void TestConfetti()
     bool done = false;
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
-            if (bConfettiCycleHue)
+            if (BuiltinInfo.bConfettiCycleHue)
                 ++BuiltinInfo.gHue;
             confetti();
             FastLED.show();
@@ -345,7 +345,7 @@ void CylonBounce(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, i
 
 void TestCylon()
 {
-    CylonBounce(nCylonEyeRed, nCylonEyeGreen, nCylonEyeBlue, nCylonEyeSize, ImgInfo.nColumnHoldTime, 50);
+    CylonBounce(BuiltinInfo.nCylonEyeRed, BuiltinInfo.nCylonEyeGreen, BuiltinInfo.nCylonEyeBlue, BuiltinInfo.nCylonEyeSize, ImgInfo.nColumnHoldTime, 50);
 }
 
 void juggle()
@@ -385,7 +385,7 @@ void TestLines()
     bool bWhite = true;
     for (int pix = 0; pix < LedInfo.nPixelCount; ++pix) {
         // fill in each block of pixels
-        for (int len = 0; len < (bWhite ? nLinesWhite : nLinesBlack); ++len) {
+        for (int len = 0; len < (bWhite ? BuiltinInfo.nLinesWhite : BuiltinInfo.nLinesBlack); ++len) {
             SetPixel(pix++, bWhite ? CRGB::White : CRGB::Black);
         }
         bWhite = !bWhite;
@@ -441,7 +441,7 @@ void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTra
 }
 
 void TestMeteor() {
-    meteorRain(nMeteorRed, nMeteorGreen, nMeteorBlue, nMeteorSize, 64, true, 30);
+    meteorRain(BuiltinInfo.nMeteorRed, BuiltinInfo.nMeteorGreen, BuiltinInfo.nMeteorBlue, BuiltinInfo.nMeteorSize, 64, true, 30);
 }
 
 // running dot
@@ -534,16 +534,16 @@ void addGlitter(fract8 chanceOfGlitter)
 
 void TestRainbow()
 {
-    BuiltinInfo.gHue = nRainbowInitialHue;
-    FillRainbow(leds, LedInfo.nPixelCount, BuiltinInfo.gHue, nRainbowHueDelta);
-    FadeInOut(nRainbowFadeTime * 100, true);
+    BuiltinInfo.gHue = BuiltinInfo.nRainbowInitialHue;
+    FillRainbow(leds, LedInfo.nPixelCount, BuiltinInfo.gHue, BuiltinInfo.nRainbowHueDelta);
+    FadeInOut(BuiltinInfo.nRainbowFadeTime * 100, true);
     bool done = false;
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
-            if (bRainbowCycleHue)
+            if (BuiltinInfo.bRainbowCycleHue)
                 ++BuiltinInfo.gHue;
-            FillRainbow(leds, LedInfo.nPixelCount, BuiltinInfo.gHue, nRainbowHueDelta);
-            if (bRainbowAddGlitter)
+            FillRainbow(leds, LedInfo.nPixelCount, BuiltinInfo.gHue, BuiltinInfo.nRainbowHueDelta);
+            if (BuiltinInfo.bRainbowAddGlitter)
                 addGlitter(80);
             FastLED.show();
         }
@@ -553,7 +553,7 @@ void TestRainbow()
             break;
         }
     }
-    FadeInOut(nRainbowFadeTime * 100, false);
+    FadeInOut(BuiltinInfo.nRainbowFadeTime * 100, false);
     FastLED.setBrightness(LedInfo.nLEDBrightness);
 }
 
@@ -579,7 +579,7 @@ void ShowRandomBars(bool blacks)
             // fill the strip color
             FastLED.showColor(CRGB(r, g, b));
         }
-        int count = nRandomBarsHoldframes;
+        int count = BuiltinInfo.nRandomBarsHoldframes;
         while (count-- > 0) {
             delay(ImgInfo.nColumnHoldTime);
             if (CheckCancel()) {
@@ -592,22 +592,22 @@ void ShowRandomBars(bool blacks)
 
 void RandomBars()
 {
-    ShowRandomBars(bRandomBarsBlacks);
+    ShowRandomBars(BuiltinInfo.bRandomBarsBlacks);
 }
 
 void sinelon()
 {
     // a colored dot sweeping back and forth, with fading trails
     fadeToBlackBy(leds, LedInfo.nPixelCount, 20);
-    int pos = beatsin16(nSineSpeed, 0, LedInfo.nPixelCount);
+    int pos = beatsin16(BuiltinInfo.nSineSpeed, 0, LedInfo.nPixelCount);
     leds[AdjustStripIndex(pos)] += CHSV(BuiltinInfo.gHue, 255, 192);
-    if (bSineCycleHue)
+    if (BuiltinInfo.bSineCycleHue)
         ++BuiltinInfo.gHue;
 }
 
 void TestSine()
 {
-	BuiltinInfo.gHue = nSineStartingHue;
+	BuiltinInfo.gHue = BuiltinInfo.nSineStartingHue;
     bool done = false;
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
@@ -635,12 +635,12 @@ int RollDownRollOver(int inc)
 // utility for DisplayLedLightBar()
 void FillLightBar()
 {
-    int offset = bDisplayAllFromMiddle ? (LedInfo.nPixelCount - nDisplayAllPixelCount) / 2 : 0;
-    if (!bDisplayAllFromMiddle && ImgInfo.bUpsideDown)
-        offset = LedInfo.nPixelCount - nDisplayAllPixelCount;
+    int offset = BuiltinInfo.bDisplayAllFromMiddle ? (LedInfo.nPixelCount - BuiltinInfo.nDisplayAllPixelCount) / 2 : 0;
+    if (!BuiltinInfo.bDisplayAllFromMiddle && ImgInfo.bUpsideDown)
+        offset = LedInfo.nPixelCount - BuiltinInfo.nDisplayAllPixelCount;
     FastLED.clear();
-    for (int ix = 0; ix < nDisplayAllPixelCount; ++ix) {
-        SetPixel(ix + offset, bDisplayAllRGB ? CRGB(nDisplayAllRed, nDisplayAllGreen, nDisplayAllBlue) : CHSV(nDisplayAllHue, nDisplayAllSaturation, nDisplayAllBrightness));
+    for (int ix = 0; ix < BuiltinInfo.nDisplayAllPixelCount; ++ix) {
+        SetPixel(ix + offset, BuiltinInfo.bDisplayAllRGB ? CRGB(BuiltinInfo.nDisplayAllRed, BuiltinInfo.nDisplayAllGreen, BuiltinInfo.nDisplayAllBlue) : CHSV(BuiltinInfo.nDisplayAllHue, BuiltinInfo.nDisplayAllSaturation, BuiltinInfo.nDisplayAllBrightness));
     }
     FastLED.show();
 }
@@ -658,19 +658,19 @@ void DisplayLedLightBar()
 		pMenu->txtSmall();
 		pMenu->buttons("up # # Go # # down #");
         pMenu->addItem("Exit");
-        pMenu->addItem("Color Mode", &bDisplayAllRGB, "RGB", "HSL", ToggleBool);
-		if (bDisplayAllRGB) {
-			pMenu->addItem("Red", &nDisplayAllRed, 0, 255, 0, HandleMenuInteger);
-			pMenu->addItem("Green", &nDisplayAllGreen, 0, 255, 0, HandleMenuInteger);
-			pMenu->addItem("Blue", &nDisplayAllBlue, 0, 255, 0, HandleMenuInteger);
+        pMenu->addItem("Color Mode", &BuiltinInfo.bDisplayAllRGB, "RGB", "HSL", ToggleBool);
+		if (BuiltinInfo.bDisplayAllRGB) {
+			pMenu->addItem("Red", &BuiltinInfo.nDisplayAllRed, 0, 255, 0, HandleMenuInteger);
+			pMenu->addItem("Green", &BuiltinInfo.nDisplayAllGreen, 0, 255, 0, HandleMenuInteger);
+			pMenu->addItem("Blue", &BuiltinInfo.nDisplayAllBlue, 0, 255, 0, HandleMenuInteger);
 		}
 		else {
-			pMenu->addItem("HUE", &nDisplayAllHue, 0, 255, 0, HandleMenuInteger);
-			pMenu->addItem("Saturation", &nDisplayAllSaturation, 0, 255, 0, HandleMenuInteger);
-			pMenu->addItem("Brightness", &nDisplayAllBrightness, 0, 255, 0, HandleMenuInteger);
+			pMenu->addItem("HUE", &BuiltinInfo.nDisplayAllHue, 0, 255, 0, HandleMenuInteger);
+			pMenu->addItem("Saturation", &BuiltinInfo.nDisplayAllSaturation, 0, 255, 0, HandleMenuInteger);
+			pMenu->addItem("Brightness", &BuiltinInfo.nDisplayAllBrightness, 0, 255, 0, HandleMenuInteger);
 		}
-		pMenu->addItem("Pixels", &nDisplayAllPixelCount, 1, LedInfo.nPixelCount, 0, HandleMenuInteger);
-		pMenu->addItem("From", &bDisplayAllFromMiddle, "Middle", "End", ToggleBool);
+		pMenu->addItem("Pixels", &BuiltinInfo.nDisplayAllPixelCount, 1, LedInfo.nPixelCount, 0, HandleMenuInteger);
+		pMenu->addItem("From", &BuiltinInfo.bDisplayAllFromMiddle, "Middle", "End", ToggleBool);
         pMenu->setItem(ix);
 		ix = pMenu->runOnce();
 		//Serial.println("retval: " + String(ix));
@@ -745,7 +745,7 @@ void TwinkleRandom(int SpeedDelay, boolean OnlyOne) {
 }
 
 void TestTwinkle() {
-    TwinkleRandom(ImgInfo.nColumnHoldTime, bTwinkleOnlyOne);
+    TwinkleRandom(ImgInfo.nColumnHoldTime, BuiltinInfo.bTwinkleOnlyOne);
 }
 
 void OppositeRunningDots()
@@ -800,9 +800,9 @@ void TestWedge()
 {
     int midPoint = LedInfo.nPixelCount / 2 - 1;
     for (int ix = 0; ix < LedInfo.nPixelCount / 2; ++ix) {
-        SetPixel(midPoint + ix, CRGB(nWedgeRed, nWedgeGreen, nWedgeBlue));
-        SetPixel(midPoint - ix, CRGB(nWedgeRed, nWedgeGreen, nWedgeBlue));
-        if (!bWedgeFill) {
+        SetPixel(midPoint + ix, CRGB(BuiltinInfo.nWedgeRed, BuiltinInfo.nWedgeGreen, BuiltinInfo.nWedgeBlue));
+        SetPixel(midPoint - ix, CRGB(BuiltinInfo.nWedgeRed, BuiltinInfo.nWedgeGreen, BuiltinInfo.nWedgeBlue));
+        if (!BuiltinInfo.bWedgeFill) {
             if (ix > 1) {
                 SetPixel(midPoint + ix - 1, CRGB::Black);
                 SetPixel(midPoint - ix + 1, CRGB::Black);
