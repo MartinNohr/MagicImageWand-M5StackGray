@@ -790,8 +790,11 @@ bool HandleMenuInteger(ezMenu* menu)
     String caption = menu->pickCaption();
     caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
     menu->setCaption(menu->pickName(), caption + FormatInteger(value, decimals));
-    // store the new value
-    *menu->getIntValue() = value;
+    if (value != *menu->getIntValue()) {
+        bValueChanged = true;
+        // store the new value
+        *menu->getIntValue() = value;
+    }
     return true;
 }
 
@@ -802,6 +805,7 @@ bool ToggleBool(ezMenu* menu)
     String caption = menu->pickCaption();
     caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
     menu->setCaption(menu->pickName(), caption + (*menu->getBoolValue() ? menu->getBoolTrue() : menu->getBoolFalse()));
+    bValueChanged = true;
     return true;
 }
 

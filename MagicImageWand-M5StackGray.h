@@ -96,6 +96,7 @@ EXTERN int b;                                // Variable for the Blue Value
 EXTERN int r;                                // Variable for the Red Value
 
 // some system settings
+EXTERN bool bValueChanged;              // this is set when an int or boolean has changed value
 EXTERN bool bIsRunning;                // system state, idle or running
 EXTERN bool bRecordingMacro;
 EXTERN bool bRunningMacro;
