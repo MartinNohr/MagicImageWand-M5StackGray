@@ -558,6 +558,7 @@ void ShowBmp()
 		int currentFileIndex = activeMenu->pick();
 		if (BuiltInFiles[currentFileIndex - 1].function) {
 			ShowLeds(1);    // get ready for preview
+            ez.buttons.show("# Cancel #");
 			(*BuiltInFiles[currentFileIndex - 1].function)();
 			ShowLeds(2);    // go back to normal
 		}

@@ -869,7 +869,7 @@ void ShowLeds(int mode)
             uint16_t color = m5.Lcd.color565(leds[ix].r, leds[ix].g, leds[ix].b);
             uint16_t sbcolor;
             // the memory image colors are byte swapped
-            swab(&color, &sbcolor, 2);
+            swab(&color, &sbcolor, sizeof(uint16_t));
             scrBuf[ix] = sbcolor;
         }
         m5.Lcd.pushRect(col, 0, 1, 144, scrBuf);
