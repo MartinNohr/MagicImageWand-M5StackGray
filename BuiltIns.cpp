@@ -4,7 +4,7 @@
 #define BARBERCOUNT 40
 void BarberPole()
 {
-CRGB:CRGB red, white, blue;
+    CRGB:CRGB red, white, blue;
     byte r, g, b;
     r = 255, g = 0, b = 0;
     fixRGBwithGamma(&r, &g, &b);
@@ -40,7 +40,7 @@ CRGB:CRGB red, white, blue;
                 break;
             }
         }
-        FastLED.show();
+        ShowLeds();
         delay(ImgInfo.nColumnHoldTime);
     }
 }
@@ -64,7 +64,7 @@ void TestBpm()
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
             bpm();
-            FastLED.show();
+            ShowLeds();
         }
         if (CheckCancel()) {
             done = true;
@@ -198,7 +198,7 @@ void BouncingColoredBalls(int balls, CRGB colors[]) {
             ++BuiltinInfo.nBouncingBallsFirstColor;
             colorChangeCounter = 0;
         }
-        FastLED.show();
+        ShowLeds();
         delayMicroseconds(50);
         FastLED.clear();
     }
@@ -266,7 +266,7 @@ void RainbowPulse()
         //Serial.println("elements: " + String(element) + " " + String(last_element));
         if (element > last_element) {
             SetPixel(element, CHSV(element * BuiltinInfo.nRainbowPulseColorScale + BuiltinInfo.nRainbowPulseStartColor, BuiltinInfo.nRainbowPulseSaturation, 255));
-            FastLED.show();
+            ShowLeds();
             highest_element = max(highest_element, element);
         }
         if (CheckCancel()) {
@@ -277,7 +277,7 @@ void RainbowPulse()
             // cleanup the highest one
             SetPixel(highest_element, CRGB::Black);
             SetPixel(element, CRGB::Black);
-            FastLED.show();
+            ShowLeds();
         }
         last_element = element;
     }
@@ -295,7 +295,7 @@ void CheckerBoard()
         for (int y = 0; y < LedInfo.nPixelCount; ++y) {
             SetPixel(y, ((y + addPixels) % width) < BuiltinInfo.nCheckboardBlackWidth ? color1 : color2);
         }
-        FastLED.show();
+        ShowLeds();
         int count = BuiltinInfo.nCheckerboardHoldframes;
         while (count-- > 0) {
             delay(ImgInfo.nColumnHoldTime);
@@ -336,7 +336,7 @@ void TestConfetti()
             if (BuiltinInfo.bConfettiCycleHue)
                 ++BuiltinInfo.gHue;
             confetti();
-            FastLED.show();
+            ShowLeds();
         }
         if (CheckCancel()) {
             done = true;
@@ -359,7 +359,7 @@ void CylonBounce(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, i
             SetPixel(i + j, CRGB(red, green, blue));
         }
         SetPixel(i + EyeSize + 1, CRGB(red / 10, green / 10, blue / 10));
-        FastLED.show();
+        ShowLeds();
         delay(SpeedDelay);
     }
     delay(ReturnDelay);
@@ -373,7 +373,7 @@ void CylonBounce(byte red, byte green, byte blue, int EyeSize, int SpeedDelay, i
             SetPixel(i + j, CRGB(red, green, blue));
         }
         SetPixel(i + EyeSize + 1, CRGB(red / 10, green / 10, blue / 10));
-        FastLED.show();
+        ShowLeds();
         delay(SpeedDelay);
     }
     FastLED.clear(true);
@@ -405,7 +405,7 @@ void TestJuggle()
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
             juggle();
-            FastLED.show();
+            ShowLeds();
         }
         if (CheckCancel()) {
             done = true;
@@ -426,7 +426,7 @@ void TestLines()
         }
         bWhite = !bWhite;
     }
-    FastLED.show();
+    ShowLeds();
     bool done = false;
     while (!done) {
         if (CheckCancel()) {
@@ -438,7 +438,7 @@ void TestLines()
         //for (int ix = 0; ix < STRIPLENGTH; ++ix) {
         //	leds[ix] = (leds[ix] == CRGB::White) ? CRGB::Black : CRGB::White;
         //}
-        FastLED.show();
+        ShowLeds();
     }
     FastLED.clear(true);
 }
@@ -471,7 +471,7 @@ void meteorRain(byte red, byte green, byte blue, byte meteorSize, byte meteorTra
                 SetPixel(i - j, CRGB(red, green, blue));
             }
         }
-        FastLED.show();
+        ShowLeds();
         delay(SpeedDelay);
     }
 }
@@ -518,12 +518,12 @@ void RunningDot()
                 SetPixel(ix - 1, CRGB::Black);
             }
             SetPixel(ix, CRGB(r, g, b));
-            FastLED.show();
+            ShowLeds();
             delay(ImgInfo.nColumnHoldTime);
         }
         // remember the last one, turn it off
         SetPixel(LedInfo.nPixelCount - 1, CRGB::Black);
-        FastLED.show();
+        ShowLeds();
     }
     FastLED.clear(true);
 }
@@ -548,14 +548,14 @@ void FadeInOut(int time, bool in)
     if (in) {
         for (int i = 0; i <= LedInfo.nLEDBrightness; ++i) {
             FastLED.setBrightness(i);
-            FastLED.show();
+            ShowLeds();
             delay(time / LedInfo.nLEDBrightness);
         }
     }
     else {
         for (int i = LedInfo.nLEDBrightness; i >= 0; --i) {
             FastLED.setBrightness(i);
-            FastLED.show();
+            ShowLeds();
             delay(time / LedInfo.nLEDBrightness);
         }
     }
@@ -581,7 +581,7 @@ void TestRainbow()
             FillRainbow(leds, LedInfo.nPixelCount, BuiltinInfo.gHue, BuiltinInfo.nRainbowHueDelta);
             if (BuiltinInfo.bRainbowAddGlitter)
                 addGlitter(80);
-            FastLED.show();
+            ShowLeds();
         }
         if (CheckCancel()) {
             done = true;
@@ -648,7 +648,7 @@ void TestSine()
     while (!done) {
         EVERY_N_MILLISECONDS(ImgInfo.nColumnHoldTime) {
             sinelon();
-            FastLED.show();
+            ShowLeds();
         }
         if (CheckCancel()) {
             done = true;
@@ -678,7 +678,7 @@ void FillLightBar()
     for (int ix = 0; ix < BuiltinInfo.nDisplayAllPixelCount; ++ix) {
         SetPixel(ix + offset, BuiltinInfo.bDisplayAllRGB ? CRGB(BuiltinInfo.nDisplayAllRed, BuiltinInfo.nDisplayAllGreen, BuiltinInfo.nDisplayAllBlue) : CHSV(BuiltinInfo.nDisplayAllHue, BuiltinInfo.nDisplayAllSaturation, BuiltinInfo.nDisplayAllBrightness));
     }
-    FastLED.show();
+    ShowLeds();
 }
 
 // Used LEDs as a light bar
@@ -750,7 +750,7 @@ void TestStripes()
             SetPixel(pix++, CRGB(Stripes[ix].color));
         }
     }
-    FastLED.show();
+    ShowLeds();
     bool done = false;
     while (!done) {
         if (CheckCancel()) {
@@ -766,7 +766,7 @@ void TwinkleRandom(int SpeedDelay, boolean OnlyOne) {
     bool done = false;
     while (!done) {
         SetPixel(random(LedInfo.nPixelCount), CRGB(random(0, 255), random(0, 255), random(0, 255)));
-        FastLED.show();
+        ShowLeds();
         delay(SpeedDelay);
         if (OnlyOne) {
             FastLED.clear(true);
@@ -821,7 +821,7 @@ void OppositeRunningDots()
             }
             SetPixel(LedInfo.nPixelCount - ix, CRGB(r, g, b));
             SetPixel(ix, CRGB(r, g, b));
-            FastLED.show();
+            ShowLeds();
             delay(ImgInfo.nColumnHoldTime);
         }
     }
@@ -845,11 +845,44 @@ void TestWedge()
                 SetPixel(midPoint, CRGB::Black);
             }
         }
-        FastLED.show();
+        ShowLeds();
         delay(ImgInfo.nColumnHoldTime);
         if (CheckCancel()) {
             return;
         }
     }
     FastLED.clear(true);
+}
+
+// show on leds or display
+// mode 0 is normal, mode 1 is prepare for LCD, mode 2 is reset to normal
+void ShowLeds(int mode)
+{
+	static uint16_t* scrBuf;
+    static int col;
+	if (scrBuf == NULL && mode == 0) {
+        FastLED.show();
+        return;
+    }
+    else if (mode == 0) {
+        for (int ix = 0; ix < 144; ++ix) {
+            uint16_t color = m5.Lcd.color565(leds[ix].r, leds[ix].g, leds[ix].b);
+            uint16_t sbcolor;
+            // the memory image colors are byte swapped
+            swab(&color, &sbcolor, 2);
+            scrBuf[ix] = sbcolor;
+        }
+        m5.Lcd.pushRect(col, 0, 1, 144, scrBuf);
+        ++col;
+        col = col % 320;
+    }
+	else if (mode == 1) {
+        col = 0;
+        ez.canvas.clear();
+        scrBuf = (uint16_t*)calloc(144, sizeof(uint16_t));
+    }
+    else if (mode == 2) {
+        free(scrBuf);
+        delay(2000);
+    }
 }

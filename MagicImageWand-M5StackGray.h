@@ -108,6 +108,7 @@ EXTERN RTC_DATA_ATTR int nRepeatCountMacro
 EXTERN RTC_DATA_ATTR int nMacroRepeatsLeft;
 
 // functions
+void ShowLeds(int mode = 0);
 void DisplayLine(int line, String text, int indent = 0, int16_t color = TFT_WHITE);
 void IRAM_ATTR SetPixel(int ix, CRGB pixel, int column = 0, int totalColumns = 1);
 bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval, int decimals = 0);

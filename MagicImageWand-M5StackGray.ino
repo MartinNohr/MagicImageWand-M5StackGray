@@ -61,7 +61,7 @@ void setup() {
             break;
         builtinMenu.addItem(bi.text);
     }
-    builtinMenu.buttons("up # View # Go # Menu # down # SD");
+    //builtinMenu.buttons("up # View # Go # Menu # down # SD # View # #");
     M5.IMU.Init();
     leds = (CRGB*)calloc(LedInfo.nPixelCount, sizeof(CRGB));
     FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, LedInfo.nPixelCount);
@@ -145,7 +145,7 @@ void loop() {
     static bool bReloadSD = true;
     bool bRetry = false;
     if (bShowBuiltInTests) {
-        builtinMenu.buttons("up # Settings # Go # Menu # down # SD");
+        builtinMenu.buttons("up # Settings # Go # Menu # down # SD # View # #");
         activeMenu = &builtinMenu;
     }
     else {
@@ -554,8 +554,15 @@ void DisplayLine(int line, String text, int indent, int16_t color)
 //Note that menu is not used, it is called with NULL sometimes
 void ShowBmp()
 {
-    if (bShowBuiltInTests)
-        return;
+	if (bShowBuiltInTests) {
+		int currentFileIndex = activeMenu->pick();
+		if (BuiltInFiles[currentFileIndex - 1].function) {
+			ShowLeds(1);    // get ready for preview
+			(*BuiltInFiles[currentFileIndex - 1].function)();
+			ShowLeds(2);    // go back to normal
+		}
+		return;
+	}
     String fn = currentFolder + currentFile;
     // make sure this is a bmp file, if not just quietly go away
     String tmp = fn.substring(fn.length() - 3);
