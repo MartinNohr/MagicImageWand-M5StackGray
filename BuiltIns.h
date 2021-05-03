@@ -83,7 +83,7 @@ struct BI_MENU {
     char* no;               // null for integers
 };
 typedef BI_MENU BiMenu;
-#define MAX_BI_MENUS 10
+#define MAX_BI_MENUS 20
 EXTERN BiMenu BpmMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
@@ -199,20 +199,25 @@ EXTERN BiMenu SineMenu[MAX_BI_MENUS]
 }
 #endif
 ;
+// to allow menu items in menu builder BuiltInMenu()
+// for eIfEqual etc, title is NULL, min contains the enum, and max the test value
+// enum must start at 0 since we use it for loop control in BuiltInMenu()
+// decimal indicates boolean, 0 for int
+enum VALID_MENU_ITEMS { eIfEqual = 1, eElse, eEndif };
 EXTERN BiMenu LedLightBarMenu[MAX_BI_MENUS]
 #ifdef MIW_MAIN
 =
 {
     {"Color Mode",&BuiltinInfo.bDisplayAllRGB,0,0,0,"RGB","HSL"},
-    //{eIfEqual,"",NULL,&BuiltinInfo.bDisplayAllRGB,true},
+    {NULL,&BuiltinInfo.bDisplayAllRGB,eIfEqual,true,true},
         {"Red",&BuiltinInfo.nDisplayAllRed,0,255},
         {"Green",&BuiltinInfo.nDisplayAllGreen,0,255},
         {"Blue",&BuiltinInfo.nDisplayAllBlue,0,255},
-    //{eElse},
+    {NULL,NULL,eElse,0},
         {"Hue",&BuiltinInfo.nDisplayAllHue,0,255},
         {"Saturation",&BuiltinInfo.nDisplayAllSaturation,0,255},
         {"Brightness",&BuiltinInfo.nDisplayAllBrightness,0,255},
-    //{eEndif},
+    {NULL,NULL,eEndif,0},
     {"Pixels",&BuiltinInfo.nDisplayAllPixelCount,1,288},
     {"From",&BuiltinInfo.bDisplayAllFromMiddle,0,0,0,"Middle","End"},
 }

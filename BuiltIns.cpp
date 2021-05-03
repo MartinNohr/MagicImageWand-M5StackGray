@@ -76,21 +76,57 @@ void TestBpm()
 // create the menu from the list
 void BuiltInMenu(String hdr, BiMenu* menuList)
 {
+    std::stack<bool> condition;
     ezMenu* pSettings;
-    int16_t ix = 1;
+	int16_t ix = 1;
+    bool bAddingMenu = true;
     while (ix != 0) {
         pSettings = new ezMenu(hdr);
         pSettings->txtSmall();
         pSettings->buttons("up # # Go # Back # down # ");
-        for (int ix = 0; menuList[ix].title; ++ix) {
-            // is this bool or int?
-            if (menuList[ix].yes == NULL) {
-                // add int
-                pSettings->addItem(menuList[ix].title, (int*)menuList[ix].pData, menuList[ix].min, menuList[ix].max, menuList[ix].decimals, HandleMenuInteger);
+		for (int ix = 0; menuList[ix].title || menuList[ix].min; ++ix) {
+            // NULL title means a conditional menu section
+			if (menuList[ix].title != NULL) {
+                if (bAddingMenu) {
+                    // is this bool or int?
+                    if (menuList[ix].yes == NULL) {
+                        // add int
+                        pSettings->addItem(menuList[ix].title, (int*)menuList[ix].pData, menuList[ix].min, menuList[ix].max, menuList[ix].decimals, HandleMenuInteger);
+                    }
+                    else {
+                        // add bool
+                        pSettings->addItem(menuList[ix].title, (bool*)menuList[ix].pData, menuList[ix].yes, menuList[ix].no, ToggleBool);
+                    }
+                }
             }
             else {
-                // add bool
-                pSettings->addItem(menuList[ix].title, (bool*)menuList[ix].pData, menuList[ix].yes, menuList[ix].no, ToggleBool);
+                // handle the conditional menu section, nesting is allowed
+                switch (menuList[ix].min) {
+				case eIfEqual:
+                    // save the current on the stack
+                    condition.push(bAddingMenu);
+                    // test the value
+                    if (menuList[ix].decimals == 0) {
+                        if (*(int*)(menuList[ix].pData) != menuList[ix].max) {
+                            bAddingMenu = false;
+                        }
+                    }
+                    else {
+                        if (*(bool*)(menuList[ix].pData) != (bool)(menuList[ix].max)) {
+                            bAddingMenu = false;
+                        }
+                    }
+                    break;
+				case eElse:
+                    bAddingMenu = !bAddingMenu;
+                    break;
+                case eEndif:
+                    // get the stack value back
+					bAddingMenu = condition.top();
+                    // remove the old one
+                    condition.pop();
+                    break;
+                }
             }
         }
         pSettings->setItem(ix);
