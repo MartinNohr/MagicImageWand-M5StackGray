@@ -692,8 +692,8 @@ void DisplayLedLightBar()
 			delete pMenu;
 		pMenu = new ezMenu("LightBar");
 		pMenu->txtSmall();
-		pMenu->buttons("up # # Go # # down #");
-        pMenu->addItem("Exit");
+		pMenu->buttons("up # # Go # Exit # down #");
+        //pMenu->addItem("Exit");
         pMenu->addItem("Color Mode", &BuiltinInfo.bDisplayAllRGB, "RGB", "HSL", ToggleBool);
 		if (BuiltinInfo.bDisplayAllRGB) {
 			pMenu->addItem("Red", &BuiltinInfo.nDisplayAllRed, 0, 255, 0, HandleMenuInteger);
@@ -709,12 +709,10 @@ void DisplayLedLightBar()
 		pMenu->addItem("From", &BuiltinInfo.bDisplayAllFromMiddle, "Middle", "End", ToggleBool);
         pMenu->setItem(ix);
 		ix = pMenu->runOnce();
-		//Serial.println("retval: " + String(ix));
-		String str = ez.buttons.poll();
-		//Serial.println("str: " + str);
-		if (ix == 0) {
-			break;
-		}
+        String str = pMenu->pickButton();
+        if (str == "Exit") {
+            break;
+        }
 		if (CheckCancel()) {
 			break;
 		}
