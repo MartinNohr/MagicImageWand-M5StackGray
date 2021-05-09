@@ -270,7 +270,7 @@ void TestLines();
 void RainbowPulse();
 void TestWedge();
 #define MAX_BUILTINS 25
-EXTERN BuiltInItem BuiltInFiles[MAX_BUILTINS]
+EXTERN BuiltInItem BuiltInFiles[]
 #ifdef MIW_MAIN
 = {
     {"Barber Pole",BarberPole},

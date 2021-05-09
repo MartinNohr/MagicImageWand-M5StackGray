@@ -1701,8 +1701,8 @@ void SendFile(String Filename) {
 
 void ShowProgressBar(int percent)
 {
-    //if (!bShowProgress || bPauseDisplay)
-    //    return;
+    if (!bShowProgress)
+        return;
     static int lastpercent;
     if (lastpercent && (lastpercent == percent))
         return;
@@ -1798,7 +1798,7 @@ bool SettingsSaveRestore(bool save, int set)
         // get some memory and save the values
         if (memptr[set])
             free(memptr[set]);
-        memptr[set] = malloc(sizeof saveValueList);
+        memptr[set] = malloc(sizeof(saveValueList));
         if (!memptr[set])
             return false;
     }
@@ -1806,7 +1806,7 @@ bool SettingsSaveRestore(bool save, int set)
     if (memptr[set] == NULL) {
         return false;
     }
-    for (int ix = 0; ix < (sizeof saveValueList / sizeof * saveValueList); ++ix) {
+	for (int ix = 0; ix < (sizeof(saveValueList) / sizeof(*saveValueList)); ++ix) {
         if (save) {
             memcpy(blockptr, saveValueList[ix].val, saveValueList[ix].size);
         }
