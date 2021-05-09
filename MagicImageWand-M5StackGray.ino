@@ -1496,10 +1496,10 @@ void ProcessFileOrTest()
 {
     int nRepeatsLeft;                         // countdown while repeating
     String line;
-    //if (bRecordingMacro) {
-    //    strcpy(FileToShow, FileNames[CurrentFileIndex].c_str());
-    //    WriteOrDeleteConfigFile(String(nCurrentMacro), false, false);
-    //}
+    if (bRecordingMacro) {
+        strcpy(FileToShow, FileNames[CurrentFileIndex].c_str());
+        WriteOrDeleteConfigFile(String(nCurrentMacro), false, false);
+    }
     bIsRunning = true;
     if (ImgInfo.startDelay) {
         // set a timer
@@ -1821,4 +1821,119 @@ String MakeMIWFilename(String filename, bool addext)
     if (addext)
         cfFile += String(".MIW");
     return cfFile;
+}
+
+void EraseStartFile(MenuItem* menu)
+{
+    WriteOrDeleteConfigFile("", true, true);
+}
+
+void SaveStartFile(MenuItem* menu)
+{
+    WriteOrDeleteConfigFile("", false, true);
+}
+
+void EraseAssociatedFile(MenuItem* menu)
+{
+    WriteOrDeleteConfigFile(FileNames[CurrentFileIndex].c_str(), true, false);
+}
+
+void SaveAssociatedFile(MenuItem* menu)
+{
+    WriteOrDeleteConfigFile(FileNames[CurrentFileIndex].c_str(), false, false);
+}
+
+void LoadAssociatedFile(MenuItem* menu)
+{
+    String name = FileNames[CurrentFileIndex];
+    name = MakeMIWFilename(name, true);
+    if (ProcessConfigFile(name)) {
+        WriteMessage(String("Processed:\n") + name);
+    }
+    else {
+        WriteMessage(String("Failed reading:\n") + name, true);
+    }
+}
+
+void LoadStartFile(MenuItem* menu)
+{
+    String name = "START.MIW";
+    if (ProcessConfigFile(name)) {
+        WriteMessage(String("Processed:\n") + name);
+    }
+    else {
+        WriteMessage("Failed reading:\n" + name, true);
+    }
+}
+
+// create the config file, or remove it
+// startfile true makes it use the start.MIW file, else it handles the associated name file
+bool WriteOrDeleteConfigFile(String filename, bool remove, bool startfile)
+{
+    bool retval = true;
+    String filepath;
+    if (startfile) {
+        filepath = currentFolder + String("START.MIW");
+    }
+    else {
+        filepath = ((bRecordingMacro || bRunningMacro) ? String("/") : currentFolder) + MakeMIWFilename(filename, true);
+    }
+    if (remove) {
+        if (!SD.exists(filepath.c_str()))
+            WriteMessage(String("Not Found:\n") + filepath);
+        else if (SD.remove(filepath.c_str())) {
+            WriteMessage(String("Erased:\n") + filepath);
+        }
+        else {
+            WriteMessage(String("Failed to erase:\n") + filepath, true);
+        }
+    }
+    else {
+        String line;
+#if USE_STANDARD_SD
+        File file = SD.open(filepath.c_str(), bRecordingMacro ? FILE_APPEND : FILE_WRITE);
+#else
+        FsFile file = SD.open(filepath.c_str(), bRecordingMacro ? (O_APPEND | O_WRITE | O_CREAT) : (O_WRITE | O_TRUNC | O_CREAT));
+#endif
+        if (file) {
+            // loop through the var list
+            for (int ix = 0; ix < sizeof(SettingsVarList) / sizeof(*SettingsVarList); ++ix) {
+                switch (SettingsVarList[ix].type) {
+                case vtBuiltIn:
+                    line = String(SettingsVarList[ix].name) + "=" + String(*(bool*)(SettingsVarList[ix].address) ? "TRUE" : "FALSE");
+                    break;
+                case vtShowFile:
+                    if (*(char*)(SettingsVarList[ix].address)) {
+                        line = String(SettingsVarList[ix].name) + "=" + (bShowBuiltInTests ? "" : currentFolder) + String((char*)(SettingsVarList[ix].address));
+                    }
+                    break;
+                case vtInt:
+                    line = String(SettingsVarList[ix].name) + "=" + String(*(int*)(SettingsVarList[ix].address));
+                    break;
+                case vtBool:
+                    line = String(SettingsVarList[ix].name) + "=" + String(*(bool*)(SettingsVarList[ix].address) ? "TRUE" : "FALSE");
+                    break;
+                case vtRGB:
+                {
+                    // handle the RBG colors
+                    CRGB* cp = (CRGB*)(SettingsVarList[ix].address);
+                    line = String(SettingsVarList[ix].name) + "=" + String(cp->r) + "," + String(cp->g) + "," + String(cp->b);
+                }
+                break;
+                default:
+                    line = "";
+                    break;
+                }
+                if (line.length())
+                    file.println(line);
+            }
+            file.close();
+            WriteMessage(String("Saved:\n") + filepath);
+        }
+        else {
+            retval = false;
+            WriteMessage(String("Failed to write:\n") + filepath, true);
+        }
+    }
+    return retval;
 }
