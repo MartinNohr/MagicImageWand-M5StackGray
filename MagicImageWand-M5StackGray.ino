@@ -528,7 +528,108 @@ bool GetFileNames(String dir, ezMenu* menu) {
 
 bool ProcessConfigFile(String filename)
 {
-    return false;
+    bool retval = true;
+    String filepath = ((bRunningMacro || bRecordingMacro) ? String("/") : currentFolder) + filename;
+    SDFile rdfile;
+    if (rdfile.available()) {
+        String line, command, args;
+        while (line = rdfile.readStringUntil('\n'), line.length()) {
+            if (CheckCancel())
+                break;
+            // read the lines and do what they say
+            int ix = line.indexOf('=', 0);
+            if (ix > 0) {
+                command = line.substring(0, ix);
+                command.trim();
+                command.toUpperCase();
+                args = line.substring(ix + 1);
+                args.trim();
+                // loop through the var list looking for a match
+                for (int which = 0; which < sizeof(SettingsVarList) / sizeof(*SettingsVarList); ++which) {
+                    if (command.compareTo(SettingsVarList[which].name) == 0) {
+                        switch (SettingsVarList[which].type) {
+                        case vtInt:
+                            {
+                                int val = args.toInt();
+                                int min = SettingsVarList[which].min;
+                                int max = SettingsVarList[which].max;
+                                if (min != max) {
+                                    val = constrain(val, min, max);
+                                }
+                                *(int*)(SettingsVarList[which].address) = val;
+                            }
+                            break;
+                        case vtBool:
+                            args.toUpperCase();
+                            *(bool*)(SettingsVarList[which].address) = args[0] == 'T';
+                            break;
+                        case vtBuiltIn:
+                            {
+                                bool bLastBuiltIn = bShowBuiltInTests;
+                                args.toUpperCase();
+                                bool value = args[0] == 'T';
+                                if (value != bLastBuiltIn) {
+                                    bShowBuiltInTests = !bShowBuiltInTests;
+                                }
+                            }
+                            break;
+                        //case vtShowFile:
+                        //    {
+                        //        // get the folder and set it first
+                        //        String folder;
+                        //        String name;
+                        //        int ix = args.lastIndexOf('/');
+                        //        folder = args.substring(0, ix + 1);
+                        //        name = args.substring(ix + 1);
+                        //        int oldFileIndex = CurrentFileIndex;
+                        //        // save the old folder if necessary
+                        //        String oldFolder;
+                        //        if (!bShowBuiltInTests && !currentFolder.equalsIgnoreCase(folder)) {
+                        //            oldFolder = currentFolder;
+                        //            currentFolder = folder;
+                        //            GetFileNamesFromSD(folder);
+                        //        }
+                        //        // search for the file in the list
+                        //        int which = LookUpFile(name);
+                        //        if (which >= 0) {
+                        //            CurrentFileIndex = which;
+                        //            // call the process routine
+                        //            strcpy(FileToShow, name.c_str());
+                        //            tft.fillScreen(TFT_BLACK);
+                        //            ProcessFileOrTest();
+                        //        }
+                        //        if (oldFolder.length()) {
+                        //            currentFolder = oldFolder;
+                        //            GetFileNamesFromSD(currentFolder);
+                        //        }
+                        //        CurrentFileIndex = oldFileIndex;
+                        //    }
+                        //    break;
+                        case vtRGB:
+                            {
+                                // handle the RBG colors
+                                CRGB* cp = (CRGB*)(SettingsVarList[which].address);
+                                cp->r = args.toInt();
+                                args = args.substring(args.indexOf(',') + 1);
+                                cp->g = args.toInt();
+                                args = args.substring(args.indexOf(',') + 1);
+                                cp->b = args.toInt();
+                            }
+                            break;
+                        default:
+                            break;
+                        }
+                        // we found it, so carry on
+                        break;
+                    }
+                }
+            }
+        }
+        rdfile.close();
+    }
+    else
+        retval = false;
+    return retval;
 }
 
 void DisplayLine(int line, String text, int indent, int16_t color)
@@ -1555,10 +1656,10 @@ void ProcessFileOrTest()
 
 void SendFile(String Filename) {
     // see if there is an associated config file
-    //String cfFile = MakeMIWFilename(Filename, true);
-    //SettingsSaveRestore(true, 0);
+    String cfFile = MakeMIWFilename(Filename, true);
+    SettingsSaveRestore(true, 0);
     IMG_INFO savedImgInfo = ImgInfo;
-    //ProcessConfigFile(cfFile);
+    ProcessConfigFile(cfFile);
     String fn = currentFolder + Filename;
     dataFile = SD.open(fn);
     // if the file is available send it to the LED's
@@ -1583,7 +1684,7 @@ void SendFile(String Filename) {
     }
     ShowProgressBar(100);
     ImgInfo = savedImgInfo;
-    //SettingsSaveRestore(false, 0);
+    SettingsSaveRestore(false, 0);
 }
 
 void ShowProgressBar(int percent)
@@ -1674,4 +1775,50 @@ void rainbow_fill()
         }
         colour = red << 11 | green << 5 | blue;
     }
+}
+
+// save and restore important settings, two sets are available
+// 0 is used by file display, and 1 is used when running macros
+bool SettingsSaveRestore(bool save, int set)
+{
+    static void* memptr[2] = { NULL, NULL };
+    if (save) {
+        // get some memory and save the values
+        if (memptr[set])
+            free(memptr[set]);
+        memptr[set] = malloc(sizeof saveValueList);
+        if (!memptr[set])
+            return false;
+    }
+    void* blockptr = memptr[set];
+    if (memptr[set] == NULL) {
+        return false;
+    }
+    for (int ix = 0; ix < (sizeof saveValueList / sizeof * saveValueList); ++ix) {
+        if (save) {
+            memcpy(blockptr, saveValueList[ix].val, saveValueList[ix].size);
+        }
+        else {
+            memcpy(saveValueList[ix].val, blockptr, saveValueList[ix].size);
+        }
+        blockptr = (void*)((byte*)blockptr + saveValueList[ix].size);
+    }
+    if (!save) {
+        // if it was saved, restore it and free the memory
+        if (memptr[set]) {
+            free(memptr[set]);
+            memptr[set] = NULL;
+        }
+    }
+    return true;
+}
+
+// create the associated MIW name
+String MakeMIWFilename(String filename, bool addext)
+{
+    String cfFile = filename;
+    cfFile = cfFile.substring(0, cfFile.lastIndexOf('.'));
+    if (addext)
+        cfFile += String(".MIW");
+    return cfFile;
 }

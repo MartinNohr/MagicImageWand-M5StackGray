@@ -186,3 +186,169 @@ EXTERN const uint8_t gammaB[256]
   169,171,173,175,177,179,181,183,185,187,189,191,193,196,198,200 }
 #endif
 ;
+
+// save and load variables from MIW files
+enum SETVARTYPE {
+    vtInt,
+    vtBool,
+    vtRGB,
+    vtShowFile,     // run a file on the display, the file has the path which is used to set the current path
+    vtBuiltIn,      // bool for builtins or SD
+};
+struct SETTINGVAR {
+    char* name;
+    void* address;
+    enum SETVARTYPE type;
+    int min, max;
+};
+struct SETTINGVAR SettingsVarList[] = {
+    {"STRIP BRIGHTNESS",&LedInfo.nLEDBrightness,vtInt,1,255},
+    {"FADE IN/OUT FRAMES",&ImgInfo.nFadeInOutFrames,vtInt,0,255},
+    {"REPEAT COUNT",&ImgInfo.repeatCount,vtInt},
+    {"REPEAT DELAY",&ImgInfo.repeatDelay,vtInt},
+    {"FRAME TIME",&ImgInfo.nColumnHoldTime,vtInt},
+    {"USE FIXED TIME",&ImgInfo.bFixedTime,vtBool},
+    {"FIXED IMAGE TIME",&ImgInfo.nFixedImageTime,vtInt},
+    {"START DELAY",&ImgInfo.startDelay,vtInt},
+    {"REVERSE IMAGE",&ImgInfo.bReverseImage,vtBool},
+    {"UPSIDE DOWN IMAGE",&ImgInfo.bUpsideDown,vtBool},
+    {"MIRROR PLAY IMAGE",&ImgInfo.bMirrorPlayImage,vtBool},
+    {"MIRROR PLAY DELAY",&ImgInfo.nMirrorDelay,vtInt},
+    {"CHAIN FILES",&ImgInfo.bChainFiles,vtBool},
+    {"CHAIN REPEATS",&ImgInfo.nChainRepeats,vtInt},
+    {"CHAIN DELAY",&ImgInfo.nChainDelay,vtInt},
+    {"CHAIN WAIT FOR KEY",&ImgInfo.bChainWaitKey,vtBool},
+    {"WHITE BALANCE",&LedInfo.whiteBalance,vtRGB},
+    {"DISPLAY BRIGHTNESS",&LedInfo.nLEDBrightness,vtInt,0,100},
+    //{"DISPLAY MENULINE COLOR",&ImgInfo.menuTextColor,vtInt},
+    //{"MENU STAR",&bMenuStar,vtBool},
+    //{"HILITE FILE",&bHiLiteCurrentFile,vtBool},
+    {"GAMMA CORRECTION",&LedInfo.bGammaCorrection,vtBool},
+    {"SELECT BUILTINS",&bShowBuiltInTests,vtBuiltIn},       // this must be before the SHOW FILE command
+    //{"SHOW FILE",&FileToShow,vtShowFile},
+};
+
+struct saveValues {
+    void* val;
+    int size;
+};
+// these values are saved in eeprom, the signature is first
+const saveValues saveValueList[] = {
+    {signature,sizeof(signature)},                      // this must be first
+    {&bSecondController, sizeof(bSecondController)},    // this must be second
+    {&TotalLeds, sizeof(TotalLeds)},                    // this must be third
+    {&stripsMode, sizeof(stripsMode)},                  // this must be fourth
+    {&bAutoLoadSettings, sizeof(bAutoLoadSettings)},    // this must be fifth
+    {&nStripBrightness, sizeof(nStripBrightness)},      // all the rest can be in any order
+    {&nStripMaxCurrent, sizeof(nStripMaxCurrent)},
+    {&nFadeInOutFrames, sizeof(nFadeInOutFrames)},
+    {&nFrameHold, sizeof(nFrameHold)},
+    {&bFixedTime,sizeof(bFixedTime)},
+    {&nFixedImageTime,sizeof(nFixedImageTime)},
+    {&nFramePulseCount, sizeof(nFramePulseCount)},
+    {&bManualFrameAdvance, sizeof(bManualFrameAdvance)},
+    {&startDelay, sizeof(startDelay)},
+    //{&bRepeatForever, sizeof(bRepeatForever)},
+    {&repeatCount, sizeof(repeatCount)},
+    {&repeatDelay, sizeof(repeatDelay)},
+    {&bGammaCorrection, sizeof(bGammaCorrection)},
+    //{&nBackLightSeconds, sizeof(nBackLightSeconds)},
+    //{&nMaxBackLight, sizeof(nMaxBackLight)},
+    {&CurrentFileIndex,sizeof(CurrentFileIndex)},
+    {&bShowBuiltInTests,sizeof(bShowBuiltInTests)},
+    {&bScaleHeight,sizeof(bScaleHeight)},
+    {&bChainFiles,sizeof(bChainFiles)},
+    {&bReverseImage,sizeof(bReverseImage)},
+    {&bMirrorPlayImage,sizeof(bMirrorPlayImage)},
+    {&nMirrorDelay,sizeof(nMirrorDelay)},
+    {&bUpsideDown,sizeof(bUpsideDown)},
+    {&bDoublePixels,sizeof(bDoublePixels)},
+    {&nChainRepeats,sizeof(nChainRepeats)},
+    {&nChainDelay,sizeof(nChainDelay)},
+    {&bChainWaitKey,sizeof(bChainWaitKey)},
+    {&whiteBalance,sizeof(whiteBalance)},
+    {&bShowProgress,sizeof(bShowProgress)},
+    {&bShowFolder,sizeof(bShowFolder)},
+    {&bAllowMenuWrap,sizeof(bAllowMenuWrap)},
+    {&bShowNextFiles,sizeof(bShowNextFiles)},
+    {&CRotaryDialButton::m_bReverseDial,sizeof(CRotaryDialButton::m_bReverseDial)},
+    {&CRotaryDialButton::m_nDialSensitivity,sizeof(CRotaryDialButton::m_nDialSensitivity)},
+    {&CRotaryDialButton::m_nDialSpeed,sizeof(CRotaryDialButton::m_nDialSpeed)},
+    {&CRotaryDialButton::m_nLongPressTimerValue,sizeof(CRotaryDialButton::m_nLongPressTimerValue)},
+    {&nDisplayBrightness,sizeof(nDisplayBrightness)},
+    {&menuTextColor,sizeof(menuTextColor)},
+    {&bMenuStar,sizeof(bMenuStar)},
+    {&bHiLiteCurrentFile,sizeof(bHiLiteCurrentFile)},
+    {&nPreviewScrollCols,sizeof(nPreviewScrollCols)},
+    // the built-in values
+    // display all color
+    {&bAllowRollover,sizeof(bAllowRollover)},
+    {&bDisplayAllRGB,sizeof(bDisplayAllRGB)},
+    {&nDisplayAllRed,sizeof(nDisplayAllRed)},
+    {&nDisplayAllGreen,sizeof(nDisplayAllGreen)},
+    {&nDisplayAllBlue,sizeof(nDisplayAllBlue)},
+    {&nDisplayAllHue,sizeof(nDisplayAllHue)},
+    {&nDisplayAllSaturation,sizeof(nDisplayAllSaturation)},
+    {&nDisplayAllBrightness,sizeof(nDisplayAllBrightness)},
+    {&nDisplayAllPixelCount,sizeof(nDisplayAllPixelCount)},
+    {&bDisplayAllFromMiddle,sizeof(bDisplayAllFromMiddle)},
+    // bouncing balls
+    {&nBouncingBallsCount,sizeof(nBouncingBallsCount)},
+    {&nBouncingBallsDecay,sizeof(nBouncingBallsDecay)},
+    {&nBouncingBallsFirstColor,sizeof(nBouncingBallsFirstColor)},
+    {&nBouncingBallsChangeColors,sizeof(nBouncingBallsChangeColors)},
+    // cylon eye
+    {&nCylonEyeSize,sizeof(nCylonEyeSize)},
+    {&nCylonEyeRed,sizeof(nCylonEyeRed)},
+    {&nCylonEyeGreen,sizeof(nCylonEyeGreen)},
+    {&nCylonEyeBlue,sizeof(nCylonEyeBlue)},
+    // random bars
+    {&bRandomBarsBlacks,sizeof(bRandomBarsBlacks)},
+    {&nRandomBarsHoldframes,sizeof(nRandomBarsHoldframes)},
+    // meteor
+    {&nMeteorSize,sizeof(nMeteorSize)},
+    {&nMeteorRed,sizeof(nMeteorRed)},
+    {&nMeteorGreen,sizeof(nMeteorGreen)},
+    {&nMeteorBlue,sizeof(nMeteorBlue)},
+    // rainbow
+    {&nRainbowHueDelta,sizeof(nRainbowHueDelta)},
+    {&nRainbowInitialHue,sizeof(nRainbowInitialHue)},
+    {&nRainbowFadeTime,sizeof(nRainbowFadeTime)},
+    {&bRainbowAddGlitter,sizeof(bRainbowAddGlitter)},
+    {&bRainbowCycleHue,sizeof(bRainbowCycleHue)},
+    // twinkle
+    {&bTwinkleOnlyOne,sizeof(bTwinkleOnlyOne)},
+    // confetti
+    {&bConfettiCycleHue,sizeof(bConfettiCycleHue)},
+    // juggle
+
+    // sine
+    {&nSineStartingHue,sizeof(nSineStartingHue)},
+    {&bSineCycleHue,sizeof(bSineCycleHue)},
+    {&nSineSpeed,sizeof(nSineSpeed)},
+    // bpm
+    {&nBpmBeatsPerMinute,sizeof(nBpmBeatsPerMinute)},
+    {&bBpmCycleHue,sizeof(bBpmCycleHue)},
+    // checkerboard/bars
+    {&nCheckerboardHoldframes,sizeof(nCheckerboardHoldframes)},
+    {&nCheckboardBlackWidth,sizeof(nCheckboardBlackWidth)},
+    {&nCheckboardWhiteWidth,sizeof(nCheckboardWhiteWidth)},
+    {&bCheckerBoardAlternate,sizeof(bCheckerBoardAlternate)},
+    {&nCheckerboardAddPixels,sizeof(nCheckerboardAddPixels)},
+    {&nCurrentMacro,sizeof(nCurrentMacro)},
+    {&nRepeatCountMacro,sizeof(nRepeatCountMacro)},
+    {&nRepeatWaitMacro,sizeof(nRepeatWaitMacro)},
+    // lines values
+    {&nLinesWhite,sizeof(nLinesWhite)},
+    {&nLinesBlack,sizeof(nLinesBlack)},
+    // rainbow pulse
+    {&nRainbowPulseColorScale,sizeof(nRainbowPulseColorScale)},
+    {&nRainbowPulsePause,sizeof(nRainbowPulsePause)},
+    {&nRainbowPulseSaturation,sizeof(nRainbowPulseSaturation)},
+    {&nRainbowPulseStartColor,sizeof(nRainbowPulseStartColor)},
+    // wedge
+    {&bWedgeFill,sizeof(bWedgeFill)},
+    {&nWedgeBlue,sizeof(nWedgeBlue)},
+    {&nWedgeRed,sizeof(nWedgeRed)},
+    {&nWedgeGreen,sizeof(nWedgeGreen)},
+};
