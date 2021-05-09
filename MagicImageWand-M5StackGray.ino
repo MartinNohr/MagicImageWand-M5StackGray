@@ -382,6 +382,7 @@ void SettingsMenu()
 	settings.addItem("Image Settings", ImageSettings);
     settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
+    settings.addItem("Macros", MacroMenu);
     settings.addItem("Saved Settings", SavedSettings);
     settings.addItem("Light Bar", DisplayLedLightBar);
     settings.addItem("Level", LevelDisplay);
@@ -981,10 +982,22 @@ void SavedSettings()
     settings.addItem("Save", NULL, SaveLoadSettings);
     settings.addItem("Load", NULL, SaveLoadSettings);
     settings.addItem("Factory Defaults", FactorySettings);
-    while (settings.runOnce()) {
-    }
+    settings.run();
     prefs.putBool("autoload", bAutoLoad);
     prefs.end();
+}
+
+// macro menu
+void MacroMenu()
+{
+    ezMenu menu("Macros");
+    menu.txtSmall();
+    menu.buttons("up # # Go # Back # down # ");
+	menu.addItem("Select: ", &nCurrentMacro, 0, 9, 0, HandleMenuInteger);
+    menu.addItem("Run", RunMacro);
+    menu.addItem("Record", &bRecordingMacro, "On", "Off", ToggleBool);
+    menu.addItem("Delete", DeleteMacro);
+    menu.run();
 }
 
 // Strip settings
@@ -1002,8 +1015,7 @@ void LEDStripSettings()
     settings.addItem("White Balance Red", &LedInfo.whiteBalance.r, 0, 255, 0, HandleMenuInteger);
     settings.addItem("White Balance Green", &LedInfo.whiteBalance.g, 0, 255, 0, HandleMenuInteger);
     settings.addItem("White Balance Blue", &LedInfo.whiteBalance.b, 0, 255, 0, HandleMenuInteger);
-    while (settings.runOnce()) {
-	}
+    settings.run();
 }
 
 void RepeatSettings()
@@ -1497,7 +1509,7 @@ void ProcessFileOrTest()
     int nRepeatsLeft;                         // countdown while repeating
     String line;
     if (bRecordingMacro) {
-        strcpy(FileToShow, FileNames[CurrentFileIndex].c_str());
+        //strcpy(FileToShow, FileNames[CurrentFileIndex].c_str());
         WriteOrDeleteConfigFile(String(nCurrentMacro), false, false);
     }
     bIsRunning = true;
@@ -1823,46 +1835,46 @@ String MakeMIWFilename(String filename, bool addext)
     return cfFile;
 }
 
-void EraseStartFile(MenuItem* menu)
+void EraseStartFile()
 {
     WriteOrDeleteConfigFile("", true, true);
 }
 
-void SaveStartFile(MenuItem* menu)
+void SaveStartFile()
 {
     WriteOrDeleteConfigFile("", false, true);
 }
 
-void EraseAssociatedFile(MenuItem* menu)
+void EraseAssociatedFile()
 {
-    WriteOrDeleteConfigFile(FileNames[CurrentFileIndex].c_str(), true, false);
+    WriteOrDeleteConfigFile(currentFile, true, false);
 }
 
-void SaveAssociatedFile(MenuItem* menu)
+void SaveAssociatedFile()
 {
-    WriteOrDeleteConfigFile(FileNames[CurrentFileIndex].c_str(), false, false);
+    WriteOrDeleteConfigFile(currentFile, false, false);
 }
 
-void LoadAssociatedFile(MenuItem* menu)
+void LoadAssociatedFile()
 {
-    String name = FileNames[CurrentFileIndex];
+    String name = currentFile;
     name = MakeMIWFilename(name, true);
     if (ProcessConfigFile(name)) {
-        WriteMessage(String("Processed:\n") + name);
+		ez.msgBox("Associated File", "Processed: " + name);
     }
     else {
-        WriteMessage(String("Failed reading:\n") + name, true);
+		ez.msgBox("Associated File", String("Failed reading: ") + name);
     }
 }
 
-void LoadStartFile(MenuItem* menu)
+void LoadStartFile()
 {
     String name = "START.MIW";
     if (ProcessConfigFile(name)) {
-        WriteMessage(String("Processed:\n") + name);
+		ez.msgBox("Startup File", "Processed: " + name);
     }
     else {
-        WriteMessage("Failed reading:\n" + name, true);
+		ez.msgBox("Startup File", "Failed reading: " + name);
     }
 }
 
@@ -1880,21 +1892,17 @@ bool WriteOrDeleteConfigFile(String filename, bool remove, bool startfile)
     }
     if (remove) {
         if (!SD.exists(filepath.c_str()))
-            WriteMessage(String("Not Found:\n") + filepath);
+			ez.msgBox("Config File", "Not Found: " + filepath);
         else if (SD.remove(filepath.c_str())) {
-            WriteMessage(String("Erased:\n") + filepath);
+			ez.msgBox("Config File", "Erased: " + filepath);
         }
         else {
-            WriteMessage(String("Failed to erase:\n") + filepath, true);
+			ez.msgBox("Config File", "Failed to erase: " + filepath);
         }
     }
     else {
         String line;
-#if USE_STANDARD_SD
         File file = SD.open(filepath.c_str(), bRecordingMacro ? FILE_APPEND : FILE_WRITE);
-#else
-        FsFile file = SD.open(filepath.c_str(), bRecordingMacro ? (O_APPEND | O_WRITE | O_CREAT) : (O_WRITE | O_TRUNC | O_CREAT));
-#endif
         if (file) {
             // loop through the var list
             for (int ix = 0; ix < sizeof(SettingsVarList) / sizeof(*SettingsVarList); ++ix) {
@@ -1928,12 +1936,77 @@ bool WriteOrDeleteConfigFile(String filename, bool remove, bool startfile)
                     file.println(line);
             }
             file.close();
-            WriteMessage(String("Saved:\n") + filepath);
+			ez.msgBox("Config File", "Saved: " + filepath);
         }
         else {
             retval = false;
-            WriteMessage(String("Failed to write:\n") + filepath, true);
+			ez.msgBox("Config File", "Failed to write: " + filepath);
         }
     }
     return retval;
+}
+
+// save the macro with the current settings
+void SaveMacro()
+{
+    bRecordingMacro = true;
+    WriteOrDeleteConfigFile(String(nCurrentMacro), false, false);
+    bRecordingMacro = false;
+}
+
+// saves and restores settings
+void RunMacro()
+{
+    bCancelMacro = false;
+    for (nMacroRepeatsLeft = nRepeatCountMacro; nMacroRepeatsLeft; --nMacroRepeatsLeft) {
+        MacroLoadRun(true);
+        if (bCancelMacro) {
+            break;
+        }
+		ez.canvas.clear();
+        for (int wait = nRepeatWaitMacro; nMacroRepeatsLeft > 1 && wait; --wait) {
+            if (CheckCancel()) {
+                nMacroRepeatsLeft = 0;
+                break;
+            }
+			DisplayLine(5, "#" + String(nCurrentMacro) + String(" Wait: ") + String(wait / 10) + "." + String(wait % 10) + " Repeat: " + String(nMacroRepeatsLeft - 1));
+            delay(100);
+        }
+    }
+    bCancelMacro = false;
+}
+
+// like run, but doesn't restore settings
+void LoadMacro()
+{
+    MacroLoadRun(false);
+}
+
+void MacroLoadRun(bool save)
+{
+    bool oldShowBuiltins;
+    if (save) {
+        oldShowBuiltins = bShowBuiltInTests;
+        SettingsSaveRestore(true, 1);
+    }
+    bRunningMacro = true;
+    bRecordingMacro = false;
+    String line = String(nCurrentMacro) + ".miw";
+    if (!ProcessConfigFile(line)) {
+        line += " not found";
+        ez.msgBox("Macros", line);
+    }
+    bRunningMacro = false;
+    if (save) {
+        // need to handle if the builtins was changed
+        if (oldShowBuiltins != bShowBuiltInTests) {
+            bShowBuiltInTests = !bShowBuiltInTests;
+        }
+        SettingsSaveRestore(false, 1);
+    }
+}
+
+void DeleteMacro()
+{
+    WriteOrDeleteConfigFile(String(nCurrentMacro), true, false);
 }

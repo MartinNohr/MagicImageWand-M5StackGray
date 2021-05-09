@@ -100,6 +100,9 @@ EXTERN bool bValueChanged;              // this is set when an int or boolean ha
 EXTERN bool bIsRunning;                // system state, idle or running
 EXTERN bool bRecordingMacro;
 EXTERN bool bRunningMacro;
+EXTERN bool bCancelMacro;
+EXTERN int nCurrentMacro;
+EXTERN int nRepeatWaitMacro;
 EXTERN RTC_DATA_ATTR int nRepeatCountMacro
 #ifdef MIW_MAIN
 = 1
@@ -117,6 +120,7 @@ bool HandleMenuInteger(ezMenu* menu);
 bool ToggleBool(ezMenu* menu);
 void fixRGBwithGamma(byte* rp, byte* gp, byte* bp);
 int AdjustStripIndex(int ix);
+bool WriteOrDeleteConfigFile(String filename, bool remove, bool startfile);
 // the built-in menu handler
 void BuiltInMenu(String hdr, BiMenu* menuList);
 
