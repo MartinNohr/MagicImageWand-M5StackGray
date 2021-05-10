@@ -78,9 +78,9 @@ void BuiltInMenu(String hdr, BiMenu* menuList)
 {
     std::stack<bool> condition;
     ezMenu* pSettings;
-	int16_t ix = 1;
+	int16_t menuix = 1;
     bool bAddingMenu = true;
-    while (ix != 0) {
+    while (menuix != 0) {
         pSettings = new ezMenu(hdr);
         pSettings->txtSmall();
         pSettings->buttons("up # # Go # Back # down # ");
@@ -129,8 +129,8 @@ void BuiltInMenu(String hdr, BiMenu* menuList)
                 }
             }
         }
-        pSettings->setItem(ix);
-        ix = pSettings->runOnce();
+        pSettings->setItem(menuix);
+        menuix = pSettings->runOnce();
         delete pSettings;
     }
 }

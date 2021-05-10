@@ -75,6 +75,7 @@ struct BUILTIN_INFO {
 typedef BUILTIN_INFO BUILTIN_INFO;
 EXTERN RTC_DATA_ATTR BUILTIN_INFO BuiltinInfo;
 
+// NOTE: each menu list must be terminated with a null entry
 struct BI_MENU {
     char* title;
     void* pData;
@@ -83,30 +84,31 @@ struct BI_MENU {
     char* no;               // null for integers
 };
 typedef BI_MENU BiMenu;
-#define MAX_BI_MENUS 20
-EXTERN BiMenu BpmMenu[MAX_BI_MENUS]
+EXTERN BiMenu BpmMenu[]
 #ifdef MIW_MAIN
 =
 {
     {"Beats per minute",&BuiltinInfo.nBpmBeatsPerMinute,1,300},
     {"Cycle Hue",&BuiltinInfo.bBpmCycleHue,0,0,0,"Yes","No"},
+    {NULL}
 }
 #endif
 ;
 
-EXTERN BiMenu BouncingBallsMenu[MAX_BI_MENUS]
+EXTERN BiMenu BouncingBallsMenu[]
 #ifdef MIW_MAIN
 =
 {
     {"Ball Count",&BuiltinInfo.nBouncingBallsCount,1,32},
-    {"Decay",&BuiltinInfo.nBouncingBallsDecay,500,10000},
+    {"Decay",&BuiltinInfo.nBouncingBallsDecay,100,10000},
     {"First Color",&BuiltinInfo.nBouncingBallsFirstColor,0,31},
     {"Change Color Rate",&BuiltinInfo.nBouncingBallsChangeColors,0,10,0},
+    {NULL}
 }
 #endif
 ;
 
-EXTERN BiMenu CheckerBoardMenu[MAX_BI_MENUS]
+EXTERN BiMenu CheckerBoardMenu[]
 #ifdef MIW_MAIN
 =
 {
@@ -115,18 +117,20 @@ EXTERN BiMenu CheckerBoardMenu[MAX_BI_MENUS]
     {"White Width (pixels)",&BuiltinInfo.nCheckboardWhiteWidth,1,288},
     {"Add Pixels per Cycle",&BuiltinInfo.nCheckerboardAddPixels,0,144},
     {"Alternate per Cycle",&BuiltinInfo.bCheckerBoardAlternate,0,0,0,"Yes","No"},
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu ConfettiMenu[MAX_BI_MENUS]
+EXTERN BiMenu ConfettiMenu[]
 #ifdef MIW_MAIN
 =
 {
     {"Cycle Hue",&BuiltinInfo.bConfettiCycleHue,0,0,0,"Yes","No"},
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu CylonEyeMenu[MAX_BI_MENUS]
+EXTERN BiMenu CylonEyeMenu[]
 #ifdef MIW_MAIN
 =
 {
@@ -134,19 +138,21 @@ EXTERN BiMenu CylonEyeMenu[MAX_BI_MENUS]
     {"Eye Red",&BuiltinInfo.nCylonEyeRed,0,255},
     {"Eye Green",&BuiltinInfo.nCylonEyeGreen,0,255},
     {"Eye Blue",&BuiltinInfo.nCylonEyeBlue,0,255},
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu LinesMenu[MAX_BI_MENUS]
+EXTERN BiMenu LinesMenu[]
 #ifdef MIW_MAIN
 =
 {
     {"White Pixels",&BuiltinInfo.nLinesWhite,0,288},
     {"Black Pixels",&BuiltinInfo.nLinesBlack,0,288},
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu MeteorMenu[MAX_BI_MENUS]
+EXTERN BiMenu MeteorMenu[]
 #ifdef MIW_MAIN
 =
 {
@@ -154,10 +160,11 @@ EXTERN BiMenu MeteorMenu[MAX_BI_MENUS]
     {"Meteor Red",&BuiltinInfo.nMeteorRed,0,255},
     {"Meteor Green",&BuiltinInfo.nMeteorGreen,0,255},
     {"Meteor Blue",&BuiltinInfo.nMeteorBlue,0,255},
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu RainbowMenu[MAX_BI_MENUS]
+EXTERN BiMenu RainbowMenu[]
 #ifdef MIW_MAIN
 =
 {
@@ -166,19 +173,21 @@ EXTERN BiMenu RainbowMenu[MAX_BI_MENUS]
     {"Cycle Hue",&BuiltinInfo.bRainbowCycleHue,0,0,0,"Yes","No" },
     {"Hue Delta Size",&BuiltinInfo.nRainbowHueDelta,1,255 },
     {"Add Glitter",&BuiltinInfo.bRainbowAddGlitter,0,0,0,"Yes","No" },
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu RandomBarsMenu[MAX_BI_MENUS]
+EXTERN BiMenu RandomBarsMenu[]
 #ifdef MIW_MAIN
 =
 {
     {"Hold Frames",&BuiltinInfo.nRandomBarsHoldframes, 1, 100},
     {"Alternating Black",&BuiltinInfo.bRandomBarsBlacks,0,0,0,"Yes","No" },
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu RainbowPulseMenu[MAX_BI_MENUS]
+EXTERN BiMenu RainbowPulseMenu[]
 #ifdef MIW_MAIN
 =
 {
@@ -186,16 +195,18 @@ EXTERN BiMenu RainbowPulseMenu[MAX_BI_MENUS]
     {"Color Rate Scale",&BuiltinInfo.nRainbowPulseColorScale,0,256},
     {"Start Color",&BuiltinInfo.nRainbowPulseStartColor,0,255},
     {"Color Saturation",&BuiltinInfo.nRainbowPulseSaturation,0,255},
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu SineMenu[MAX_BI_MENUS]
+EXTERN BiMenu SineMenu[]
 #ifdef MIW_MAIN
 =
 {
     {"Starting Hue",&BuiltinInfo.nSineStartingHue,0,255},
     {"Cycle Hue",&BuiltinInfo.bSineCycleHue,0,0,0,"Yes","No"},
     {"Speed",&BuiltinInfo.nSineSpeed,1,500},
+    {NULL}
 }
 #endif
 ;
@@ -204,7 +215,7 @@ EXTERN BiMenu SineMenu[MAX_BI_MENUS]
 // enum must start at 0 since we use it for loop control in BuiltInMenu()
 // decimal indicates boolean, 0 for int
 enum VALID_MENU_ITEMS { eIfEqual = 1, eElse, eEndif };
-EXTERN BiMenu LedLightBarMenu[MAX_BI_MENUS]
+EXTERN BiMenu LedLightBarMenu[]
 #ifdef MIW_MAIN
 =
 {
@@ -220,14 +231,16 @@ EXTERN BiMenu LedLightBarMenu[MAX_BI_MENUS]
     {NULL,NULL,eEndif,0},
     {"Pixels",&BuiltinInfo.nDisplayAllPixelCount,1,288},
     {"From",&BuiltinInfo.bDisplayAllFromMiddle,0,0,0,"Middle","End"},
+    {NULL}
 }
 #endif
 ;
-EXTERN BiMenu TwinkleMenu[MAX_BI_MENUS]
+EXTERN BiMenu TwinkleMenu[]
 #ifdef MIW_MAIN
 =
 {
     {"One or Many",&BuiltinInfo.bTwinkleOnlyOne,0,0,0,"One","Many"},
+    {NULL}
 }
 #endif
 ;
@@ -239,6 +252,7 @@ EXTERN BiMenu WedgeMenu[]
     {"Red: %d",&BuiltinInfo.nWedgeRed,0,255},
     {"Green: %d",&BuiltinInfo.nWedgeGreen,0,255},
     {"Blue: %d",&BuiltinInfo.nWedgeBlue,0,255},
+    {NULL}
 }
 #endif
 ;
@@ -269,7 +283,6 @@ void TestStripes();
 void TestLines();
 void RainbowPulse();
 void TestWedge();
-#define MAX_BUILTINS 25
 EXTERN BuiltInItem BuiltInFiles[]
 #ifdef MIW_MAIN
 = {
@@ -292,6 +305,7 @@ EXTERN BuiltInItem BuiltInFiles[]
     {"Twinkle",TestTwinkle,TwinkleMenu},
     {"Two Dots",OppositeRunningDots},
     {"Wedge",TestWedge,WedgeMenu},
+    {NULL}
 }
 #endif
 ;

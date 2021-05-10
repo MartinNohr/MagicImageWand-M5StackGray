@@ -61,6 +61,8 @@ void setup() {
             break;
         builtinMenu.addItem(bi.text);
     }
+    builtinMenu.upOnFirst("last|up");
+    builtinMenu.downOnLast("first|down");
     //builtinMenu.buttons("up # View # Go # Menu # down # SD # View # #");
     M5.IMU.Init();
     leds = (CRGB*)calloc(LedInfo.nPixelCount, sizeof(CRGB));
@@ -1517,8 +1519,9 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
             //delayMicroseconds(100);
             //yield();
             // we should maybe check the cancel key here to handle slow frame rates?
-            if (CheckCancel())
+            if (CheckCancel()) {
                 break;
+            }
         }
         // now show the lights
         FastLED.show();
@@ -1526,8 +1529,9 @@ void IRAM_ATTR ReadAndDisplayFile(bool doingFirstHalf) {
         bStripWaiting = true;
         esp_timer_start_once(oneshot_LED_timer, ImgInfo.nColumnHoldTime * 1000);
         // check keys
-        if (CheckCancel())
+        if (CheckCancel()) {
             break;
+        }
         if (ImgInfo.bManualFrameAdvance) {
             // check if frame advance button requested
             if (ImgInfo.nFramePulseCount) {
@@ -1745,7 +1749,7 @@ void ProcessFileOrTest()
 void SendFile(String Filename) {
     // see if there is an associated config file
     String cfFile = MakeMIWFilename(Filename, true);
-    SettingsSaveRestore(true, 0);
+    //SettingsSaveRestore(true, 0);
     IMG_INFO savedImgInfo = ImgInfo;
     ProcessConfigFile(cfFile);
     String fn = currentFolder + Filename;
@@ -1772,7 +1776,7 @@ void SendFile(String Filename) {
     }
     ShowProgressBar(100);
     ImgInfo = savedImgInfo;
-    SettingsSaveRestore(false, 0);
+    //SettingsSaveRestore(false, 0);
 }
 
 void ShowProgressBar(int percent)
