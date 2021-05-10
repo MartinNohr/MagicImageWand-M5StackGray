@@ -1055,6 +1055,8 @@ void MacroMenu()
         menu.addItem("Current Macro # ", &nCurrentMacro, 0, 9, 0, HandleMenuInteger);
         if (SD.exists(file)) {
             menu.addItem("Run", RunMacro);
+            menu.addItem("Macro Repeat Count", &nRepeatCountMacro, 1, 100, 0, HandleMenuInteger);
+            menu.addItem("Macro Repeat Delay", &nRepeatWaitMacro, 0, 100, 1, HandleMenuInteger);
             menu.addItem("Record Append", &bRecordingMacro, "On", "Off", ToggleBool);
             menu.addItem("Delete", DeleteMacro);
         }

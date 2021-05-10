@@ -102,6 +102,7 @@ EXTERN bool bRecordingMacro;
 EXTERN bool bRunningMacro;
 EXTERN bool bCancelMacro;
 EXTERN int nCurrentMacro;
+// display etc config settings
 EXTERN int nRepeatWaitMacro;
 EXTERN bool bShowProgress
 #ifdef MIW_MAIN
