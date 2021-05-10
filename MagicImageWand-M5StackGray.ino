@@ -383,6 +383,7 @@ void SettingsMenu()
     settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
     settings.addItem("Macros", MacroMenu);
+    settings.addItem("Command Files", AssociatedMenu);
     settings.addItem("Saved Settings", SavedSettings);
     settings.addItem("Light Bar", DisplayLedLightBar);
     settings.addItem("Level", LevelDisplay);
@@ -987,13 +988,26 @@ void SavedSettings()
     prefs.end();
 }
 
+// handle associated command files
+void AssociatedMenu()
+{
+    String commandFile = MakeMIWFilename(currentFile, true);
+	ezMenu menu("Setup File: " + commandFile);
+    menu.txtSmall();
+    menu.buttons("up # # Go # Back # down # ");
+	menu.addItem("Create", SaveAssociatedFile);
+	menu.addItem("Load", LoadAssociatedFile);
+	menu.addItem("Delete", EraseAssociatedFile);
+    menu.run();
+}
+
 // macro menu
 void MacroMenu()
 {
     ezMenu menu("Macros");
     menu.txtSmall();
     menu.buttons("up # # Go # Back # down # ");
-	menu.addItem("Select: ", &nCurrentMacro, 0, 9, 0, HandleMenuInteger);
+	menu.addItem("Current Macro # ", &nCurrentMacro, 0, 9, 0, HandleMenuInteger);
     menu.addItem("Run", RunMacro);
     menu.addItem("Record", &bRecordingMacro, "On", "Off", ToggleBool);
     menu.addItem("Delete", DeleteMacro);

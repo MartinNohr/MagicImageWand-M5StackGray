@@ -231,7 +231,7 @@ EXTERN BiMenu TwinkleMenu[MAX_BI_MENUS]
 }
 #endif
 ;
-EXTERN BiMenu WedgeMenu[MAX_BI_MENUS]
+EXTERN BiMenu WedgeMenu[]
 #ifdef MIW_MAIN
 =
 {
