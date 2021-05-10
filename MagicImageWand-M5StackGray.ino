@@ -1020,11 +1020,12 @@ void AssociatedMenu()
 // handle startup file command files, run when folder opened
 void StartupFileMenu()
 {
-	ezMenu menu(currentFolder + "startup.MIW");
+    String path = currentFolder + "start.MIW";
+	ezMenu menu(path);
     menu.txtSmall();
     menu.buttons("up # # Go # Back # down # ");
     while (true) {
-        if (!SD.exists("startup.MIW")) {
+		if (!SD.exists(path)) {
             menu.addItem("Create", SaveStartFile);
         }
         else {
