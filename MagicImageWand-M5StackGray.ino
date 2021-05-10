@@ -383,11 +383,12 @@ void SettingsMenu()
     settings.addItem("Repeat and Chain Settings", RepeatSettings);
     settings.addItem("LED Strip Settings", LEDStripSettings);
     settings.addItem("Macros", MacroMenu);
-    settings.addItem("Command Files", AssociatedMenu);
+    settings.addItem("Folder Config Files", StartupFileMenu);
+    settings.addItem("Image Config Files", AssociatedMenu);
     settings.addItem("Saved Settings", SavedSettings);
     settings.addItem("Light Bar", DisplayLedLightBar);
     settings.addItem("Level", LevelDisplay);
-    settings.addItem("System Settings", ez.settings.menu);
+    settings.addItem("Menu System Settings", ez.settings.menu);
     settings.addItem("Power Off", powerOff);
     settings.addItem("Reboot", reboot);
     settings.addItem("SysInfo", sysInfo);
@@ -995,10 +996,51 @@ void AssociatedMenu()
 	ezMenu menu("Setup File: " + commandFile);
     menu.txtSmall();
     menu.buttons("up # # Go # Back # down # ");
-	menu.addItem("Create", SaveAssociatedFile);
-	menu.addItem("Load", LoadAssociatedFile);
-	menu.addItem("Delete", EraseAssociatedFile);
-    menu.run();
+    while (true) {
+        String path = currentFolder + MakeMIWFilename(currentFile, true);
+        if (!SD.exists(path)) {
+            menu.addItem("Create", SaveAssociatedFile);
+        }
+        else {
+            menu.addItem("Load", LoadAssociatedFile);
+            menu.addItem("Delete", EraseAssociatedFile);
+        }
+        menu.runOnce();
+        if (menu.pickButton() == "Back") {
+            break;
+        }
+        else {
+            while (menu.deleteItem(1)) {
+                ;
+          }
+        }
+    }
+}
+
+// handle startup file command files, run when folder opened
+void StartupFileMenu()
+{
+	ezMenu menu(currentFolder + "startup.MIW");
+    menu.txtSmall();
+    menu.buttons("up # # Go # Back # down # ");
+    while (true) {
+        if (!SD.exists("startup.MIW")) {
+            menu.addItem("Create", SaveStartFile);
+        }
+        else {
+            menu.addItem("Load", LoadStartFile);
+            menu.addItem("Delete", EraseStartFile);
+        }
+        menu.runOnce();
+        if (menu.pickButton() == "Back") {
+            break;
+        }
+        else {
+            while (menu.deleteItem(1)) {
+                ;
+            }
+        }
+    }
 }
 
 // macro menu
@@ -1007,11 +1049,28 @@ void MacroMenu()
     ezMenu menu("Macros");
     menu.txtSmall();
     menu.buttons("up # # Go # Back # down # ");
-	menu.addItem("Current Macro # ", &nCurrentMacro, 0, 9, 0, HandleMenuInteger);
-    menu.addItem("Run", RunMacro);
-    menu.addItem("Record", &bRecordingMacro, "On", "Off", ToggleBool);
-    menu.addItem("Delete", DeleteMacro);
-    menu.run();
+
+    while (true) {
+        String file = String(nCurrentMacro) + ".MIW";
+        menu.addItem("Current Macro # ", &nCurrentMacro, 0, 9, 0, HandleMenuInteger);
+        if (SD.exists(file)) {
+            menu.addItem("Run", RunMacro);
+            menu.addItem("Record Append", &bRecordingMacro, "On", "Off", ToggleBool);
+            menu.addItem("Delete", DeleteMacro);
+        }
+        else {
+            menu.addItem("Record Create New", &bRecordingMacro, "On", "Off", ToggleBool);
+        }
+        menu.runOnce();
+        if (menu.pickButton() == "Back") {
+            break;
+        }
+        else {
+            while (menu.deleteItem(1)) {
+                ;
+            }
+        }
+    }
 }
 
 // Strip settings
