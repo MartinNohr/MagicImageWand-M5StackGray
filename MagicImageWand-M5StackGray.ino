@@ -44,6 +44,7 @@ void setup() {
     ezt::setDebug(INFO);
     ez.begin();
     Wire.begin();
+    rainbow_fill();
     img.setColorDepth(8);
     img.createSprite(220, 100);
     // Fill Sprite with a "transparent" colour
@@ -56,7 +57,6 @@ void setup() {
     img.setCursor(0, 50);
     img.print("Magic Image Wand");
     img.pushSprite(50, 40, TFT_TRANSPARENT);
-    img.deleteSprite();
     oneshot_LED_timer_args = {
                 oneshot_LED_timer_callback,
                 /* argument specified here will be passed to timer callback function */
@@ -96,13 +96,15 @@ void setup() {
     //builtinMenu.buttons("up # View # Go # Menu # down # SD # View # #");
     M5.IMU.Init();
     leds = (CRGB*)calloc(LedInfo.nPixelCount, sizeof(CRGB));
-    FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, LedInfo.nPixelCount);
     if (LedInfo.bSecondController) {
-        FastLED.addLeds<NEOPIXEL, DATA_PIN2>(leds, 0, LedInfo.nPixelCount);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, LedInfo.nPixelCount / 2);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN2>(leds, LedInfo.nPixelCount / 2, LedInfo.nPixelCount / 2);
+    }
+    else {
+        FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, LedInfo.nPixelCount);
     }
     FastLED.setBrightness(LedInfo.nLEDBrightness);
 	FastLED.setMaxPowerInVoltsAndMilliamps(5, LedInfo.nStripMaxCurrent);
-    rainbow_fill();
 
 	//ez.canvas.font(&Satisfy_24);
  //   ez.canvas.x(50);
@@ -137,6 +139,7 @@ void setup() {
     //fill_rainbow(leds, LedInfo.nPixelCount, 0);
     //FastLED.show();
     //delay(1500);
+    img.deleteSprite();
     FastLED.clear(true);
 }
 
