@@ -930,6 +930,17 @@ bool ToggleBool(ezMenu* menu)
     return true;
 }
 
+// toggle bool for 2nd controller, double or halve the number of pixels
+bool ToggleBool2ndController(ezMenu* menu)
+{
+    bool retval = ToggleBool(menu);
+    if (LedInfo.bSecondController)
+        LedInfo.nPixelCount *= 2;
+    else
+        LedInfo.nPixelCount /= 2;
+    return retval;
+}
+
 // save/load settings
 // call with NULL to load
 bool SaveLoadSettings(ezMenu* pMenu)
@@ -1088,19 +1099,31 @@ void MacroMenu()
 // Strip settings
 void LEDStripSettings()
 {
+    int16_t ix = 1;
     ezMenu settings("LED Strip Settings");
     settings.txtSmall();
     settings.buttons("up # # Go # Back # down # ");
-	settings.addItem("LED Brightness", &LedInfo.nLEDBrightness, 1, 255, 0, HandleMenuInteger);
-	settings.addItem("Second Controller", &LedInfo.bSecondController, "On", "Off", ToggleBool);
-	settings.addItem("Total Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
-    settings.addItem("Maximum Current (mA)", &LedInfo.nStripMaxCurrent, 100, 20000, 0, HandleMenuInteger);
-	settings.addItem("Gamma Correction", &LedInfo.bGammaCorrection, "On", "Off", ToggleBool);
-    settings.addItem("Strip Wiring Mode", &LedInfo.stripsMode, 0, 2, 0, HandleMenuInteger);
-    settings.addItem("White Balance Red", &LedInfo.whiteBalance.r, 0, 255, 0, HandleMenuInteger);
-    settings.addItem("White Balance Green", &LedInfo.whiteBalance.g, 0, 255, 0, HandleMenuInteger);
-    settings.addItem("White Balance Blue", &LedInfo.whiteBalance.b, 0, 255, 0, HandleMenuInteger);
-    settings.run();
+    while (true) {
+        settings.addItem("LED Brightness", &LedInfo.nLEDBrightness, 1, 255, 0, HandleMenuInteger);
+        settings.addItem("Second Controller", &LedInfo.bSecondController, "On", "Off", ToggleBool2ndController);
+        settings.addItem("Total Pixel Count", &LedInfo.nPixelCount, 1, 512, 0, HandleMenuInteger);
+        settings.addItem("Maximum Current (mA)", &LedInfo.nStripMaxCurrent, 100, 20000, 0, HandleMenuInteger);
+        settings.addItem("Gamma Correction", &LedInfo.bGammaCorrection, "On", "Off", ToggleBool);
+        settings.addItem("Strip Wiring Mode", &LedInfo.stripsMode, 0, 2, 0, HandleMenuInteger);
+        settings.addItem("White Balance Red", &LedInfo.whiteBalance.r, 0, 255, 0, HandleMenuInteger);
+        settings.addItem("White Balance Green", &LedInfo.whiteBalance.g, 0, 255, 0, HandleMenuInteger);
+        settings.addItem("White Balance Blue", &LedInfo.whiteBalance.b, 0, 255, 0, HandleMenuInteger);
+        settings.setItem(ix);
+		ix = settings.runOnce();
+        if (settings.pickButton() == "Back") {
+            break;
+        }
+        else {
+            while (settings.deleteItem(1)) {
+                ;
+            }
+        }
+    }
 }
 
 void RepeatSettings()
