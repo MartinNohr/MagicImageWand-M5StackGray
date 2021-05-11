@@ -528,7 +528,9 @@ bool GetFileNames(String dir, ezMenu* menu) {
 	// see if we need to process the auto start file
 	if (startfile.length())
 		ProcessConfigFile(startfile);
-	return true;
+    menu->upOnFirst("last|up");
+    menu->downOnLast("first|down");
+    return true;
 }
 
 bool ProcessConfigFile(String filename)
@@ -1749,7 +1751,7 @@ void ProcessFileOrTest()
 void SendFile(String Filename) {
     // see if there is an associated config file
     String cfFile = MakeMIWFilename(Filename, true);
-    //SettingsSaveRestore(true, 0);
+    SettingsSaveRestore(true, 0);
     IMG_INFO savedImgInfo = ImgInfo;
     ProcessConfigFile(cfFile);
     String fn = currentFolder + Filename;
@@ -1776,7 +1778,7 @@ void SendFile(String Filename) {
     }
     ShowProgressBar(100);
     ImgInfo = savedImgInfo;
-    //SettingsSaveRestore(false, 0);
+    SettingsSaveRestore(false, 0);
 }
 
 void ShowProgressBar(int percent)
@@ -1878,9 +1880,15 @@ bool SettingsSaveRestore(bool save, int set)
         // get some memory and save the values
         if (memptr[set])
             free(memptr[set]);
-        memptr[set] = malloc(sizeof(saveValueList));
-        if (!memptr[set])
+        // calculate how many bytes we need
+        size_t neededBytes = 0;
+        for (int ix = 0; ix < (sizeof(saveValueList) / sizeof(*saveValueList)); ++ix) {
+            neededBytes += saveValueList[ix].size;
+        }
+		memptr[set] = malloc(neededBytes);
+        if (!memptr[set]) {
             return false;
+        }
     }
     void* blockptr = memptr[set];
     if (memptr[set] == NULL) {
