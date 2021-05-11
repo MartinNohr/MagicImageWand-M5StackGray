@@ -64,8 +64,8 @@ EXTERN RTC_DATA_ATTR IMG_INFO ImgInfo;
 
 #define FRAMEBUTTON 17
 // led strip settings
-#define DATA_PIN1 2
-#define DATA_PIN2 5
+#define DATA_PIN1 22
+#define DATA_PIN2 21
 EXTERN  CRGB* leds;
 struct LED_INFO {
 	bool bSecondController = false;

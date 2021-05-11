@@ -44,6 +44,19 @@ void setup() {
     ezt::setDebug(INFO);
     ez.begin();
     Wire.begin();
+    img.setColorDepth(8);
+    img.createSprite(220, 100);
+    // Fill Sprite with a "transparent" colour
+    // TFT_TRANSPARENT is already defined for convenience
+    // We could also fill with any colour as "transparent" and later specify that
+    // same colour when we push the Sprite onto the screen.
+    img.fillSprite(TFT_TRANSPARENT);
+    img.setFreeFont(&Satisfy_24);
+    img.setTextColor(TFT_CYAN);
+    img.setCursor(0, 50);
+    img.print("Magic Image Wand");
+    img.pushSprite(50, 40, TFT_TRANSPARENT);
+    img.deleteSprite();
     oneshot_LED_timer_args = {
                 oneshot_LED_timer_callback,
                 /* argument specified here will be passed to timer callback function */
@@ -51,6 +64,23 @@ void setup() {
                 ESP_TIMER_TASK,
                 "one-shotLED"
     };
+    Preferences prefs;
+    prefs.begin(prefsName);
+    // check the version string
+    String vsn = prefs.getString("version", "");
+    if (String(MIW_VERSION) != vsn) {
+        prefs.putString("version", MIW_VERSION);
+        ez.msgBox("Saved Settings", "no saved settings");
+    }
+    else {
+        // see if the values need to be loaded
+        if (prefs.getBool("autoload")) {
+            // get all the defaults
+            SaveLoadSettings(NULL);
+            ez.msgBox("Saved Settings", "Settngs Loaded");
+        }
+    }
+    prefs.end();
     esp_timer_create(&oneshot_LED_timer_args, &oneshot_LED_timer);
     builtinMenu.txtSmall();
     //ez.msgBox("Initializing", "LED test", "", false);
@@ -67,23 +97,12 @@ void setup() {
     M5.IMU.Init();
     leds = (CRGB*)calloc(LedInfo.nPixelCount, sizeof(CRGB));
     FastLED.addLeds<NEOPIXEL, DATA_PIN1>(leds, 0, LedInfo.nPixelCount);
+    if (LedInfo.bSecondController) {
+        FastLED.addLeds<NEOPIXEL, DATA_PIN2>(leds, 0, LedInfo.nPixelCount);
+    }
     FastLED.setBrightness(LedInfo.nLEDBrightness);
 	FastLED.setMaxPowerInVoltsAndMilliamps(5, LedInfo.nStripMaxCurrent);
     rainbow_fill();
-
-    img.setColorDepth(8);
-    img.createSprite(220, 100);
-    // Fill Sprite with a "transparent" colour
-    // TFT_TRANSPARENT is already defined for convenience
-    // We could also fill with any colour as "transparent" and later specify that
-    // same colour when we push the Sprite onto the screen.
-    img.fillSprite(TFT_TRANSPARENT);
-    img.setFreeFont(&Satisfy_24);
-    img.setTextColor(TFT_CYAN);
-    img.setCursor(0, 50);
-    img.print("Magic Image Wand");
-    img.pushSprite(50, 40, TFT_TRANSPARENT);
-    img.deleteSprite();
 
 	//ez.canvas.font(&Satisfy_24);
  //   ez.canvas.x(50);
@@ -119,23 +138,6 @@ void setup() {
     //FastLED.show();
     //delay(1500);
     FastLED.clear(true);
-    Preferences prefs;
-    prefs.begin(prefsName);
-    // check the version string
-    String vsn = prefs.getString("version", "");
-    if (String(MIW_VERSION) != vsn) {
-        prefs.putString("version", MIW_VERSION);
-        ez.msgBox("Saved Settings", "no saved settings");
-    }
-    else {
-        // see if the values need to be loaded
-        if (prefs.getBool("autoload")) {
-            // get all the defaults
-            SaveLoadSettings(NULL);
-            ez.msgBox("Saved Settings", "Settngs Loaded");
-        }
-    }
-    prefs.end();
 }
 
 ezMenu* pFileMenu = NULL;
