@@ -868,22 +868,22 @@ bool GetMenuInteger(ezMenu* menu, void (*fcn)())
     int minVal = menu->getIntMinVal();
     int maxVal = menu->getIntMaxVal();
     int decimals = menu->getIntDecimals();
-    int value = *menu->getIntValue();
+    int* pValue = menu->getIntValue();
     int inc = 1;
-    int originalVal = value;
+    int originalVal = *pValue;
     ezProgressBar bl(menu->pickCaption(), "From " + FormatInteger(minVal, decimals) + " to " + FormatInteger(maxVal, decimals), "left # - # OK # Cancel # right # +");
     ez.canvas.font(&FreeSans12pt7b);
-    int lastVal = value;
+    int lastVal = *pValue;
     int lastInc = inc;
     ez.canvas.x(140);
     ez.canvas.y(180);
-    ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
+    ez.canvas.print("value: " + FormatInteger(*pValue, decimals) + "   ");
     while (true) {
         String b = ez.buttons.poll();
         if (b == "right")
-            value += inc;
+            *pValue += inc;
         else if (b == "left")
-            value -= inc;
+            *pValue -= inc;
         else if (b == "+") {
             inc *= 10;
         }
@@ -895,15 +895,15 @@ bool GetMenuInteger(ezMenu* menu, void (*fcn)())
         }
         else if (b == "Cancel") {
             if (ez.msgBox("Restore original", "Cancel?", "Cancel # OK #") == "OK") {
-                value = originalVal;
+                *pValue = originalVal;
                 break;
             }
             ez.buttons.show("left # - # OK # Cancel # right # +");
             ez.canvas.font(&FreeSans12pt7b);
         }
         inc = constrain(inc, 1, maxVal);
-        value = constrain(value, minVal, maxVal);
-        bl.value(((float)value / ((float)(maxVal - minVal) / 100.0)));
+        *pValue = constrain(*pValue, minVal, maxVal);
+        bl.value(((float)(*pValue) / ((float)(maxVal - minVal) / 100.0)));
         if (lastInc != inc) {
             ez.canvas.x(0);
             ez.canvas.y(180);
@@ -913,11 +913,11 @@ bool GetMenuInteger(ezMenu* menu, void (*fcn)())
             ez.canvas.color(oldcolor);
             lastInc = inc;
         }
-        if (lastVal != value) {
+        if (lastVal != *pValue) {
             ez.canvas.x(140);
             ez.canvas.y(180);
-            ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
-            lastVal = value;
+            ez.canvas.print("value: " + FormatInteger(*pValue, decimals) + "   ");
+            lastVal = *pValue;
             // call the function if there
             if (fcn) {
                 (*fcn)();
@@ -926,11 +926,9 @@ bool GetMenuInteger(ezMenu* menu, void (*fcn)())
     }
     String caption = menu->pickCaption();
     caption = caption.substring(0, caption.lastIndexOf('\t') + 1);
-    menu->setCaption(menu->pickName(), caption + FormatInteger(value, decimals));
-    if (value != *menu->getIntValue()) {
+    menu->setCaption(menu->pickName(), caption + FormatInteger(*pValue, decimals));
+	if (*pValue != lastVal) {
         bValueChanged = true;
-        // store the new value
-        *menu->getIntValue() = value;
     }
     return true;
 }
