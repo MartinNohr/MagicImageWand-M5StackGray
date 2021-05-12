@@ -694,19 +694,19 @@ void DisplayLedLightBar()
 		pMenu->txtSmall();
 		pMenu->buttons("up # # Go # Exit # down #");
         //pMenu->addItem("Exit");
-        pMenu->addItem("Color Mode", &BuiltinInfo.bDisplayAllRGB, "RGB", "HSL", ToggleBool);
+        pMenu->addItem("Color Mode", &BuiltinInfo.bDisplayAllRGB, "RGB", "HSL", ToggleBoolLightbar);
 		if (BuiltinInfo.bDisplayAllRGB) {
-			pMenu->addItem("Red", &BuiltinInfo.nDisplayAllRed, 0, 255, 0, HandleMenuInteger);
-			pMenu->addItem("Green", &BuiltinInfo.nDisplayAllGreen, 0, 255, 0, HandleMenuInteger);
-			pMenu->addItem("Blue", &BuiltinInfo.nDisplayAllBlue, 0, 255, 0, HandleMenuInteger);
+			pMenu->addItem("Red", &BuiltinInfo.nDisplayAllRed, 0, 255, 0, HandleLightBarIntegers);
+			pMenu->addItem("Green", &BuiltinInfo.nDisplayAllGreen, 0, 255, 0, HandleLightBarIntegers);
+			pMenu->addItem("Blue", &BuiltinInfo.nDisplayAllBlue, 0, 255, 0, HandleLightBarIntegers);
 		}
 		else {
-			pMenu->addItem("HUE", &BuiltinInfo.nDisplayAllHue, 0, 255, 0, HandleMenuInteger);
-			pMenu->addItem("Saturation", &BuiltinInfo.nDisplayAllSaturation, 0, 255, 0, HandleMenuInteger);
-			pMenu->addItem("Brightness", &BuiltinInfo.nDisplayAllBrightness, 0, 255, 0, HandleMenuInteger);
+			pMenu->addItem("HUE", &BuiltinInfo.nDisplayAllHue, 0, 255, 0, HandleLightBarIntegers);
+			pMenu->addItem("Saturation", &BuiltinInfo.nDisplayAllSaturation, 0, 255, 0, HandleLightBarIntegers);
+			pMenu->addItem("Brightness", &BuiltinInfo.nDisplayAllBrightness, 0, 255, 0, HandleLightBarIntegers);
 		}
-		pMenu->addItem("Pixels", &BuiltinInfo.nDisplayAllPixelCount, 1, LedInfo.nPixelCount, 0, HandleMenuInteger);
-		pMenu->addItem("From", &BuiltinInfo.bDisplayAllFromMiddle, "Middle", "End", ToggleBool);
+		pMenu->addItem("Pixels", &BuiltinInfo.nDisplayAllPixelCount, 1, LedInfo.nPixelCount, 0, HandleLightBarIntegers);
+		pMenu->addItem("From", &BuiltinInfo.bDisplayAllFromMiddle, "Middle", "End", ToggleBoolLightbar);
         pMenu->setItem(ix);
 		ix = pMenu->runOnce();
         String str = pMenu->pickButton();

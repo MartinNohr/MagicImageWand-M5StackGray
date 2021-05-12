@@ -127,6 +127,9 @@ bool GetInteger(ezMenu* menu, char* title, int& value, int minval, int maxval, i
 bool CheckCancel();
 bool HandleMenuInteger(ezMenu* menu);
 bool ToggleBool(ezMenu* menu);
+void FillLightBar();
+bool HandleLightBarIntegers(ezMenu* menu);
+bool ToggleBoolLightbar(ezMenu* menu);
 void fixRGBwithGamma(byte* rp, byte* gp, byte* bp);
 int AdjustStripIndex(int ix);
 bool WriteOrDeleteConfigFile(String filename, bool remove, bool startfile);

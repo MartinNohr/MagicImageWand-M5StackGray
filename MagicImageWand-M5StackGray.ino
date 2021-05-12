@@ -862,7 +862,8 @@ String FormatInteger(int num, int decimals)
     return str;
 }
 
-bool HandleMenuInteger(ezMenu* menu)
+// fcn is called after each change
+bool GetMenuInteger(ezMenu* menu, void (*fcn)())
 {
     int minVal = menu->getIntMinVal();
     int maxVal = menu->getIntMaxVal();
@@ -917,6 +918,10 @@ bool HandleMenuInteger(ezMenu* menu)
             ez.canvas.y(180);
             ez.canvas.print("value: " + FormatInteger(value, decimals) + "   ");
             lastVal = value;
+            // call the function if there
+            if (fcn) {
+                (*fcn)();
+            }
         }
     }
     String caption = menu->pickCaption();
@@ -928,6 +933,31 @@ bool HandleMenuInteger(ezMenu* menu)
         *menu->getIntValue() = value;
     }
     return true;
+}
+
+// menu entry for ordinary integers
+bool HandleMenuInteger(ezMenu* menu)
+{
+    GetMenuInteger(menu, NULL);
+}
+
+// call from menu for lightbar values
+void UpdateLightBarValues()
+{
+    FillLightBar();
+}
+
+// handle the light bar settings by calling update
+bool HandleLightBarIntegers(ezMenu* menu)
+{
+    GetMenuInteger(menu, UpdateLightBarValues);
+}
+
+// toggle bool lightbar with update
+bool ToggleBoolLightbar(ezMenu* menu)
+{
+    bool retval = ToggleBool(menu);
+    UpdateLightBarValues();
 }
 
 // handle boolean toggles
