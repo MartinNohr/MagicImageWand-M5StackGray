@@ -66,13 +66,16 @@ EXTERN RTC_DATA_ATTR IMG_INFO ImgInfo;
 // led strip settings
 #define DATA_PIN1 22
 #define DATA_PIN2 21
+// Define the array of leds, up to 512
 EXTERN  CRGB* leds;
+// 0 feed from center, 1 serial from end, 2 from outsides
+enum STRIPS_MODE { STRIPS_MIDDLE_WIRED = 0, STRIPS_CHAINED, STRIPS_OUTSIDE_WIRED };
 struct LED_INFO {
 	bool bSecondController = false;
 	int nLEDBrightness = 25;
 	int nPixelCount = 144;
 	bool bGammaCorrection = true;
-    int stripsMode = 0;             // 0 feed from center, 1 serial from end, 2 from outsides
+    int stripsMode = STRIPS_MIDDLE_WIRED;
 // white balance values, really only 8 bits, but menus need ints
     struct {
         int r;

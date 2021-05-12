@@ -44,6 +44,25 @@ void setup() {
     ezt::setDebug(INFO);
     ez.begin();
     Wire.begin();
+    Preferences prefs;
+    prefs.begin(prefsName);
+    // check the version string
+    String vsn = prefs.getString("version", "");
+    bool bSettingsLoaded = false;
+    if (String(MIW_VERSION) != vsn) {
+        prefs.putString("version", MIW_VERSION);
+        ez.msgBox("Saved Settings", "no saved settings");
+    }
+    else {
+        // see if the values need to be loaded
+        if (prefs.getBool("autoload")) {
+            // get all the defaults
+            SaveLoadSettings(NULL);
+            bSettingsLoaded = true;
+        }
+    }
+    prefs.end();
+    // make the screen pretty
     rainbow_fill();
     img.setColorDepth(8);
     img.createSprite(220, 100);
@@ -54,8 +73,15 @@ void setup() {
     img.fillSprite(TFT_TRANSPARENT);
     img.setFreeFont(&Satisfy_24);
     img.setTextColor(TFT_CYAN);
-    img.setCursor(0, 50);
+    img.setCursor(0, 20);
     img.print("Magic Image Wand");
+    img.setFreeFont(&FreeSans9pt7b);
+    img.setCursor(40, 50);
+    img.print(String("Version: ") + MIW_VERSION);
+    if (bSettingsLoaded) {
+        img.setCursor(30, 70);
+        img.print("Settings Loaded");
+    }
     img.pushSprite(50, 40, TFT_TRANSPARENT);
     oneshot_LED_timer_args = {
                 oneshot_LED_timer_callback,
@@ -64,23 +90,6 @@ void setup() {
                 ESP_TIMER_TASK,
                 "one-shotLED"
     };
-    Preferences prefs;
-    prefs.begin(prefsName);
-    // check the version string
-    String vsn = prefs.getString("version", "");
-    if (String(MIW_VERSION) != vsn) {
-        prefs.putString("version", MIW_VERSION);
-        ez.msgBox("Saved Settings", "no saved settings");
-    }
-    else {
-        // see if the values need to be loaded
-        if (prefs.getBool("autoload")) {
-            // get all the defaults
-            SaveLoadSettings(NULL);
-            ez.msgBox("Saved Settings", "Settngs Loaded");
-        }
-    }
-    prefs.end();
     esp_timer_create(&oneshot_LED_timer_args, &oneshot_LED_timer);
     builtinMenu.txtSmall();
     //ez.msgBox("Initializing", "LED test", "", false);
@@ -135,6 +144,8 @@ void setup() {
  //       //SetPixel(ix + 2, CRGB::Black);
  //       delayMicroseconds(50);
  //   }
+    // need a delay for LED controllers to get ready
+    delay(400);
     RainbowPulse();
     //fill_rainbow(leds, LedInfo.nPixelCount, 0);
     //FastLED.show();
@@ -1308,17 +1319,18 @@ void fixRGBwithGamma(byte* rp, byte* gp, byte* bp)
 // also check to make sure it isn't out of range
 int AdjustStripIndex(int ix)
 {
+    int ledCount = LedInfo.bSecondController ? LedInfo.nPixelCount / 2 : LedInfo.nPixelCount;
     switch (LedInfo.stripsMode) {
-    case 0:	// bottom reversed, top normal, both wired in the middle
-        if (ix < LedInfo.nPixelCount) {
-            ix = (LedInfo.nPixelCount - 1 - ix);
+    case STRIPS_MIDDLE_WIRED:	// bottom reversed, top normal, both wired in the middle
+        if (ix < ledCount) {
+            ix = (ledCount - 1 - ix);
         }
         break;
-    case 1:	// bottom and top normal, chained, so nothing to do
+    case STRIPS_CHAINED:	// bottom and top normal, chained, so nothing to do
         break;
-    case 2:	// top reversed, bottom normal, no connection in the middle
-        if (ix >= LedInfo.nPixelCount) {
-            ix = (LedInfo.nPixelCount - 1 - ix);
+    case STRIPS_OUTSIDE_WIRED:	// top reversed, bottom normal, no connection in the middle
+        if (ix >= ledCount) {
+            ix = (LedInfo.nPixelCount - 1 - ix) + ledCount;
         }
         break;
     }
