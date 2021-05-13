@@ -883,6 +883,6 @@ void ShowLeds(int mode)
     }
     else if (mode == 2) {
         free(scrBuf);
-        delay(2000);
+        scrBuf = NULL;
     }
 }

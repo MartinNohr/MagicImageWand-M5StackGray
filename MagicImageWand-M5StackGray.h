@@ -6,7 +6,7 @@
     #define EXTERN extern
 #endif
 
-#define MIW_VERSION "1.00"
+#define MIW_VERSION "1.01"
 // define must first #include <M5Stack.h>
 //#define M5STACK_MPU6886 
 #define M5STACK_MPU9250 
@@ -64,8 +64,8 @@ EXTERN RTC_DATA_ATTR IMG_INFO ImgInfo;
 
 #define FRAMEBUTTON 17
 // led strip settings
-#define DATA_PIN1 22
-#define DATA_PIN2 21
+#define DATA_PIN1 2
+#define DATA_PIN2 5
 // Define the array of leds, up to 512
 EXTERN  CRGB* leds;
 // 0 feed from center, 1 serial from end, 2 from outsides
