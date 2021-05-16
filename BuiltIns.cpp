@@ -879,6 +879,7 @@ void ShowLeds(int mode)
 	else if (mode == 1) {
         col = 0;
         ez.canvas.clear();
+        FastLED.clearData();
         scrBuf = (uint16_t*)calloc(144, sizeof(uint16_t));
     }
     else if (mode == 2) {

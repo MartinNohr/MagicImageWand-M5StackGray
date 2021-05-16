@@ -6,6 +6,7 @@
 #define MIW_MAIN 1
 #include "MagicImageWand-M5StackGray.h"
 #include <Preferences.h>
+#include <nvs_flash.h>
 
 #define MAIN_DECLARED
 String exit_button = "Exit";
@@ -293,7 +294,7 @@ float GetAverage(int& ix, int size, float val, float* fary, float& sum)
     return sum / size;
 }
 
-#define SAMPLES 10
+constexpr auto SAMPLES = 10;
 float tempSum;
 float tempArray[SAMPLES];
 int tempIx = 0;
@@ -1017,6 +1018,16 @@ bool SaveLoadSettings(ezMenu* pMenu)
     return true;
 }
 
+// format eeprom nvram
+void FormatNVRam()
+{
+	String str = ez.msgBox("Format EEPROM", "Delete all save data?", "Cancel#OK#");
+    if (str == "OK") {
+        nvs_flash_erase(); // erase the NVS partition and...
+        nvs_flash_init(); // initialize the NVS partition.
+    }
+}
+
 // delete saved settings
 void FactorySettings()
 {
@@ -1043,6 +1054,7 @@ void SavedSettings()
     settings.addItem("Save", NULL, SaveLoadSettings);
     settings.addItem("Load", NULL, SaveLoadSettings);
     settings.addItem("Factory Defaults", FactorySettings);
+    settings.addItem("Format EEPROM", FormatNVRam);
     settings.run();
     prefs.putBool("autoload", bAutoLoad);
     prefs.end();
