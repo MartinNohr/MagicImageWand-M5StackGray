@@ -681,6 +681,8 @@ int RollDownRollOver(int inc)
 // utility for DisplayLedLightBar()
 void FillLightBar()
 {
+    // check max pixels
+    BuiltinInfo.nDisplayAllPixelCount = constrain(BuiltinInfo.nDisplayAllPixelCount, 1, LedInfo.nPixelCount);
     int offset = BuiltinInfo.bDisplayAllFromMiddle ? (LedInfo.nPixelCount - BuiltinInfo.nDisplayAllPixelCount) / 2 : 0;
     if (!BuiltinInfo.bDisplayAllFromMiddle && ImgInfo.bUpsideDown)
         offset = LedInfo.nPixelCount - BuiltinInfo.nDisplayAllPixelCount;
