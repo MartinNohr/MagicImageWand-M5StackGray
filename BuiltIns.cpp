@@ -593,10 +593,19 @@ void TestRainbow()
     FastLED.setBrightness(LedInfo.nLEDBrightness);
 }
 
+// fill the array with a color and display it
+void FillAndShowLeds(CRGB color)
+{
+    for (int ix = 0; ix < LedInfo.nPixelCount; ++ix) {
+        leds[ix] = color;
+    }
+    ShowLeds();
+}
+
 // show random bars of lights with optional blacks between
 void ShowRandomBars(bool blacks)
 {
-    time_t start = time(NULL);
+    //time_t start = time(NULL);
     byte r, g, b;
     srand(millis());
     char line[40];
@@ -613,7 +622,8 @@ void ShowRandomBars(bool blacks)
             b = random(0, 255);
             fixRGBwithGamma(&r, &g, &b);
             // fill the strip color
-            FastLED.showColor(CRGB(r, g, b));
+            FillAndShowLeds(CRGB(r, g, b));
+            //FastLED.showColor(CRGB(r, g, b));
         }
         int count = BuiltinInfo.nRandomBarsHoldframes;
         while (count-- > 0) {
