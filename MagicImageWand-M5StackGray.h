@@ -63,7 +63,11 @@ typedef IMG_INFO IMG_INFO;
 EXTERN RTC_DATA_ATTR IMG_INFO ImgInfo;
 
 #define FRAMEBUTTON 17
-// led strip settings
+// led strip settings. When using a M5Stack Fire, grove port B can be used, GPIO 26 & 36
+//#define DATA_PIN1 26
+//#define DATA_PIN2 36
+
+// led strip settings for M5Stack-grey
 #define DATA_PIN1 2
 #define DATA_PIN2 5
 // Define the array of leds, up to 512
