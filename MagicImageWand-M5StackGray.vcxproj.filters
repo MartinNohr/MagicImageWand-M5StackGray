@@ -39,4 +39,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="20210602_112311.jpg">
+      <Filter>Misc Files</Filter>
+    </Image>
+    <Image Include="20210602_112324.jpg">
+      <Filter>Misc Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
